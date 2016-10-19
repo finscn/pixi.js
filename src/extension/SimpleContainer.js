@@ -122,5 +122,6 @@ export default class SimpleContainer extends core.Container
 
         return null;
     }
+
 }
 
