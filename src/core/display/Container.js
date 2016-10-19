@@ -366,11 +366,7 @@ export default class Container extends DisplayObject
         {
             this._renderWebGL(renderer);
 
-            // simple render children!
-            for (let i = 0, j = this.children.length; i < j; ++i)
-            {
-                this.children[i].renderWebGL(renderer);
-            }
+            this.renderWebGLChildren(renderer);
         }
     }
 
@@ -422,10 +418,7 @@ export default class Container extends DisplayObject
         this._renderWebGL(renderer);
 
         // now loop through the children and make sure they get rendered
-        for (let i = 0, j = this.children.length; i < j; i++)
-        {
-            this.children[i].renderWebGL(renderer);
-        }
+        this.renderWebGLChildren(renderer);
 
         renderer.currentRenderer.flush();
 
@@ -440,6 +433,20 @@ export default class Container extends DisplayObject
         }
 
         renderer.currentRenderer.start();
+    }
+
+    /**
+     * Simple render children with WebGL renderer
+     *
+     * @private
+     * @param {PIXI.WebGLRenderer} renderer - The renderer
+     */
+    renderWebGLChildren(renderer)
+    {
+        for (let i = 0, j = this.children.length; i < j; i++)
+        {
+            this.children[i].renderWebGL(renderer);
+        }
     }
 
     /**
@@ -483,14 +490,25 @@ export default class Container extends DisplayObject
         }
 
         this._renderCanvas(renderer);
-        for (let i = 0, j = this.children.length; i < j; ++i)
-        {
-            this.children[i].renderCanvas(renderer);
-        }
+        this.renderCanvasChildren(renderer);
 
         if (this._mask)
         {
             renderer.maskManager.popMask(renderer);
+        }
+    }
+
+    /**
+     * Simple render children with Canvas renderer
+     *
+     * @private
+     * @param {PIXI.CanvasRenderer} renderer - The renderer
+     */
+    renderCanvasChildren(renderer)
+    {
+        for (let i = 0, j = this.children.length; i < j; i++)
+        {
+            this.children[i].renderCanvas(renderer);
         }
     }
 

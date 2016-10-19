@@ -16,6 +16,8 @@ import * as mesh from './mesh';
 import * as particles from './particles';
 import * as prepare from './prepare';
 
+import * as extension from './extension';
+
 export {
     accessibility,
     extract,
@@ -26,6 +28,8 @@ export {
     mesh,
     particles,
     prepare,
+
+    extension,
 };
 
 /**
