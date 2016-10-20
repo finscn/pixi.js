@@ -39,8 +39,11 @@ export {
  * @memberof PIXI
  * @property {PIXI.loaders.Loader}
  */
-const loader = new loaders.Loader();
-
+let loader;
+if (typeof loaders.Loader === 'function')
+{
+    loader = new loaders.Loader();
+}
 export { loader };
 
 // Always export pixi globally.
