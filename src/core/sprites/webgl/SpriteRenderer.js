@@ -109,8 +109,8 @@ export default class SpriteRenderer extends ObjectRenderer
         this.MAX_TEXTURES = checkMaxIfStatmentsInShader(this.MAX_TEXTURES, gl);
 
         this.shaders = new Array(this.MAX_TEXTURES);
-        this.shaders[0] = generateMultiTextureShader(gl, 1);
-        this.shaders[1] = generateMultiTextureShader(gl, 2);
+        this.shaders[0] = this.generateShader(gl, 1);
+        this.shaders[1] = this.generateShader(gl, 2);
 
         // create a couple of buffers
         this.indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indices, gl.STATIC_DRAW);
@@ -138,6 +138,11 @@ export default class SpriteRenderer extends ObjectRenderer
 
         this.vao = this.vaos[0];
         this.currentBlendMode = 99999;
+    }
+
+    generateShader(gl, args)
+    {
+        return generateMultiTextureShader(gl, args);
     }
 
     /**
@@ -354,7 +359,7 @@ export default class SpriteRenderer extends ObjectRenderer
 
             if (!shader)
             {
-                shader = this.shaders[groupTextureCount - 1] = generateMultiTextureShader(gl, groupTextureCount);
+                shader = this.shaders[groupTextureCount - 1] = this.generateShader(gl, groupTextureCount);
                 // console.log("SHADER generated for " + textureCount + " textures")
             }
 

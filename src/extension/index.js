@@ -8,7 +8,11 @@
 /**
  * @namespace PIXI.extension
  */
+export { default as Matrix3 } from './Matrix3';
 export { default as patch } from './patch';
 export { default as SimpleContainer } from './SimpleContainer';
 export { default as SimpleSprite } from './SimpleSprite';
 export { default as SimpleParticleContainer } from './SimpleParticleContainer';
+export { default as PerspectiveTransform } from './PerspectiveTransform';
+export { default as PerspectiveFilter } from './PerspectiveFilter';
+export { default as PerspectiveRenderer } from './PerspectiveRenderer';
