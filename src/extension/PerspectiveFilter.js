@@ -54,20 +54,20 @@ export default class PerspectiveFilter extends core.Filter
             '    float iW = 1.0 / w;',
             '    float iH = 1.0 / h;',
 
-            '    mat3 smallM3;',
-            '    smallM3[0]=vec3(iW,  0,  0 );',
-            '    smallM3[1]=vec3(0,   iH, 0 );',
-            '    smallM3[2]=vec3(0,   0,  1 );',
+            '    mat3 normalM3;',
+            '    normalM3[0]=vec3(iW,  0,  0 );',
+            '    normalM3[1]=vec3(0,   iH, 0 );',
+            '    normalM3[2]=vec3(0,   0,  1 );',
 
-            '    vec3 normalPos = smallM3 * worldM3T * vec3(aVertexPosition, 1.0);',
+            '    vec3 normalPos = normalM3 * worldM3T * vec3(aVertexPosition, 1.0);',
 
-            '    mat4 bigM4;',
-            '    bigM4[0]=vec4(w,  0,  0,  0 );',
-            '    bigM4[1]=vec4(0,  h,  0,  0 );',
-            '    bigM4[2]=vec4(0,  0,  1,  0 );',
-            '    bigM4[3]=vec4(0,  0,  0,  1 );',
+            '    mat4 restoreM4;',
+            '    restoreM4[0]=vec4(w,  0,  0,  0 );',
+            '    restoreM4[1]=vec4(0,  h,  0,  0 );',
+            '    restoreM4[2]=vec4(0,  0,  1,  0 );',
+            '    restoreM4[3]=vec4(0,  0,  0,  1 );',
 
-            '    gl_Position = proM4 * worldM4 * bigM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);',
+            '    gl_Position = proM4 * worldM4 * restoreM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);',
 
             '}',
         ].join('\n');

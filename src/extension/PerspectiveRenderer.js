@@ -77,11 +77,8 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
 
         shader.uniforms.uAlpha = sprite.worldAlpha;
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
-        shader.uniforms.worldMatrixT = Matrix3.invert(new Float32Array(9), shader.uniforms.worldMatrix);
-        shader.uniforms.spriteWidth = sprite.width;
-        shader.uniforms.spriteHeight = sprite.height;
-        shader.uniforms.spriteScaleX = sprite.scale.x;
-        shader.uniforms.spriteScaleY = sprite.scale.y;
+        shader.uniforms.origWidth = sprite.origWidth;
+        shader.uniforms.origHeight = sprite.origHeight;
         shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
         shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
 
@@ -106,12 +103,9 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
             'uniform mat3 quadToSquareMatrix;',
             'uniform mat3 squareToQuadMatrix;',
             'uniform mat3 worldMatrix;',
-            'uniform mat3 worldMatrixT;',
 
-            'uniform float spriteScaleX;',
-            'uniform float spriteScaleY;',
-            'uniform float spriteWidth;',
-            'uniform float spriteHeight;',
+            'uniform float origWidth;',
+            'uniform float origHeight;',
 
             'void main(void) {',
             '    vTextureCoord = aTextureCoord;',
@@ -121,7 +115,6 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
 
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
-            '    mat3 worldM3T = worldMatrixT;',
             '    mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;',
 
             '    mat4 proM4;',
@@ -142,25 +135,25 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
             '    worldM4[2]=vec4( 0,              0,              1,  0             );',
             '    worldM4[3]=vec4( worldM3[2][0],  worldM3[2][1],  0,  worldM3[2][2] );',
 
-            '    float w = spriteWidth / spriteScaleX;',
-            '    float h = spriteHeight / spriteScaleY;',
+            '    float w = origWidth;',
+            '    float h = origHeight;',
             '    float iW = 1.0 / w;',
             '    float iH = 1.0 / h;',
 
-            '    mat3 smallM3;',
-            '    smallM3[0]=vec3(iW,  0,  0 );',
-            '    smallM3[1]=vec3(0,   iH, 0 );',
-            '    smallM3[2]=vec3(0,   0,  1 );',
+            '    mat3 normalM3;',
+            '    normalM3[0]=vec3(iW,  0,  0 );',
+            '    normalM3[1]=vec3(0,   iH, 0 );',
+            '    normalM3[2]=vec3(0,   0,  1 );',
 
-            '    vec3 normalPos = smallM3 * worldM3T * vec3(aVertexPosition, 1.0);',
+            '    vec3 normalPos = normalM3 * vec3(aVertexPosition, 1.0);',
 
-            '    mat4 bigM4;',
-            '    bigM4[0]=vec4(w,  0,  0,  0 );',
-            '    bigM4[1]=vec4(0,  h,  0,  0 );',
-            '    bigM4[2]=vec4(0,  0,  1,  0 );',
-            '    bigM4[3]=vec4(0,  0,  0,  1 );',
+            '    mat4 restoreM4;',
+            '    restoreM4[0]=vec4(w,  0,  0,  0 );',
+            '    restoreM4[1]=vec4(0,  h,  0,  0 );',
+            '    restoreM4[2]=vec4(0,  0,  1,  0 );',
+            '    restoreM4[3]=vec4(0,  0,  0,  1 );',
 
-            '    gl_Position = proM4 * worldM4 * bigM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);',
+            '    gl_Position = proM4 * worldM4 * restoreM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);',
 
             '}',
         ].join('\n');
@@ -236,10 +229,66 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
 
     static _spriteRenderWebGL(renderer)
     {
-        this.calculateVertices();
-
+        const sprite = this;
+        // sprite.calculateVertices();
+        PerspectiveRenderer.calculateSpriteVerticesWithTransform(sprite);
         renderer.setObjectRenderer(renderer.plugins.perspective);
-        renderer.plugins.perspective.render(this);
+        renderer.plugins.perspective.render(sprite);
+    }
+
+    static calculateSpriteVerticesWithTransform(sprite)
+    {
+        if (sprite._transformID === sprite.transform._worldID && sprite._textureID === sprite._texture._updateID)
+        {
+            return;
+        }
+
+        sprite._transformID = sprite.transform._worldID;
+        sprite._textureID = sprite._texture._updateID;
+
+        // set the vertex data
+
+        const texture = sprite._texture;
+        const vertexData = sprite.vertexData;
+        const trim = texture.trim;
+        const orig = texture.orig;
+        const anchor = sprite._anchor;
+
+        let w0 = 0;
+        let w1 = 0;
+        let h0 = 0;
+        let h1 = 0;
+
+        if (trim)
+        {
+            // if the sprite is trimmed and is not a tilingsprite then we need to add the extra
+            // space before transforming the sprite coords.
+            w1 = trim.x - (anchor._x * orig.width);
+            w0 = w1 + trim.width;
+
+            h1 = trim.y - (anchor._y * orig.height);
+            h0 = h1 + trim.height;
+        }
+        else
+        {
+            w0 = orig.width * (1 - anchor._x);
+            w1 = orig.width * -anchor._x;
+
+            h0 = orig.height * (1 - anchor._y);
+            h1 = orig.height * -anchor._y;
+        }
+
+        sprite.origWidth = w0 - w1;
+        sprite.origHeight = h0 - h1;
+
+        vertexData[0] = w1;
+        vertexData[1] = h1;
+        vertexData[2] = w0;
+        vertexData[3] = h1;
+        vertexData[4] = w0;
+        vertexData[5] = h0;
+        vertexData[6] = w1;
+        vertexData[7] = h0;
     }
 }
 
