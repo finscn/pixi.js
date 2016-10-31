@@ -18,10 +18,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         ]);
     }
 
-    bindShader(shader, sprite)
+    updateShaderParameters(shader, sprite)
     {
-        this.renderer.bindShader(this.shader);
-        shader.uniforms.uAlpha = sprite.worldAlpha;
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
         shader.uniforms.origWidth = sprite.origRealWidth;
         shader.uniforms.origHeight = sprite.origRealHeight;
@@ -34,13 +32,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     getVertexSrc()
     {
         return [
-            'attribute vec2 aVertexPosition;',
-            'attribute vec2 aTextureCoord;',
-            // 'uniform vec4 aColor;',
-            'uniform mat3 projectionMatrix;',
-            'uniform float uAlpha;',
-            'varying vec2 vTextureCoord;',
-            'varying float vAlpha;',
+            this.getVertexHeadSrc(),
 
             'uniform mat3 quadToSquareMatrix;',
             'uniform mat3 squareToQuadMatrix;',
@@ -53,9 +45,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
             'void main(void) {',
             '    vTextureCoord = aTextureCoord;',
+            // '    vColor = vec4(uColor.rgb * uColor.a, uColor.a);',
             '    vAlpha = uAlpha;',
-            // '    vColor = vec4(aColor.rgb * aColor.a, aColor.a);',
-            // '    gl_Position = perspectiveMatrix * vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
 
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
@@ -90,23 +81,6 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
             '    gl_Position = proM4 * worldM4 * scaleM4 * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);',
 
-            '}',
-        ].join('\n');
-    }
-
-    getFragmentSrc()
-    {
-        return [
-            'uniform sampler2D uSampler;',
-            'varying vec2 vTextureCoord;',
-            // 'varying vec4 vColor;',
-            'varying float vAlpha;',
-
-            'void main(void) {',
-            '    vec4 color = texture2D(uSampler, vTextureCoord) * vAlpha;',
-            '    if (color.a == 0.0) discard;',
-            '    gl_FragColor = color;',
-            // '    gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor;',
             '}',
         ].join('\n');
     }

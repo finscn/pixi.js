@@ -3,6 +3,8 @@ import * as core from '../core';
 const Shader = core.Shader;
 const Quad = core.Quad;
 
+// const tempArray = new Float32Array(4);
+
 export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 {
     constructor(renderer)
@@ -44,13 +46,12 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const texture = sprite._texture.baseTexture;
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
 
-        // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
-        const uvs = sprite._texture._uvs;
-
         const vertices = quad.vertices;
         for (let i = 0; i < 8; i++) {
             vertices[i] = vertexData[i];
         }
+
+        const uvs = sprite._texture._uvs;
         quad.uvs[0] = uvs.x0;
         quad.uvs[1] = uvs.y0;
         quad.uvs[2] = uvs.x1;
@@ -62,7 +63,18 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 
         quad.upload();
 
-        this.bindShader(shader, sprite);
+        this.renderer.bindShader(this.shader);
+
+        // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
+
+        // const color = tempArray;
+        // core.utils.hex2rgb(sprite._tint, color);
+        // color[3] = sprite.worldAlpha;
+        // shader.uniforms.uColor = color;
+        shader.uniforms.uAlpha = sprite.worldAlpha;
+
+        this.updateShaderParameters(shader, sprite);
+
 
         renderer.bindTexture(texture, this.textureLocation);
         renderer.state.setBlendMode(sprite.blendMode);
@@ -71,41 +83,64 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         this.quad.draw();
     }
 
-    bindShader(shader, sprite)
+    updateShaderParameters(shader, sprite)
     {
-        this.renderer.bindShader(this.shader);
-        shader.uniforms.uAlpha = sprite.worldAlpha;
+        // implemented by subclass
+        if (!sprite) {
+            return;
+        }
     }
 
-    getVertexSrc()
+    getVertexHeadSrc()
     {
         return [
             'attribute vec2 aVertexPosition;',
             'attribute vec2 aTextureCoord;',
             'uniform mat3 projectionMatrix;',
+            // 'uniform vec4 uColor;',
             'uniform float uAlpha;',
             'varying vec2 vTextureCoord;',
+            // 'varying vec4 vColor;',
             'varying float vAlpha;',
+        ].join('\n');
+    }
+
+    getVertexSrc()
+    {
+        return [
+            this.getVertexHeadSrc(),
 
             'void main(void) {',
             '    vTextureCoord = aTextureCoord;',
+            // '    vColor = vec4(uColor.rgb * uColor.a, uColor.a);',
             '    vAlpha = uAlpha;',
             '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
             '}',
         ].join('\n');
     }
 
-    getFragmentSrc()
+    getFragmentHeadSrc()
     {
         return [
             'uniform sampler2D uSampler;',
             'varying vec2 vTextureCoord;',
+            // 'varying vec4 vColor;',
             'varying float vAlpha;',
+        ].join('\n');
+    }
+
+    getFragmentSrc()
+    {
+        return [
+            this.getFragmentHeadSrc(),
 
             'void main(void) {',
-            '    vec4 color = texture2D(uSampler, vTextureCoord) * vAlpha;',
-            '    if (color.a == 0.0) discard;',
-            '    gl_FragColor = color;',
+            // '    gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor;',
+            '    gl_FragColor = texture2D(uSampler, vTextureCoord) * vAlpha;',
+            // // '    vec4 color = texture2D(uSampler, vTextureCoord) * vColor;',
+            // '    vec4 color = texture2D(uSampler, vTextureCoord) * uAlpha;',
+            // '    if (color.a == 0.0) discard;',
+            // '    gl_FragColor = color;',
             '}',
         ].join('\n');
     }
