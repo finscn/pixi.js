@@ -206,6 +206,31 @@ Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3) {
     return mat;
 };
 
+Matrix3.perspective = function(fromQuad, toQuad) {
+    const qToS = Matrix3.quadrilateralToSquare(
+        fromQuad[0], fromQuad[1],
+        fromQuad[2], fromQuad[3],
+        fromQuad[4], fromQuad[5],
+        fromQuad[6], fromQuad[7]
+    );
+    const sToQ = Matrix3.squareToQuadrilateral(
+        toQuad[0], toQuad[1],
+        toQuad[2], toQuad[3],
+        toQuad[4], toQuad[5],
+        toQuad[6], toQuad[7]
+    );
+    const pt = new Float32Array(9);
+    Matrix3.multiply(pt, qToS, sToQ);
+    return pt;
+};
+
+Matrix3.perspectiveTransfromPoint = function(mat, x, y) {
+    const a = x * mat[0] + y * mat[1] + mat[2];
+    const b = x * mat[3] + y * mat[4] + mat[5];
+    const c = x * mat[6] + y * mat[7] + mat[8];
+    return [a / c, b / c];
+};
+
 Matrix3.str = function (a) {
     return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', '
             + a[3] + ', ' + a[4] + ', ' + a[5] + ', '

@@ -13,6 +13,6 @@ export { default as patch } from './patch';
 export { default as SimpleContainer } from './SimpleContainer';
 export { default as SimpleSprite } from './SimpleSprite';
 export { default as SimpleParticleContainer } from './SimpleParticleContainer';
-export { default as PerspectiveTransform } from './PerspectiveTransform';
-export { default as PerspectiveFilter } from './PerspectiveFilter';
+export { default as BaseSpriteShaderRenderer } from './BaseSpriteShaderRenderer';
 export { default as PerspectiveRenderer } from './PerspectiveRenderer';
+export { default as PerspectiveFilter } from './PerspectiveFilter';

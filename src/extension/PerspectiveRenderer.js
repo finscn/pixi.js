@@ -1,17 +1,15 @@
 import * as core from '../core';
 import Matrix3 from './Matrix3';
+import BaseSpriteShaderRenderer from './BaseSpriteShaderRenderer';
 
-const Shader = core.Shader;
-const Quad = core.Quad;
 const WebGLRenderer = core.WebGLRenderer;
 
-export default class PerspectiveRenderer extends core.ObjectRenderer
+export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 {
 
     constructor(renderer)
     {
         super(renderer);
-        this.gl = renderer.gl;
         this.uniforms = {};
         this.defaultMatrix = new Float32Array([
             1, 0, 0,
@@ -20,73 +18,15 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
         ]);
     }
 
-    onContextChange()
-    {
-        const gl = this.renderer.gl;
-        const shader = this.shader = this.generateShader(gl);
-        const quad = this.quad = new Quad(gl, this.renderer.state.attribState);
-        quad.initVao(shader);
-    }
-
-    generateShader(gl, args)
-    {
-        if (args) {
-            // noop
-        }
-        const vertexSrc = this.getVertexSrc();
-        const fragmentSrc = this.getFragmentSrc();
-        const shader = new Shader(gl, vertexSrc, fragmentSrc);
-        return shader;
-    }
-
-    start()
+    bindShader(shader, sprite)
     {
         this.renderer.bindShader(this.shader);
-    }
-
-    render(sprite)
-    {
-        if (!sprite.texture._uvs) {
-            return;
-        }
-
-        const renderer = this.renderer;
-        const shader = this.shader;
-        const quad = this.quad;
-
-        const texture = sprite._texture.baseTexture;
-        const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
-
-        // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
-        const uvs = sprite._texture._uvs;
-
-        const vertices = quad.vertices;
-        for (let i = 0; i < 8; i++) {
-            vertices[i] = vertexData[i];
-        }
-        quad.uvs[0] = uvs.x0;
-        quad.uvs[1] = uvs.y0;
-        quad.uvs[2] = uvs.x1;
-        quad.uvs[3] = uvs.y1;
-        quad.uvs[4] = uvs.x2;
-        quad.uvs[5] = uvs.y2;
-        quad.uvs[6] = uvs.x3;
-        quad.uvs[7] = uvs.y3;
-
-        quad.upload();
-
         shader.uniforms.uAlpha = sprite.worldAlpha;
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
-        shader.uniforms.origWidth = sprite.origWidth;
-        shader.uniforms.origHeight = sprite.origHeight;
+        shader.uniforms.origWidth = sprite.origRealWidth;
+        shader.uniforms.origHeight = sprite.origRealHeight;
         shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
         shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
-
-        renderer.bindTexture(texture, 0);
-        renderer.state.setBlendMode(sprite.blendMode);
-
-        // gl.drawElements(gl.TRIANGLES, 1 * 6, gl.UNSIGNED_SHORT, 0 * 6 * 2);
-        this.quad.draw();
     }
 
     getVertexSrc()
@@ -144,7 +84,7 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
             '    scaleM4[2] = vec4(0,  0,  1,  0 );',
             '    scaleM4[3] = vec4(0,  0,  0,  1 );',
 
-            '    gl_Position = proM4 * worldM4 * scaleM4 * perM4 *  vec4(aVertexPosition.xy, 0.0, 1.0);',
+            '    gl_Position = proM4 * worldM4 * scaleM4 * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);',
 
             '}',
         ].join('\n');
@@ -167,15 +107,35 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
         ].join('\n');
     }
 
-    static updateMatrix(sprite, toQuad, fromQuad)
+    static applyTo(sprite)
     {
-        if (!fromQuad) {
+        sprite._perspectiveRendererBakRenderWebGL = sprite._renderWebGL;
+        sprite._renderWebGL = PerspectiveRenderer._spriteRenderWebGL;
+        sprite.updatePerspective = PerspectiveRenderer._updatePerspective;
+    }
+
+    static unapplyTo(sprite)
+    {
+        if (sprite._perspectiveRendererBakRenderWebGL) {
+            sprite._renderWebGL = sprite._perspectiveRendererBakRenderWebGL;
+            sprite.updatePerspective = null;
+        }
+    }
+
+    // sprite.updatePerspective(toQuad);
+    // sprite.updatePerspective(fromQuad, toQuad);
+    static _updatePerspective(fromQuad, toQuad)
+    {
+        const sprite = this;
+
+        if (arguments.length === 1) {
             if (!sprite._texture) {
                 return false;
             }
+            toQuad = fromQuad;
             const frame = sprite._texture._frame;
-            const x = frame.x;
-            const y = frame.y;
+            const x = 0; // frame.x;
+            const y = 0; // frame.y;
             const w = frame.width;
             const h = frame.height;
             fromQuad = [
@@ -205,82 +165,16 @@ export default class PerspectiveRenderer extends core.ObjectRenderer
         return true;
     }
 
-    static applyTo(sprite)
-    {
-        sprite._perspectiveRendererBakRenderWebGL = sprite._renderWebGL;
-        sprite._renderWebGL = PerspectiveRenderer._spriteRenderWebGL;
-    }
-
-    static unapplyTo(sprite)
-    {
-        if (sprite._perspectiveRendererBakRenderWebGL) {
-            sprite._renderWebGL = sprite._perspectiveRendererBakRenderWebGL;
-        }
-    }
-
     static _spriteRenderWebGL(renderer)
     {
         const sprite = this;
         // sprite.calculateVertices();
-        PerspectiveRenderer.calculateSpriteVerticesWithoutTransform(sprite);
+        // PerspectiveRenderer.calculateSpriteVerticesWithoutTransform(sprite);
+        sprite.calculateVerticesWithoutTransform(true);
         renderer.setObjectRenderer(renderer.plugins.perspective);
         renderer.plugins.perspective.render(sprite);
     }
 
-    static calculateSpriteVerticesWithoutTransform(sprite)
-    {
-        if (sprite._textureID === sprite._texture._updateID)
-        {
-            return;
-        }
-
-        sprite._textureID = sprite._texture._updateID;
-
-        const texture = sprite._texture;
-        const vertexData = sprite.vertexData;
-        const trim = texture.trim;
-        const orig = texture.orig;
-        const anchor = sprite._anchor;
-
-        let w0 = 0;
-        let w1 = 0;
-        let h0 = 0;
-        let h1 = 0;
-
-        if (trim)
-        {
-            w1 = trim.x - (anchor._x * orig.width);
-            w0 = w1 + trim.width;
-
-            h1 = trim.y - (anchor._y * orig.height);
-            h0 = h1 + trim.height;
-        }
-        else
-        {
-            w0 = orig.width * (1 - anchor._x);
-            w1 = orig.width * -anchor._x;
-
-            h0 = orig.height * (1 - anchor._y);
-            h1 = orig.height * -anchor._y;
-        }
-
-        sprite.origWidth = w0 - w1;
-        sprite.origHeight = h0 - h1;
-
-        w0 = w0 / orig.width;
-        w1 = w1 / orig.width;
-        h0 = h0 / orig.height;
-        h1 = h1 / orig.height;
-
-        vertexData[0] = w1;
-        vertexData[1] = h1;
-        vertexData[2] = w0;
-        vertexData[3] = h1;
-        vertexData[4] = w0;
-        vertexData[5] = h0;
-        vertexData[6] = w1;
-        vertexData[7] = h0;
-    }
 }
 
 WebGLRenderer.registerPlugin('perspective', PerspectiveRenderer);
