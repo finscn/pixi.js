@@ -80,17 +80,20 @@ core.Sprite.prototype.calculateVerticesWithoutTransform = function(normal) {
     }
 
     if (normal) {
-        vertexData[0] = w1 / width;
-        vertexData[1] = h1 / height;
+        const ax = anchor._x;
+        const ay = anchor._y;
 
-        vertexData[2] = w0 / width;
-        vertexData[3] = h1 / height;
+        vertexData[0] = w1 / width + ax;
+        vertexData[1] = h1 / height + ay;
 
-        vertexData[4] = w0 / width;
-        vertexData[5] = h0 / height;
+        vertexData[2] = w0 / width + ax;
+        vertexData[3] = h1 / height + ay;
 
-        vertexData[6] = w1 / width;
-        vertexData[7] = h0 / height;
+        vertexData[4] = w0 / width + ax;
+        vertexData[5] = h0 / height + ay;
+
+        vertexData[6] = w1 / width + ax;
+        vertexData[7] = h0 / height + ay;
     } else {
         vertexData[0] = w1;
         vertexData[1] = h1;
@@ -106,7 +109,7 @@ core.Sprite.prototype.calculateVerticesWithoutTransform = function(normal) {
     }
 
     this.origRealWidth = w0 - w1;
-    this.origRealHeight = w0 - w1;
+    this.origRealHeight = h0 - h1;
 
 };
 

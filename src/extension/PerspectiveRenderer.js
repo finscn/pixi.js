@@ -25,6 +25,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
         shader.uniforms.origWidth = sprite.origRealWidth;
         shader.uniforms.origHeight = sprite.origRealHeight;
+        shader.uniforms.anchorX = sprite._anchor._x;
+        shader.uniforms.anchorY = sprite._anchor._y;
         shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
         shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
     }
@@ -46,6 +48,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
             'uniform float origWidth;',
             'uniform float origHeight;',
+            'uniform float anchorX;',
+            'uniform float anchorY;',
 
             'void main(void) {',
             '    vTextureCoord = aTextureCoord;',
@@ -82,7 +86,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             '    scaleM4[0] = vec4(w,  0,  0,  0 );',
             '    scaleM4[1] = vec4(0,  h,  0,  0 );',
             '    scaleM4[2] = vec4(0,  0,  1,  0 );',
-            '    scaleM4[3] = vec4(0,  0,  0,  1 );',
+            '    scaleM4[3] = vec4(-w * anchorX,  -h * anchorY,  0,  1 );',
 
             '    gl_Position = proM4 * worldM4 * scaleM4 * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);',
 
