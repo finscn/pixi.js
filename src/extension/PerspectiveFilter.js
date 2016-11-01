@@ -1,5 +1,7 @@
 import * as core from '../core';
-import Matrix3 from './Matrix3';
+import mat3 from './Matrix3';
+
+const Matrix3 = mat3;
 
 export default class PerspectiveFilter extends core.Filter
 {

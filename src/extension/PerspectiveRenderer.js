@@ -1,6 +1,8 @@
 import * as core from '../core';
-import Matrix3 from './Matrix3';
 import BaseSpriteShaderRenderer from './BaseSpriteShaderRenderer';
+import mat3 from './Matrix3';
+
+const Matrix3 = mat3;
 
 const WebGLRenderer = core.WebGLRenderer;
 
