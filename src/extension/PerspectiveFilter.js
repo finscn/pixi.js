@@ -14,8 +14,9 @@ export default class PerspectiveFilter extends core.Filter
             'uniform mat3 projectionMatrix;',
             'varying vec2 vTextureCoord;',
 
-            'uniform mat3 quadToSquareMatrix;',
-            'uniform mat3 squareToQuadMatrix;',
+            // 'uniform mat3 quadToSquareMatrix;',
+            // 'uniform mat3 squareToQuadMatrix;',
+            'uniform mat3 perspectiveMatrix;',
             'uniform mat3 worldMatrix;',
             'uniform mat3 worldMatrixT;',
 
@@ -30,7 +31,8 @@ export default class PerspectiveFilter extends core.Filter
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
             '    mat3 worldM3T = worldMatrixT;',
-            '    mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;',
+            // '    mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;',
+            '    mat3 perM3 = perspectiveMatrix;',
 
             '    mat4 proM4;',
             '    proM4[0]=vec4( proM3[0][0],  proM3[0][1],  0,  proM3[0][2] );',
@@ -88,6 +90,12 @@ export default class PerspectiveFilter extends core.Filter
             fragSrc
         );
 
+        this.perspectiveMatrix = new Float32Array([
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1,
+        ]);
+
         this.updateMatrix(fromQuad, toQuad);
 
     }
@@ -118,16 +126,15 @@ export default class PerspectiveFilter extends core.Filter
             toQuad[4], toQuad[5],
             toQuad[6], toQuad[7]
         );
-        // const pt = new Float32Array(9);
-        // Matrix3.multiply(pt, qToS, sToQ);
-        // Matrix3.multiply(pt, sToQ, qToS);
+        // this.uniforms.quadToSquareMatrix = qToS;
+        // this.uniforms.squareToQuadMatrix = sToQ;
+        Matrix3.multiply(this.perspectiveMatrix, qToS, sToQ);
 
-        this.uniforms.quadToSquareMatrix = qToS;
-        this.uniforms.squareToQuadMatrix = sToQ;
     }
 
     apply(filterManager, input, output, clear)
     {
+        this.uniforms.perspectiveMatrix = this.perspectiveMatrix;
         this.uniforms.worldMatrix = this.currentSprite.worldTransform.toArray(9);
         this.uniforms.worldMatrixT = Matrix3.invert(new Float32Array(9), this.uniforms.worldMatrix);
         this.uniforms.spriteWidth = this.currentSprite.width;
