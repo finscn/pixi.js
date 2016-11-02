@@ -64,12 +64,12 @@ export default class BloomFilter extends core.Filter
         const blurTarget = filterManager.getRenderTarget(true);
         this.blurFilter.apply(filterManager, brightTarget, blurTarget, false);
 
+        filterManager.returnRenderTarget(brightTarget);
 
         this.uniforms.toneScale = this.toneScale;
         this.uniforms.bloomTexture = blurTarget;
         filterManager.applyFilter(this, input, output, clear);
 
-        filterManager.returnRenderTarget(brightTarget);
         filterManager.returnRenderTarget(blurTarget);
     }
 

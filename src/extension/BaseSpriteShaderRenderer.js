@@ -12,6 +12,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         super(renderer);
         this.gl = renderer.gl;
         this.textureLocation = 0;
+        this.useUvs = false;
     }
 
     onContextChange()
@@ -44,29 +45,40 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const quad = this.quad;
 
         const texture = sprite._texture.baseTexture;
+
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
+        const uvsData = sprite._texture._uvs;
 
         const vertices = quad.vertices;
-        for (let i = 0; i < 8; i++) {
-            vertices[i] = vertexData[i];
+        const uvs = quad.uvs;
+
+        if (this.useUvs) {
+            vertices[0] = uvsData.x0;
+            vertices[1] = uvsData.y0;
+            vertices[2] = uvsData.x1;
+            vertices[3] = uvsData.y1;
+            vertices[4] = uvsData.x2;
+            vertices[5] = uvsData.y2;
+            vertices[6] = uvsData.x3;
+            vertices[7] = uvsData.y3;
+        } else {
+            for (let i = 0; i < 8; i++) {
+                vertices[i] = vertexData[i];
+            }
         }
-
-        const uvs = sprite._texture._uvs;
-        quad.uvs[0] = uvs.x0;
-        quad.uvs[1] = uvs.y0;
-        quad.uvs[2] = uvs.x1;
-        quad.uvs[3] = uvs.y1;
-        quad.uvs[4] = uvs.x2;
-        quad.uvs[5] = uvs.y2;
-        quad.uvs[6] = uvs.x3;
-        quad.uvs[7] = uvs.y3;
-
+        uvs[0] = uvsData.x0;
+        uvs[1] = uvsData.y0;
+        uvs[2] = uvsData.x1;
+        uvs[3] = uvsData.y1;
+        uvs[4] = uvsData.x2;
+        uvs[5] = uvsData.y2;
+        uvs[6] = uvsData.x3;
+        uvs[7] = uvsData.y3;
         quad.upload();
 
         this.renderer.bindShader(this.shader);
 
         // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
-
         // const color = tempArray;
         // core.utils.hex2rgb(sprite._tint, color);
         // color[3] = sprite.worldAlpha;
@@ -75,11 +87,9 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 
         this.updateShaderParameters(shader, sprite);
 
-
         renderer.bindTexture(texture, this.textureLocation);
         renderer.state.setBlendMode(sprite.blendMode);
 
-        // gl.drawElements(gl.TRIANGLES, 1 * 6, gl.UNSIGNED_SHORT, 0 * 6 * 2);
         this.quad.draw();
     }
 

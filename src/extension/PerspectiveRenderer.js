@@ -12,6 +12,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     constructor(renderer)
     {
         super(renderer);
+        this.useUvs = true;
         this.uniforms = {};
         this.defaultMatrix = new Float32Array([
             1, 0, 0,
@@ -148,9 +149,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     static _spriteRenderWebGL(renderer)
     {
         const sprite = this;
-        // sprite.calculateVertices();
-        // PerspectiveRenderer.calculateSpriteVerticesWithoutTransform(sprite);
-        sprite.calculateVerticesWithoutTransform(true);
+        // sprite.calculateVerticesWithoutTransform(true);
+        sprite.calculateVertices();
         renderer.setObjectRenderer(renderer.plugins.perspective);
         renderer.plugins.perspective.render(sprite);
     }
