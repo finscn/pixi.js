@@ -28,8 +28,9 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         shader.uniforms.origHeight = sprite.origRealHeight;
         shader.uniforms.anchorX = sprite._anchor._x;
         shader.uniforms.anchorY = sprite._anchor._y;
-        shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
-        shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
+        // shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
+        // shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
+        shader.uniforms.perspectiveMatrix = sprite.perspectiveMatrix || this.defaultMatrix;
     }
 
     getVertexSrc()
@@ -37,8 +38,9 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         return [
             this.getVertexHeadSrc(),
 
-            'uniform mat3 quadToSquareMatrix;',
-            'uniform mat3 squareToQuadMatrix;',
+            // 'uniform mat3 quadToSquareMatrix;',
+            // 'uniform mat3 squareToQuadMatrix;',
+            'uniform mat3 perspectiveMatrix;',
             'uniform mat3 worldMatrix;',
 
             'uniform float origWidth;',
@@ -53,7 +55,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
-            '    mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;',
+            // '    mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;',
+            '    mat3 perM3 = perspectiveMatrix;',
 
             '    mat4 proM4;',
             '    proM4[0]=vec4( proM3[0][0],  proM3[0][1],  0,  proM3[0][2] );',
@@ -93,6 +96,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         sprite._perspectiveRendererBakRenderWebGL = sprite._renderWebGL;
         sprite._renderWebGL = PerspectiveRenderer._spriteRenderWebGL;
         sprite.updatePerspective = PerspectiveRenderer._updatePerspective;
+        sprite.perspectiveMatrix = new Float32Array(9);
+        sprite._perspectiveMatrixId = 1;
     }
 
     static unapplyTo(sprite)
@@ -100,6 +105,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         if (sprite._perspectiveRendererBakRenderWebGL) {
             sprite._renderWebGL = sprite._perspectiveRendererBakRenderWebGL;
             sprite.updatePerspective = null;
+            sprite.perspectiveMatrix = null;
+            sprite._perspectiveMatrixId = null;
         }
     }
 
@@ -140,8 +147,10 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             toQuad[6], toQuad[7]
         );
 
-        sprite.quadToSquareMatrix = qToS;
-        sprite.squareToQuadMatrix = sToQ;
+        // sprite.quadToSquareMatrix = qToS;
+        // sprite.squareToQuadMatrix = sToQ;
+        Matrix3.multiply(sprite.perspectiveMatrix, qToS, sToQ);
+        sprite._perspectiveMatrixId++;
 
         return true;
     }

@@ -205,6 +205,9 @@ export default class Sprite extends Container
             h1 = orig.height * -anchor._y;
         }
 
+        this.origRealWidth = w0 - w1;
+        this.origRealHeight = h0 - h1;
+
         // xy
         vertexData[0] = (a * w1) + (c * h1) + tx;
         vertexData[1] = (d * h1) + (b * w1) + ty;
@@ -221,8 +224,6 @@ export default class Sprite extends Container
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
 
-        this.origRealWidth = w0 - w1;
-        this.origRealHeight = h0 - h1;
     }
 
     /**

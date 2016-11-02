@@ -45,6 +45,14 @@ core.Container.prototype.renderCanvasChildren = function(renderer) {
     }
 };
 
+core.Sprite.prototype.perspectivePoint = function(mat, x, y, scaleX, scaleY) {
+    // var mat = this.perspectiveMatrix;
+    const a = x * mat[0] + y * mat[3] + mat[6];
+    const b = x * mat[1] + y * mat[4] + mat[7];
+    const c = x * mat[2] + y * mat[5] + mat[8];
+    return [scaleX * a / c, scaleY * b / c];
+};
+
 // core.Sprite.prototype.calculateVerticesWithoutTransform = function(normal) {
 //     if (this._textureID === this._texture._updateID) {
 //         return;
