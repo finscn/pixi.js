@@ -26,7 +26,6 @@ export default class PerspectiveFilter extends core.Filter
 
             'void main(void) {',
             '    vTextureCoord = aTextureCoord;',
-            // '    gl_Position = perspectiveMatrix * vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
 
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
