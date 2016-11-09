@@ -129,7 +129,6 @@ export default class PerspectiveFilter extends core.Filter
         // this.uniforms.quadToSquareMatrix = qToS;
         // this.uniforms.squareToQuadMatrix = sToQ;
         Matrix3.multiply(this.perspectiveMatrix, qToS, sToQ);
-
     }
 
     apply(filterManager, input, output, clear)

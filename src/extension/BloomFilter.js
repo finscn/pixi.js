@@ -1,76 +1,68 @@
 import * as core from '../core';
-import BrightnessFilter from './BrightnessFilter';
-import BlurFilter from '../filters/blur/BlurFilter';
+import { BLEND_MODES } from '../core/const';
+import VoidFilter from '../filters/void/VoidFilter';
+import BlurXFilter from '../filters/blur/BlurXFilter';
+import BlurYFilter from '../filters/blur/BlurYFilter';
 
 export default class BloomFilter extends core.Filter
 {
 
-    constructor(sampleCount, minBright, toneScale)
+    constructor(sampleCount, strength, quality, resolution)
     {
-
-        const vertSrc =  [
-            'attribute vec2 aVertexPosition;',
-            'attribute vec2 aTextureCoord;',
-            'uniform mat3 projectionMatrix;',
-            'varying vec2 vTextureCoord;',
-
-            'void main() {',
-            '    vTextureCoord = aTextureCoord;',
-            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
-            '}',
-        ].join('\n');
-
-        const fragSrc = [
-            'uniform sampler2D uSampler;',
-            'varying vec2 vTextureCoord;',
-
-            'uniform sampler2D bloomTexture;',
-            'uniform float toneScale;',
-
-            'void main() {',
-            '    vec4 color = vec4(0.0);',
-            '    color  = texture2D(uSampler, vTextureCoord) * toneScale;',
-            '    color += texture2D(bloomTexture, vTextureCoord);',
-            '    gl_FragColor = color;',
-            '}',
-        ].join('\n');
-
-        super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc
-        );
+        super();
 
         this.sampleCount = sampleCount || 9;
-        this.toneScale = toneScale || 0.8;
-        this.minBright = minBright || 0.2;
+        this.strength = strength || 8;
+        this.quality = quality || 4;
+        this.resolution = resolution || 1;
 
-        this.resolution = 1;
-        this._quality = 0;
-        this.quality = 4;
-        this.strength = 8;
-
-        this.brightnessFilter = new BrightnessFilter(this.minBright);
-        this.blurFilter = new BlurFilter(this.strength, this.quality, this.resolution, this.sampleCount);
+        this.defaultFilter = new VoidFilter();
+        this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.sampleCount);
+        this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.sampleCount);
+        this.blurYFilter.blendMode = BLEND_MODES.SCREEN;
     }
 
     apply(filterManager, input, output, clear)
     {
+        const renderTarget = filterManager.getRenderTarget(true);
 
-        const brightTarget = filterManager.getRenderTarget(true);
-        this.brightnessFilter.apply(filterManager, input, brightTarget, true);
+        //TODO - copyTexSubImage2D could be used here?
+        this.defaultFilter.apply(filterManager, input, output, clear);
 
-        const blurTarget = filterManager.getRenderTarget(true);
-        this.blurFilter.apply(filterManager, brightTarget, blurTarget, false);
+        this.blurXFilter.apply(filterManager, input, renderTarget, true);
+        this.blurYFilter.apply(filterManager, renderTarget, output, false);
 
-        filterManager.returnRenderTarget(brightTarget);
+        filterManager.returnRenderTarget(renderTarget);
+    }
 
-        this.uniforms.toneScale = this.toneScale;
-        this.uniforms.bloomTexture = blurTarget;
-        filterManager.applyFilter(this, input, output, clear);
+    get blur()
+    {
+        return this.blurXFilter.blur;
+    }
 
-        filterManager.returnRenderTarget(blurTarget);
+    set blur(value)
+    {
+        this.blurXFilter.blur = this.blurYFilter.blur = value;
+    }
+
+    get blurX()
+    {
+        return this.blurXFilter.blur;
+    }
+
+    set blurX(value)
+    {
+        this.blurXFilter.blur = value;
+    }
+
+    get blurY()
+    {
+        return this.blurYFilter.blur;
+    }
+
+    set blurY(value)
+    {
+        this.blurYFilter.blur = value;
     }
 
 }
