@@ -49,7 +49,6 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             'uniform float anchorY;',
 
             'void main(void) {',
-            '    vTextureCoord = aTextureCoord;',
             // '    vColor = vec4(uColor.rgb * uColor.a, uColor.a);',
             '    vAlpha = uAlpha;',
 
@@ -86,7 +85,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             '    scaleM4[3] = vec4(-w * anchorX,  -h * anchorY,  0,  1 );',
 
             '    gl_Position = proM4 * worldM4 * scaleM4 * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);',
-
+            '    vTextureCoord = aTextureCoord;',
             '}',
         ].join('\n');
     }

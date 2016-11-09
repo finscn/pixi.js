@@ -26,8 +26,6 @@ export default class PerspectiveFilter extends core.Filter
             'uniform float spriteHeight;',
 
             'void main(void) {',
-            '    vTextureCoord = aTextureCoord;',
-
             '    mat3 proM3 = projectionMatrix;',
             '    mat3 worldM3 = worldMatrix;',
             '    mat3 worldM3T = worldMatrixT;',
@@ -71,7 +69,7 @@ export default class PerspectiveFilter extends core.Filter
             '    restoreM4[3]=vec4(0,  0,  0,  1 );',
 
             '    gl_Position = proM4 * worldM4 * restoreM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);',
-
+            '    vTextureCoord = aTextureCoord;',
             '}',
         ].join('\n');
 

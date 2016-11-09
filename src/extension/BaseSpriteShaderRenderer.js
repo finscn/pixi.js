@@ -121,10 +121,10 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
             this.getVertexHeadSrc(),
 
             'void main(void) {',
-            '    vTextureCoord = aTextureCoord;',
+            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
             // '    vColor = vec4(uColor.rgb * uColor.a, uColor.a);',
             '    vAlpha = uAlpha;',
-            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
+            '    vTextureCoord = aTextureCoord;',
             '}',
         ].join('\n');
     }
