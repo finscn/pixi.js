@@ -258,6 +258,9 @@ export default class Sprite extends Container
         const h0 = orig.height * (1 - anchor._y);
         const h1 = orig.height * -anchor._y;
 
+        // this.origRealWidth = w0 - w1;
+        // this.origRealHeight = h0 - h1;
+
         // xy
         vertexData[0] = (a * w1) + (c * h1) + tx;
         vertexData[1] = (d * h1) + (b * w1) + ty;

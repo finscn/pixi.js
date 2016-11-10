@@ -100,40 +100,39 @@ export default class PerspectiveFilter extends core.Filter
 
     updateMatrix(fromQuad, toQuad)
     {
+        if (fromQuad && toQuad) {
+            const qToS = Matrix3.quadrilateralToSquare(
+                fromQuad[0], fromQuad[1],
+                fromQuad[2], fromQuad[3],
+                fromQuad[4], fromQuad[5],
+                fromQuad[6], fromQuad[7]
+            );
+            const sToQ = Matrix3.squareToQuadrilateral(
+                toQuad[0], toQuad[1],
+                toQuad[2], toQuad[3],
+                toQuad[4], toQuad[5],
+                toQuad[6], toQuad[7]
+            );
 
-        this.fromQuad = fromQuad;
-        this.toQuad = toQuad;
+            Matrix3.multiply(qToS, sToQ, this.perspectiveMatrix);
 
-        // var qToS = getSquareToQuad.apply(null, fromQuad);
-        // var sToQ = getSquareToQuad.apply(null, toQuad);
-        // var pt = multiply(getInverse(sToQ), qToS);
-
-        // computeQuadToSquare(src);
-        // computeSquareToQuad(dst);
-        // srcMat * dstMat
-
-        const qToS = Matrix3.quadrilateralToSquare(
-            fromQuad[0], fromQuad[1],
-            fromQuad[2], fromQuad[3],
-            fromQuad[4], fromQuad[5],
-            fromQuad[6], fromQuad[7]
-        );
-        const sToQ = Matrix3.squareToQuadrilateral(
-            toQuad[0], toQuad[1],
-            toQuad[2], toQuad[3],
-            toQuad[4], toQuad[5],
-            toQuad[6], toQuad[7]
-        );
-        // this.uniforms.quadToSquareMatrix = qToS;
-        // this.uniforms.squareToQuadMatrix = sToQ;
-        Matrix3.multiply(this.perspectiveMatrix, qToS, sToQ);
+        } else if (fromQuad) {
+            toQuad = fromQuad;
+            Matrix3.squareToQuadrilateral(
+                toQuad[0], toQuad[1],
+                toQuad[2], toQuad[3],
+                toQuad[4], toQuad[5],
+                toQuad[6], toQuad[7],
+                this.perspectiveMatrix
+            );
+        }
     }
 
     apply(filterManager, input, output, clear)
     {
         this.uniforms.perspectiveMatrix = this.perspectiveMatrix;
         this.uniforms.worldMatrix = this.currentSprite.worldTransform.toArray(9);
-        this.uniforms.worldMatrixT = Matrix3.invert(new Float32Array(9), this.uniforms.worldMatrix);
+        this.uniforms.worldMatrixT = Matrix3.invert(this.uniforms.worldMatrix, new Float32Array(9));
         this.uniforms.spriteWidth = this.currentSprite.width;
         this.uniforms.spriteHeight = this.currentSprite.height;
         this.uniforms.spriteScaleX = this.currentSprite.scale.x;

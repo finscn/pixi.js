@@ -19,8 +19,8 @@ export default Matrix3;
  * @returns {mat3} out
  */
 
-Matrix3.create = function(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
-    const out = new Float32Array(9);
+Matrix3.create = function(m00, m01, m02, m10, m11, m12, m20, m21, m22, out) {
+    out = out || new Float32Array(9);
     out[0] = m00;
     out[1] = m01;
     out[2] = m02;
@@ -33,65 +33,7 @@ Matrix3.create = function(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
     return out;
 };
 
-Matrix3.adjoint = function(out, a) {
-    const a00 = a[0];
-    const a01 = a[1];
-    const a02 = a[2];
-    const a10 = a[3];
-    const a11 = a[4];
-    const a12 = a[5];
-    const a20 = a[6];
-    const a21 = a[7];
-    const a22 = a[8];
-
-    out[0] = (a11 * a22 - a12 * a21);
-    out[1] = (a02 * a21 - a01 * a22);
-    out[2] = (a01 * a12 - a02 * a11);
-    out[3] = (a12 * a20 - a10 * a22);
-    out[4] = (a00 * a22 - a02 * a20);
-    out[5] = (a02 * a10 - a00 * a12);
-    out[6] = (a10 * a21 - a11 * a20);
-    out[7] = (a01 * a20 - a00 * a21);
-    out[8] = (a00 * a11 - a01 * a10);
-    return out;
-};
-
-Matrix3.invert = function(out, a) {
-    const a00 = a[0];
-    const a01 = a[1];
-    const a02 = a[2];
-    const a10 = a[3];
-    const a11 = a[4];
-    const a12 = a[5];
-    const a20 = a[6];
-    const a21 = a[7];
-    const a22 = a[8];
-
-    const b01 = a22 * a11 - a12 * a21;
-    const b11 = -a22 * a10 + a12 * a20;
-    const b21 = a21 * a10 - a11 * a20;
-
-    // Calculate the determinant
-    let det = a00 * b01 + a01 * b11 + a02 * b21;
-
-    if (!det) {
-        return null;
-    }
-    det = 1.0 / det;
-
-    out[0] = b01 * det;
-    out[1] = (-a22 * a01 + a02 * a21) * det;
-    out[2] = (a12 * a01 - a02 * a11) * det;
-    out[3] = b11 * det;
-    out[4] = (a22 * a00 - a02 * a20) * det;
-    out[5] = (-a12 * a00 + a02 * a10) * det;
-    out[6] = b21 * det;
-    out[7] = (-a21 * a00 + a01 * a20) * det;
-    out[8] = (a11 * a00 - a01 * a10) * det;
-    return out;
-};
-
-Matrix3.multiply = function (out, a, b) {
+Matrix3.multiply = function (a, b, out) {
     const a00 = a[0];
     const a01 = a[1];
     const a02 = a[2];
@@ -126,16 +68,15 @@ Matrix3.multiply = function (out, a, b) {
 };
 
 
-Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3) {
+Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out) {
 
     const sx = x0 - x1 + x2 - x3;
     const sy = y0 - y1 + y2 - y3;
-    let result;
     if (sx === 0.0 && sy === 0.0) {
-        result = Matrix3.create(
+        out = Matrix3.create(
           x1 - x0, y1 - y0, 0.0,
           x2 - x1, y2 - y1, 0.0,
-          x0, y0, 1.0);
+          x0, y0, 1.0, out);
     } else {
         const dx1 = x1 - x2;
         const dy1 = y1 - y2;
@@ -144,19 +85,19 @@ Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3) {
         const denominator = dx1 * dy2 - dx2 * dy1;
         const a13 = (sx * dy2 - dx2 * sy) / denominator;
         const a23 = (dx1 * sy - sx * dy1) / denominator;
-        result = Matrix3.create(
+        out = Matrix3.create(
           x1 - x0 + a13 * x1,
           y1 - y0 + a13 * y1,
           a13,
           x3 - x0 + a23 * x3,
           y3 - y0 + a23 * y3,
           a23,
-          x0, y0, 1.0);
+          x0, y0, 1.0, out);
     }
-    return result;
+    return out;
 };
 
-Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3) {
+Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3, out) {
 
     // const sToq = Matrix3.squareToQuadrilateral(x0, y0, x1, y1, x2, y2, x3, y3);
     // const qToS = new Float32Array(9);
@@ -164,17 +105,17 @@ Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3) {
     // console.log(qToS)
     // return qToS;
 
-    const mat = Matrix3.squareToQuadrilateral(x0, y0, x1, y1, x2, y2, x3, y3);
+    out = Matrix3.squareToQuadrilateral(x0, y0, x1, y1, x2, y2, x3, y3, out);
 
     // invert through adjoint
-    const a = mat[0];
-    const d = mat[1];
-    const g = mat[2];
-    const b = mat[3];
-    const e = mat[4];
-    const h = mat[5];
-    const c = mat[6];
-    const f = mat[7];
+    const a = out[0];
+    const d = out[1];
+    const g = out[2];
+    const b = out[3];
+    const e = out[4];
+    const h = out[5];
+    const c = out[6];
+    const f = out[7];
 
     const A =     e - f * h;
     const B = c * h - b;
@@ -192,21 +133,21 @@ Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3) {
     // Determinant  =   a * (e - f * h) + b * (f * g - d) + c * (d * h - e * g);
     const det = a * A + b * D + c * G;
 
-    mat[0] = A / det;
-    mat[1] = D / det;
-    mat[2] = G / det;
-    mat[3] = B / det;
-    mat[4] = E / det;
-    mat[5] = H / det;
-    mat[6] = C / det;
-    mat[7] = F / det;
-    mat[8] = I / det;
+    out[0] = A / det;
+    out[1] = D / det;
+    out[2] = G / det;
+    out[3] = B / det;
+    out[4] = E / det;
+    out[5] = H / det;
+    out[6] = C / det;
+    out[7] = F / det;
+    out[8] = I / det;
 
-    // console.log(mat)
-    return mat;
+    // console.log(out)
+    return out;
 };
 
-Matrix3.perspective = function(fromQuad, toQuad) {
+Matrix3.perspective = function(fromQuad, toQuad, out) {
     const qToS = Matrix3.quadrilateralToSquare(
         fromQuad[0], fromQuad[1],
         fromQuad[2], fromQuad[3],
@@ -219,9 +160,9 @@ Matrix3.perspective = function(fromQuad, toQuad) {
         toQuad[4], toQuad[5],
         toQuad[6], toQuad[7]
     );
-    const pt = new Float32Array(9);
-    Matrix3.multiply(pt, qToS, sToQ);
-    return pt;
+    out = out || new Float32Array(9);
+    Matrix3.multiply(qToS, sToQ, out);
+    return out;
 };
 
 Matrix3.perspectiveTransfromPoint = function(mat, x, y) {
@@ -229,6 +170,69 @@ Matrix3.perspectiveTransfromPoint = function(mat, x, y) {
     const b = x * mat[3] + y * mat[4] + mat[5];
     const c = x * mat[6] + y * mat[7] + mat[8];
     return [a / c, b / c];
+};
+
+
+Matrix3.adjoint = function(a, out) {
+    out = out || new Float32Array(9);
+
+    const a00 = a[0];
+    const a01 = a[1];
+    const a02 = a[2];
+    const a10 = a[3];
+    const a11 = a[4];
+    const a12 = a[5];
+    const a20 = a[6];
+    const a21 = a[7];
+    const a22 = a[8];
+
+    out[0] = (a11 * a22 - a12 * a21);
+    out[1] = (a02 * a21 - a01 * a22);
+    out[2] = (a01 * a12 - a02 * a11);
+    out[3] = (a12 * a20 - a10 * a22);
+    out[4] = (a00 * a22 - a02 * a20);
+    out[5] = (a02 * a10 - a00 * a12);
+    out[6] = (a10 * a21 - a11 * a20);
+    out[7] = (a01 * a20 - a00 * a21);
+    out[8] = (a00 * a11 - a01 * a10);
+    return out;
+};
+
+Matrix3.invert = function(a, out) {
+    out = out || new Float32Array(9);
+
+    const a00 = a[0];
+    const a01 = a[1];
+    const a02 = a[2];
+    const a10 = a[3];
+    const a11 = a[4];
+    const a12 = a[5];
+    const a20 = a[6];
+    const a21 = a[7];
+    const a22 = a[8];
+
+    const b01 = a22 * a11 - a12 * a21;
+    const b11 = -a22 * a10 + a12 * a20;
+    const b21 = a21 * a10 - a11 * a20;
+
+    // Calculate the determinant
+    let det = a00 * b01 + a01 * b11 + a02 * b21;
+
+    if (!det) {
+        return null;
+    }
+    det = 1.0 / det;
+
+    out[0] = b01 * det;
+    out[1] = (-a22 * a01 + a02 * a21) * det;
+    out[2] = (a12 * a01 - a02 * a11) * det;
+    out[3] = b11 * det;
+    out[4] = (a22 * a00 - a02 * a20) * det;
+    out[5] = (-a12 * a00 + a02 * a10) * det;
+    out[6] = b21 * det;
+    out[7] = (-a21 * a00 + a01 * a20) * det;
+    out[8] = (a11 * a00 - a01 * a10) * det;
+    return out;
 };
 
 Matrix3.str = function (a) {
