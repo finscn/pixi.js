@@ -16,5 +16,6 @@ export { default as SimpleParticleContainer } from './SimpleParticleContainer';
 export { default as BaseSpriteShaderRenderer } from './BaseSpriteShaderRenderer';
 export { default as PerspectiveRenderer } from './PerspectiveRenderer';
 export { default as PerspectiveFilter } from './PerspectiveFilter';
-export { default as BloomFilter } from './BloomFilter';
-export { default as BloomBrightnessFilter } from './BloomBrightnessFilter';
+export { default as BloomFilter } from './bloom/BloomFilter';
+export { default as BloomBrightnessFilter } from './bloom/BloomBrightnessFilter';
+export { default as OutlineFilter } from './outline/OutlineFilter';

@@ -1,8 +1,8 @@
-import * as core from '../core';
+import * as core from '../../core';
 import ExtractBrightnessFilter from './ExtractBrightnessFilter';
-import BlurXFilter from '../filters/blur/BlurXFilter';
-import BlurYFilter from '../filters/blur/BlurYFilter';
-import VoidFilter from '../filters/void/VoidFilter';
+import BlurXFilter from '../../filters/blur/BlurXFilter';
+import BlurYFilter from '../../filters/blur/BlurYFilter';
+import VoidFilter from '../../filters/void/VoidFilter';
 
 export default class BloomBrightnessFilter extends core.Filter {
 

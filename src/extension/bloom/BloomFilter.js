@@ -1,8 +1,8 @@
-import * as core from '../core';
-import { BLEND_MODES } from '../core/const';
-import VoidFilter from '../filters/void/VoidFilter';
-import BlurXFilter from '../filters/blur/BlurXFilter';
-import BlurYFilter from '../filters/blur/BlurYFilter';
+import * as core from '../../core';
+import { BLEND_MODES } from '../../core/const';
+import VoidFilter from '../../filters/void/VoidFilter';
+import BlurXFilter from '../../filters/blur/BlurXFilter';
+import BlurYFilter from '../../filters/blur/BlurYFilter';
 
 export default class BloomFilter extends core.Filter
 {

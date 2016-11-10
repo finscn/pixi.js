@@ -1,4 +1,4 @@
-import * as core from '../core';
+import * as core from '../../core';
 
 export default class ExtractBrightnessFilter extends core.Filter
 {
