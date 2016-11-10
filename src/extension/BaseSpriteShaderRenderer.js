@@ -96,7 +96,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
     updateShaderParameters(shader, sprite)
     {
         // implemented by subclass
-        if (!sprite) {
+        if (!shader || !sprite) {
             return;
         }
     }
