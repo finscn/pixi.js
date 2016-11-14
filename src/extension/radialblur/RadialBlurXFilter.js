@@ -16,8 +16,8 @@ export default class RadialBlurXFilter extends core.Filter
         const vertSrc = generateRadialBlurVertSource(kernelSize, horizontal);
         const fragSrc = generateRadialBlurFragSource(kernelSize, horizontal);
 
-        core.utils.log(' ==== RadialBlur Filter : ' + horizontal + ' ==== ');
-        core.utils.log(fragSrc);
+        // core.utils.log(' ==== RadialBlur Filter : ' + horizontal + ' ==== ');
+        // core.utils.log(fragSrc);
 
         super(
             // vertex shader
