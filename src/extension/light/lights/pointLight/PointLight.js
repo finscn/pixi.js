@@ -42,7 +42,7 @@ export default class PointLight extends Light
         const shader = this.shader;
         super.syncShader(shader);
 
-        shader.uniforms.uLightRadius.value = this.radius;
+        shader.uniforms.uLightRadius = this.radius;
     }
 
     static getCircleMesh(radius, totalSegments, vertices, indices)

@@ -49,8 +49,8 @@ export default class DirectionalLight extends Light
         const shader = this.shader;
         super.syncShader(shader);
 
-        shader.uniforms.uLightDirection.value[0] = this._directionVector.x;
-        shader.uniforms.uLightDirection.value[1] = this._directionVector.y;
+        shader.uniforms.uLightDirection[0] = this._directionVector.x;
+        shader.uniforms.uLightDirection[1] = this._directionVector.y;
     }
 
 }
