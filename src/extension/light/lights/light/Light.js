@@ -48,6 +48,9 @@ export default class Light extends core.DisplayObject
             this.brightness = brightness;
         }
 
+        this.diffuseTextureLocation = 1;
+        this.normalsTextureLocation = 2;
+
         this.inited = false;
     }
 
@@ -103,7 +106,7 @@ export default class Light extends core.DisplayObject
     {
         const shader = this.shader;
         const gl = renderer.gl;
-
+        let tex;
         if (!this.needsUpdate)
         {
             // update vertex data
@@ -112,13 +115,13 @@ export default class Light extends core.DisplayObject
             gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
 
             // bind diffuse texture
-            gl.activeTexture(gl.TEXTURE1);
-            var t = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D,t.texture);
+            gl.activeTexture(gl.TEXTURE0 + this.diffuseTextureLocation);
+            tex = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
+            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
             // bind normal texture
-            gl.activeTexture(gl.TEXTURE2);
-            var t = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D,t.texture);
+            gl.activeTexture(gl.TEXTURE0 + this.normalsTextureLocation);
+            tex = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
+            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
             // update indices
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
             gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, this.indices);
@@ -134,13 +137,13 @@ export default class Light extends core.DisplayObject
 
             // bind diffuse texture
             gl.activeTexture(gl.TEXTURE1);
-             var t = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, t.texture);
+            tex = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
+            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
 
             // bind normal texture
             gl.activeTexture(gl.TEXTURE2);
-            var t = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, t.texture);
+            tex = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
+            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
 
             // static upload of index buffer
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);

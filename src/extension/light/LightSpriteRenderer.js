@@ -12,8 +12,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         super(renderer);
         this.gl = renderer.gl;
 
-        this.diffuseTexture = RenderTexture.create(2);
-        this.normalsTexture = RenderTexture.create(2);
+        this.diffuseTexture = RenderTexture.create(2, 2);
+        this.normalsTexture = RenderTexture.create(2, 2);
     }
 
     onContextChange()
@@ -41,7 +41,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         sprite._renderWebGL = LightSpriteRenderer.__renderWebGLSprite;
 
         if (sprite.normalsTexture) {
-            this.diffuseTexture.resize(width, height);
+            this.normalsTexture.resize(width, height);
             renderer.render(sprite.normalsTexture, this.normalsTexture, true);
         } else {
             // TODO
@@ -74,8 +74,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             light.syncShader(sprite);
 
             // shader.syncUniforms();
-            light.shader.uniforms.uSampler = 0;
-            light.shader.uniforms.uSampler = 1;
+            light.shader.uniforms.uSampler = light.diffuseTextureLocation;
+            light.shader.uniforms.uNormalSampler = light.normalsTextureLocation;
             // gl.uniform1i(light.shader.uniforms.uSampler._location, 0);
             // gl.uniform1i(light.shader.uniforms.uNormalSampler._location, 1);
 
