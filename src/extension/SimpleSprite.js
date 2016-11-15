@@ -1,10 +1,10 @@
 import * as core from '../core';
 
-const math = core.math;
 const utils = core.utils;
 const Texture = core.Texture;
 const DisplayObject = core.DisplayObject;
-const tempPoint = new math.Point();
+const Rectangle = core.Rectangle;
+const tempPoint = new core.Point();
 
 
 export default class SimpleSprite extends core.Sprite
@@ -136,7 +136,7 @@ export default class SimpleSprite extends core.Sprite
 
         if (!rect) {
             if (!this._localBoundsRect) {
-                this._localBoundsRect = new math.Rectangle();
+                this._localBoundsRect = new Rectangle();
             }
 
             rect = this._localBoundsRect;
