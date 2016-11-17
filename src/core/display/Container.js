@@ -43,19 +43,29 @@ export default class Container extends DisplayObject
     }
 
     /**
-     * Adds a child or multiple children to the container.
+     * Adds one or more children to the container.
      *
-     * Multple items can be added like so: `myContainer.addChild(thinkOne, thingTwo, thingThree)`
+     * Multiple items can be added like so: `myContainer.addChild(thingOne, thingTwo, thingThree)`
      *
      * @param {...PIXI.DisplayObject} child - The DisplayObject(s) to add to the container
      * @return {PIXI.DisplayObject} The first child that was added.
      */
-    addChild(...childs)
+    addChild(child)
     {
-        for (let i = 0; i < childs.length; ++i)
-        {
-            const child = childs[i];
+        const argumentsLength = arguments.length;
 
+        // if there is only one argument we can bypass looping through the them
+        if (argumentsLength > 1)
+        {
+            // loop through the arguments property and add all children
+            // use it the right way (.length and [i]) so that this function can still be optimised by JS runtimes
+            for (let i = 0; i < argumentsLength; i++)
+            {
+                this.addChild(arguments[i]);
+            }
+        }
+        else
+        {
             // if the child has a parent then lets remove it as Pixi objects can only exist in one place
             if (child.parent)
             {
@@ -75,7 +85,7 @@ export default class Container extends DisplayObject
             child.emit('added', this);
         }
 
-        return childs[0];
+        return child;
     }
 
     /**
@@ -184,29 +194,44 @@ export default class Container extends DisplayObject
     }
 
     /**
-     * Removes a child from the container.
+     * Removes one or more children from the container.
      *
-     * @param {...PIXI.DisplayObject} childs - The DisplayObject(s) to remove
+     * @param {...PIXI.DisplayObject} child - The DisplayObject(s) to remove
      * @return {PIXI.DisplayObject} The first child that was removed.
      */
-    removeChild(...childs)
+    removeChild(child)
     {
-        for (let i = 0; i < childs.length; ++i)
+        const argumentsLength = arguments.length;
+
+        // if there is only one argument we can bypass looping through the them
+        if (argumentsLength > 1)
         {
-            const child = childs[i];
+            // loop through the arguments property and add all children
+            // use it the right way (.length and [i]) so that this function can still be optimised by JS runtimes
+            for (let i = 0; i < argumentsLength; i++)
+            {
+                this.removeChild(arguments[i]);
+            }
+        }
+        else
+        {
             const index = this.children.indexOf(child);
 
-            if (index === -1) continue;
+            if (index === -1) return null;
 
             child.parent = null;
             removeItems(this.children, index, 1);
+
+            // ensure a transform will be recalculated..
+            this.transform._parentID = -1;
+            this._boundsID++;
 
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
             child.emit('removed', this);
         }
 
-        return childs[0];
+        return child;
     }
 
     /**
@@ -378,7 +403,7 @@ export default class Container extends DisplayObject
      */
     renderAdvancedWebGL(renderer)
     {
-        renderer.currentRenderer.flush();
+        renderer.flush();
 
         const filters = this._filters;
         const mask = this._mask;
@@ -412,15 +437,13 @@ export default class Container extends DisplayObject
             renderer.maskManager.pushMask(this, this._mask);
         }
 
-        renderer.currentRenderer.start();
-
         // add this object to the batch, only rendered if it has a texture.
         this._renderWebGL(renderer);
 
         // now loop through the children and make sure they get rendered
         this.renderWebGLChildren(renderer);
 
-        renderer.currentRenderer.flush();
+        renderer.flush();
 
         if (mask)
         {
@@ -431,8 +454,6 @@ export default class Container extends DisplayObject
         {
             renderer.filterManager.popFilter();
         }
-
-        renderer.currentRenderer.start();
     }
 
     /**

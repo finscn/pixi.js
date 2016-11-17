@@ -39,11 +39,8 @@ export {
  * @memberof PIXI
  * @property {PIXI.loaders.Loader}
  */
-let loader;
-if (typeof loaders.Loader === 'function')
-{
-    loader = new loaders.Loader();
-}
+const loader = loaders && loaders.Loader ? new loaders.Loader() : null; // check is there in case user excludes loader lib
+
 export { loader };
 
 // Always export pixi globally.

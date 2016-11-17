@@ -76,7 +76,8 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         uvs[7] = uvsData.y3;
         quad.upload();
 
-        this.renderer.bindShader(this.shader);
+        renderer.bindShader(this.shader);
+        renderer.bindVao(quad.vao);
 
         // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
         // const color = tempArray;
@@ -90,7 +91,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         renderer.bindTexture(texture, this.textureLocation);
         renderer.state.setBlendMode(sprite.blendMode);
 
-        this.quad.draw();
+        this.quad.vao.draw(renderer.gl.TRIANGLES, 6, 0);
     }
 
     updateShaderParameters(shader, sprite)

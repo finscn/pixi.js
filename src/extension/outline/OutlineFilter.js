@@ -1,7 +1,6 @@
 import * as core from '../../core';
-
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 /**
  * OutlineFilter, originally by mishaa
@@ -22,9 +21,9 @@ export default class OutlineFilter extends core.Filter
         thickness = thickness || 1;
         super(
             // vertex shader
-            glslify('./outline.vert'),
+            readFileSync(join(__dirname, './outline.vert'), 'utf8'),
             // fragment shader
-            glslify('./outline.frag').replace(/%THICKNESS%/gi, (1.0 / thickness).toFixed(7))
+            readFileSync(join(__dirname, './outline.frag'), 'utf8').replace(/%THICKNESS%/gi, (1.0 / thickness).toFixed(7))
         );
 
         this.uniforms.thickness = thickness;
