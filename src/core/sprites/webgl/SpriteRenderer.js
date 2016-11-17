@@ -112,7 +112,7 @@ export default class SpriteRenderer extends ObjectRenderer
         // step 2: check the maximum number of if statements the shader can have too..
         this.MAX_TEXTURES = checkMaxIfStatmentsInShader(this.MAX_TEXTURES, gl);
 
-        const shader = this.shader = this.generateShader(gl, this.MAX_TEXTURES);
+        const shader = this.shader = generateMultiTextureShader(gl, this.MAX_TEXTURES);
 
         // create a couple of buffers
         this.indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indices, gl.STATIC_DRAW);
@@ -143,11 +143,6 @@ export default class SpriteRenderer extends ObjectRenderer
         this.currentBlendMode = 99999;
 
         this.boundTextures = new Array(this.MAX_TEXTURES);
-    }
-
-    generateShader(gl, args)
-    {
-        return generateMultiTextureShader(gl, args);
     }
 
     /**
@@ -371,7 +366,7 @@ export default class SpriteRenderer extends ObjectRenderer
         if (!CAN_UPLOAD_SAME_BUFFER)
         {
             // this is still needed for IOS performance..
-            // it realy doe not like uploading to  the same bufffer in a single frame!
+            // it really does not like uploading to  the same buffer in a single frame!
             if (this.vaoMax <= this.vertexCount)
             {
                 this.vaoMax++;
@@ -394,7 +389,7 @@ export default class SpriteRenderer extends ObjectRenderer
         }
         else
         {
-            // lets use the faster option..
+            // lets use the faster option, always use buffer number 0
             this.vertexBuffers[this.vertexCount].upload(buffer.vertices, 0, true);
         }
 
@@ -441,9 +436,13 @@ export default class SpriteRenderer extends ObjectRenderer
     {
         this.renderer.bindShader(this.shader);
 
-        this.renderer.bindVao(this.vaos[this.vertexCount]);
+        if (CAN_UPLOAD_SAME_BUFFER)
+        {
+            // bind buffer #0, we don't need others
+            this.renderer.bindVao(this.vaos[this.vertexCount]);
 
-        this.vertexBuffers[this.vertexCount].bind();
+            this.vertexBuffers[this.vertexCount].bind();
+        }
     }
 
     /**
