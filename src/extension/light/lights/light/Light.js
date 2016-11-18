@@ -12,9 +12,10 @@ export default class Light extends core.DisplayObject
     {
         super();
 
-        this.height = 0.075;
+        this.height = 0.45;
 
-        this.falloff = [0.75, 3, 20];
+        // x + y * D + z * D * D
+        this.falloff = [0.75, 2, 12];
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
@@ -30,17 +31,17 @@ export default class Light extends core.DisplayObject
             this.brightness = brightness;
         }
 
-        this.visible = false;
 
-        this.diffuseTextureLocation = 1;
-        this.normalsTextureLocation = 2;
-
-        this.blendMode = BLEND_MODES.ADD;
+        // this.blendMode = BLEND_MODES.ADD;
+        this.blendMode = BLEND_MODES.NORMAL;
 
         this.drawMode = DRAW_MODES.TRIANGLES;
 
         this._vertices = vertices || null;
         this._indices = indices || null;
+
+        // TODO : disable Light
+        this.visible = false;
 
         // this.shaderName = null;
         // this.needsUpdate = true;
@@ -82,16 +83,10 @@ export default class Light extends core.DisplayObject
 
         shader.uniforms.uViewSize = this.viewSize;
 
-        shader.uniforms.uLightColor[0] = this._colorRgba[0];
-        shader.uniforms.uLightColor[1] = this._colorRgba[1];
-        shader.uniforms.uLightColor[2] = this._colorRgba[2];
-        shader.uniforms.uLightColor[3] = this._colorRgba[3];
-
+        shader.uniforms.uLightColor = this._colorRgba;
         shader.uniforms.uLightHeight = this.height;
 
-        shader.uniforms.uLightFalloff[0] = this.falloff[0];
-        shader.uniforms.uLightFalloff[1] = this.falloff[1];
-        shader.uniforms.uLightFalloff[2] = this.falloff[2];
+        shader.uniforms.uLightFalloff = this.falloff;
     }
 
     get color()

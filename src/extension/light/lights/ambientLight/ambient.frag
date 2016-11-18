@@ -20,7 +20,7 @@ void main(void)
     // then perform "N dot L" to determine our diffuse
     vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);
 
-    vec4 diffuseColor = texture2D(uSampler, texCoord);
+    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 finalColor = diffuseColor.rgb * diffuse;
 
     gl_FragColor = vec4(finalColor, diffuseColor.a);

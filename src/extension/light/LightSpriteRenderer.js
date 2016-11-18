@@ -57,8 +57,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const diffuseBaseTexture = this.diffuseRenderTexture.baseTexture;
         const normalsBaseTexture = this.normalsRenderTexture.baseTexture;
 
-
         const lights = sprite.lights;
+
         for (let i = 0; i < lights.length; i++)
         {
             const light = lights[i];
@@ -90,8 +90,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
             light.syncShader(sprite);
 
-            shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture, light.diffuseTextureLocation);
-            shader.uniforms.uNormalSampler = renderer.bindTexture(normalsBaseTexture, light.normalsTextureLocation);
+            shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture);
+            shader.uniforms.uNormalSampler = renderer.bindTexture(normalsBaseTexture);
 
             renderer.state.setBlendMode(light.blendMode);
 

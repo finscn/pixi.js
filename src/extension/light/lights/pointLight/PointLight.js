@@ -1,6 +1,6 @@
 import * as core from '../../../../core';
-import { DRAW_MODES } from '../../../../core/const';
 import Light from '../light/Light';
+// import { DRAW_MODES } from '../../../../core/const';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
@@ -14,20 +14,25 @@ export default class PointLight extends Light
     {
         radius = radius || Infinity;
 
-        if (radius !== Infinity) {
-            // const shape = new Circle(0, 0, radius);
-            const mesh = PointLight.getCircleMesh(radius, 36);
+        // TODO : for circle light
+        // if (radius !== Infinity) {
+        //     // const shape = new Circle(0, 0, radius);
+        //     const mesh = PointLight.getCircleMesh(radius, 36);
 
-            super(color, brightness, mesh.vertices, mesh.indices);
+        //     super(color, brightness, mesh.vertices, mesh.indices);
 
-            this.useCircelVert = true;
-            this.drawMode = DRAW_MODES.TRIANGLE_FAN;
-        } else {
-            super(color, brightness);
-        }
+        //     this.useCircelVert = true;
+        //     this.drawMode = DRAW_MODES.TRIANGLE_FAN;
+        // } else {
+        //     super(color, brightness);
+        // }
+
+        super(color, brightness);
 
         this.radius = radius;
         this.shaderName = 'pointLightShader';
+
+        this.positionArray = new Float32Array(2);
     }
 
     generateShader(gl)
@@ -46,8 +51,9 @@ export default class PointLight extends Light
     {
         super.syncShader(sprite);
         this.shader.uniforms.uLightRadius = this.radius;
-        this.shader.uniforms.uLightPosition[0] = this.position.x;
-        this.shader.uniforms.uLightPosition[1] = this.position.y;
+        this.positionArray[0] = this.position.x;
+        this.positionArray[1] = this.position.y;
+        this.shader.uniforms.uLightPosition = this.positionArray;
     }
 
     static getCircleMesh(radius, totalSegments, vertices, indices)

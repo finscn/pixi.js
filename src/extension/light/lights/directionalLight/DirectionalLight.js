@@ -17,6 +17,9 @@ export default class DirectionalLight extends Light
         this._directionVector = new Point();
 
         this.shaderName = 'directionalLightShader';
+
+        this.directionArray = new Float32Array(2);
+
     }
 
     generateShader(gl)
@@ -48,8 +51,9 @@ export default class DirectionalLight extends Light
     syncShader(sprite)
     {
         super.syncShader(sprite);
-        this.shader.uniforms.uLightDirection[0] = this._directionVector.x;
-        this.shader.uniforms.uLightDirection[1] = this._directionVector.y;
+        this.directionArray[0] = this._directionVector.x;
+        this.directionArray[1] = this._directionVector.y;
+        this.shader.uniforms.uLightDirection = this.directionArray;
     }
 
 }
