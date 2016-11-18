@@ -2,6 +2,7 @@ import * as core from '../../core';
 
 const RenderTexture = core.RenderTexture;
 const WebGLRenderer = core.WebGLRenderer;
+const Sprite = core.Sprite;
 
 // const tempArray = new Float32Array(4);
 
@@ -12,6 +13,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         super(renderer);
         this.gl = renderer.gl;
 
+        this.middleRenderTexture = RenderTexture.create(renderer.width, renderer.height);
+        this.middleSprite = new Sprite(this.middleRenderTexture);
         this.diffuseRenderTexture = RenderTexture.create(2, 2);
         this.normalsRenderTexture = RenderTexture.create(2, 2);
     }
@@ -28,7 +31,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         }
 
         const renderer = this.renderer;
-        // const gl = renderer.gl;
+        const gl = renderer.gl;
 
         let width = sprite.texture.width;
         let height = sprite.texture.height;
@@ -49,7 +52,20 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             // TODO
         }
 
-        renderer.bindRenderTarget(renderer.rootRenderTarget);
+        const lightCount = sprite.lights.length;
+
+        if (lightCount > 1) {
+            renderer.bindRenderTexture(this.middleRenderTexture);
+            gl.disable(gl.SCISSOR_TEST);
+            renderer.clear(); // [1, 1, 1, 1]);
+            gl.enable(gl.SCISSOR_TEST);
+        } else {
+            renderer.bindRenderTarget(renderer.rootRenderTarget);
+        }
+
+        // sprite._renderWebGL = sprite._renderWebGLBakLightSpriteRenderer;
+        // renderer.render(sprite);
+        // sprite._renderWebGL = LightSpriteRenderer.__renderWebGLSprite;
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
         const uvsData = sprite._texture._uvs;
@@ -99,6 +115,13 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
             renderer.drawCount++;
         }
+
+        if (lightCount > 1) {
+            renderer.bindRenderTarget(renderer.rootRenderTarget);
+            renderer.render(this.middleSprite, null, false);
+            renderer.drawCount++;
+        }
+
         this.contextChanged = false;
     }
 

@@ -32,8 +32,8 @@ export default class Light extends core.DisplayObject
         }
 
 
-        // this.blendMode = BLEND_MODES.ADD;
-        this.blendMode = BLEND_MODES.NORMAL;
+        this.blendMode = BLEND_MODES.ADD;
+        // this.blendMode = BLEND_MODES.NORMAL;
 
         this.drawMode = DRAW_MODES.TRIANGLES;
 

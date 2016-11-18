@@ -1,5 +1,6 @@
 import * as core from '../../../../core';
 import Light from '../light/Light';
+import { BLEND_MODES } from '../../../../core/const';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
@@ -12,6 +13,8 @@ export default class DirectionalLight extends Light
     constructor(color, brightness, target)
     {
         super(color, brightness);
+
+        this.blendMode = BLEND_MODES.ADD;
 
         this.target = target;
         this._directionVector = new Point();
