@@ -15,10 +15,10 @@ export default class AmbientLight extends Light
         this.shaderName = 'ambientLightShader';
     }
 
-    initShader(gl)
+    generateShader(gl)
     {
         const vertexSrc = glslify('../light/light.vert');
         const fragmentSrc = glslify('./ambient.frag');
-        this.shader = new Shader(gl, vertexSrc, fragmentSrc);
+        return new Shader(gl, vertexSrc, fragmentSrc);
     }
 }

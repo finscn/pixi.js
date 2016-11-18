@@ -4,35 +4,17 @@ import { BLEND_MODES, DRAW_MODES } from '../../../../core/const';
  * Excuse the mess, haven't cleaned this up yet!
  */
 
+const Quad = core.Quad;
+
 export default class Light extends core.DisplayObject
 {
     constructor(color, brightness, vertices, indices)
     {
         super();
 
-        this.vertices = vertices || new Float32Array(8);
-
-        this.indices = indices || new Uint16Array([0, 1, 2, 0, 2, 3]);
-
-        this.blendMode = BLEND_MODES.ADD;
-
-        this.drawMode = DRAW_MODES.TRIANGLES;
-
-        this.needsUpdate = true;
-
         this.height = 0.075;
 
         this.falloff = [0.75, 3, 20];
-
-        this.shaderName = null;
-
-        this.useViewportQuad = true;
-
-        this.visible = false;
-
-        // webgl buffers
-        this._vertexBuffer = null;
-        this._indexBuffer = null;
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
@@ -48,38 +30,57 @@ export default class Light extends core.DisplayObject
             this.brightness = brightness;
         }
 
+        this.visible = false;
+
         this.diffuseTextureLocation = 1;
         this.normalsTextureLocation = 2;
+
+        this.blendMode = BLEND_MODES.ADD;
+
+        this.drawMode = DRAW_MODES.TRIANGLES;
+
+        this._vertices = vertices || null;
+        this._indices = indices || null;
+
+        // this.shaderName = null;
+        // this.needsUpdate = true;
 
         this.inited = false;
     }
 
-    initShader(gl)
+    init(renderer, force)
     {
-        if (!gl) {
-            return;
+        if (!this.inited || force) {
+            const gl = renderer.gl;
+            this.viewSize = new Float32Array([renderer.width, renderer.height]);
+            const shader = this.shader = this.generateShader(gl);
+
+            if (this._vertices && this._indices) {
+                // TODO : for custom vertices && indices
+
+            } else {
+                this.quad = new Quad(gl, renderer.state.attribState);
+                this.quad.initVao(shader);
+            }
+
+            this.inited = true;
         }
     }
 
-    initWebGLContext(gl)
+    generateShader(gl)
     {
-
-        // create the buffers
-        this._vertexBuffer = gl.createBuffer();
-        this._indexBuffer = gl.createBuffer();
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
+        if (!gl) {
+            return null;
+        }
+        // TODO
+        return null;
     }
 
     syncShader()
     {
         const shader = this.shader;
 
-        shader.uniforms.uUseViewportQuad = this.useViewportQuad;
+        shader.uniforms.uViewSize = this.viewSize;
 
         shader.uniforms.uLightColor[0] = this._colorRgba[0];
         shader.uniforms.uLightColor[1] = this._colorRgba[1];
@@ -91,64 +92,6 @@ export default class Light extends core.DisplayObject
         shader.uniforms.uLightFalloff[0] = this.falloff[0];
         shader.uniforms.uLightFalloff[1] = this.falloff[1];
         shader.uniforms.uLightFalloff[2] = this.falloff[2];
-    }
-
-    update(gl)
-    {
-        if (!this.inited) {
-            this.initShader(gl);
-            this.initWebGLContext(gl);
-            this.inited = true;
-        }
-    }
-
-    render(renderer, diffuseTexture, normalsTexture)
-    {
-        const shader = this.shader;
-        const gl = renderer.gl;
-        let tex;
-        if (!this.needsUpdate)
-        {
-            // update vertex data
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-            gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
-            gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
-
-            // bind diffuse texture
-            gl.activeTexture(gl.TEXTURE0 + this.diffuseTextureLocation);
-            tex = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
-            // bind normal texture
-            gl.activeTexture(gl.TEXTURE0 + this.normalsTextureLocation);
-            tex = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
-            // update indices
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, this.indices);
-        }
-        else
-        {
-            this.needsUpdate = false;
-
-            // upload vertex data
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._vertexBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.STATIC_DRAW);
-            gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
-
-            // bind diffuse texture
-            gl.activeTexture(gl.TEXTURE1);
-            tex = diffuseTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
-
-            // bind normal texture
-            gl.activeTexture(gl.TEXTURE2);
-            tex = normalsTexture.baseTexture._glTextures[renderer.CONTEXT_UID];
-            gl.bindTexture(gl.TEXTURE_2D, tex.texture);
-
-            // static upload of index buffer
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer);
-            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-        }
     }
 
     get color()

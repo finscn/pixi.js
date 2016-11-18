@@ -20,7 +20,7 @@ export default class PointLight extends Light
 
             super(color, brightness, mesh.vertices, mesh.indices);
 
-            this.useViewportQuad = false;
+            this.useCircelVert = true;
             this.drawMode = DRAW_MODES.TRIANGLE_FAN;
         } else {
             super(color, brightness);
@@ -30,19 +30,24 @@ export default class PointLight extends Light
         this.shaderName = 'pointLightShader';
     }
 
-    initShader(gl)
+    generateShader(gl)
     {
-        const vertexSrc = glslify('../light/light.vert');
+        let vertexSrc;
+        if (this.useCircelVert) {
+            vertexSrc = glslify('./point-circle.vert');
+        } else {
+            vertexSrc = glslify('./point.vert');
+        }
         const fragmentSrc = glslify('./point.frag');
-        this.shader = new Shader(gl, vertexSrc, fragmentSrc);
+        return new Shader(gl, vertexSrc, fragmentSrc);
     }
 
-    syncShader()
+    syncShader(sprite)
     {
-        const shader = this.shader;
-        super.syncShader(shader);
-
-        shader.uniforms.uLightRadius = this.radius;
+        super.syncShader(sprite);
+        this.shader.uniforms.uLightRadius = this.radius;
+        this.shader.uniforms.uLightPosition[0] = this.position.x;
+        this.shader.uniforms.uLightPosition[1] = this.position.y;
     }
 
     static getCircleMesh(radius, totalSegments, vertices, indices)

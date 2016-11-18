@@ -4,13 +4,14 @@ precision lowp float;
 #pragma glslify: import("../_shared/commonUniforms.glsl");
 
 uniform float uLightRadius;
+uniform vec2 uLightPosition;
 
 void main()
 {
 #pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
-    vec2 lightPosition = translationMatrix[2].xy / uViewSize;
+    vec2 lightPosition = uLightPosition / uViewSize;
 
     // the directional vector of the light
     vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);
@@ -23,6 +24,7 @@ void main()
 
     // bail out early when pixel outside of light sphere
     if (D > uLightRadius) discard;
+
 
 #pragma glslify: import("../_shared/computeDiffuse.glsl");
 

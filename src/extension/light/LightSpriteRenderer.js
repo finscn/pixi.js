@@ -12,15 +12,13 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         super(renderer);
         this.gl = renderer.gl;
 
-        this.diffuseTexture = RenderTexture.create(2, 2);
-        this.normalsTexture = RenderTexture.create(2, 2);
+        this.diffuseRenderTexture = RenderTexture.create(2, 2);
+        this.normalsRenderTexture = RenderTexture.create(2, 2);
     }
 
     onContextChange()
     {
-        if (this.lights) {
-            // TODO
-        }
+        this.contextChanged = true;
     }
 
     render(sprite)
@@ -30,67 +28,85 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         }
 
         const renderer = this.renderer;
-        const gl = renderer.gl;
+        // const gl = renderer.gl;
 
-        const width = sprite.texture.width;
-        const height = sprite.texture.height;
-        this.diffuseTexture.resize(width, height);
+        let width = sprite.texture.width;
+        let height = sprite.texture.height;
 
-        sprite._renderWebGL = sprite._renderWebGLBakLightSpriteRenderer;
-        renderer.render(sprite, this.diffuseTexture, true);
-        sprite._renderWebGL = LightSpriteRenderer.__renderWebGLSprite;
-
-        if (sprite.normalsTexture) {
-            this.normalsTexture.resize(width, height);
-            renderer.render(sprite.normalsTexture, this.normalsTexture, true);
+        if (sprite.diffuseTexture) {
+            this.diffuseRenderTexture.resize(width, height);
+            renderer.render(sprite.diffuseTexture, this.diffuseRenderTexture, true);
         } else {
             // TODO
         }
 
-        const lights = sprite.lights;
+        if (sprite.normalsTexture) {
+            width = sprite.normalsTexture.width;
+            height = sprite.normalsTexture.height;
+            this.normalsRenderTexture.resize(width, height);
+            renderer.render(sprite.normalsTexture, this.normalsRenderTexture, true);
+        } else {
+            // TODO
+        }
 
-        for (let i = 0; i < lights.length; ++i)
+        renderer.bindRenderTarget(renderer.rootRenderTarget);
+
+        const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
+        const uvsData = sprite._texture._uvs;
+
+        const diffuseBaseTexture = this.diffuseRenderTexture.baseTexture;
+        const normalsBaseTexture = this.normalsRenderTexture.baseTexture;
+
+
+        const lights = sprite.lights;
+        for (let i = 0; i < lights.length; i++)
         {
             const light = lights[i];
-            light.update(gl);
+            light.init(renderer, this.contextChanged);
 
-            renderer.state.setBlendMode(light.blendMode);
+            const shader = light.shader;
+            const quad = light.quad;
 
-            if (light.useViewportQuad) {
-                // update verts to ensure it is a fullscreen quad even if the renderer is resized. This should be optimized
-                light.vertices[2] = light.vertices[4] = renderer.width;
-                light.vertices[5] = light.vertices[7] = renderer.height;
+            const vertices = quad.vertices;
+            const uvs = quad.uvs;
+
+            for (let i = 0; i < 8; i++) {
+                vertices[i] = vertexData[i];
             }
 
-            // set uniforms, can do some optimizations here.
-            light.shader.uniforms.uViewSize[0] = renderer.width;
-            light.shader.uniforms.uViewSize[1] = renderer.height;
+            uvs[0] = uvsData.x0;
+            uvs[1] = uvsData.y0;
+            uvs[2] = uvsData.x1;
+            uvs[3] = uvsData.y1;
+            uvs[4] = uvsData.x2;
+            uvs[5] = uvsData.y2;
+            uvs[6] = uvsData.x3;
+            uvs[7] = uvsData.y3;
+            quad.upload();
 
-            light.shader.uniforms.translationMatrix = light.worldTransform.toArray(true);
-            // light.shader.uniforms.projectionMatrix = renderer.currentRenderTarget.projectionMatrix.toArray(true);
 
-            renderer.bindShader(light.shader);
+            renderer.bindShader(shader);
+            renderer.bindVao(quad.vao);
 
             light.syncShader(sprite);
 
-            // shader.syncUniforms();
-            light.shader.uniforms.uSampler = light.diffuseTextureLocation;
-            light.shader.uniforms.uNormalSampler = light.normalsTextureLocation;
-            // gl.uniform1i(light.shader.uniforms.uSampler._location, 0);
-            // gl.uniform1i(light.shader.uniforms.uNormalSampler._location, 1);
+            shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture, light.diffuseTextureLocation);
+            shader.uniforms.uNormalSampler = renderer.bindTexture(normalsBaseTexture, light.normalsTextureLocation);
 
-            light.render(renderer, this.diffuseTexture, this.normalsTexture);
+            renderer.state.setBlendMode(light.blendMode);
 
-            gl.drawElements(renderer.drawModes[light.drawMode], light.indices.length, gl.UNSIGNED_SHORT, 0);
+            light.quad.vao.draw(renderer.drawModes[light.drawMode], 6, 0);
+
             renderer.drawCount++;
         }
+        this.contextChanged = false;
     }
 
     destroy()
     {
         super.destroy();
-        this.diffuseTexture.destroy();
-        this.normalsTexture.destroy();
+        this.diffuseRenderTexture.destroy();
+        this.normalsRenderTexture.destroy();
     }
 
     static applyTo(sprite)

@@ -5,6 +5,7 @@ import Light from '../light/Light';
 const glslify = require('glslify'); // eslint-disable-line no-undef
 
 const Shader = core.Shader;
+const Point = core.Point;
 
 export default class DirectionalLight extends Light
 {
@@ -13,16 +14,16 @@ export default class DirectionalLight extends Light
         super(color, brightness);
 
         this.target = target;
-        this._directionVector = new core.Point();
+        this._directionVector = new Point();
 
         this.shaderName = 'directionalLightShader';
     }
 
-    initShader(gl)
+    generateShader(gl)
     {
         const vertexSrc = glslify('../light/light.vert');
         const fragmentSrc = glslify('./directional.frag');
-        this.shader = new Shader(gl, vertexSrc, fragmentSrc);
+        return new Shader(gl, vertexSrc, fragmentSrc);
     }
 
     updateTransform()
@@ -44,13 +45,11 @@ export default class DirectionalLight extends Light
         vec.y /= len;
     }
 
-    syncShader()
+    syncShader(sprite)
     {
-        const shader = this.shader;
-        super.syncShader(shader);
-
-        shader.uniforms.uLightDirection[0] = this._directionVector.x;
-        shader.uniforms.uLightDirection[1] = this._directionVector.y;
+        super.syncShader(sprite);
+        this.shader.uniforms.uLightDirection[0] = this._directionVector.x;
+        this.shader.uniforms.uLightDirection[1] = this._directionVector.y;
     }
 
 }

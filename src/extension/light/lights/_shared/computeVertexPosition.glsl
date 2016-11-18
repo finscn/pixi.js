@@ -1,2 +1,4 @@
-vec2 texCoord = gl_FragCoord.xy / uViewSize;
-texCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.
+    vec2 texCoord = gl_FragCoord.xy / uViewSize;
+
+    // FBOs positions are flipped.
+    texCoord.y = 1.0 - texCoord.y;
