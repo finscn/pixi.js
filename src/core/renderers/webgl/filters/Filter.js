@@ -97,13 +97,17 @@ class Filter
      * @param {PIXI.RenderTarget} input - The input render target.
      * @param {PIXI.RenderTarget} output - The target to output to.
      * @param {boolean} clear - Should the output be cleared before rendering to it
+     * @param {Object} currentState - filter.currentState
      */
-    apply(filterManager, input, output, clear)
+    apply(filterManager, input, output, clear, currentState)
     {
         // --- //
         //  this.uniforms.filterMatrix = filterManager.calculateSpriteMatrix(tempMatrix, window.panda );
 
         // do as you please!
+        if (currentState) {
+            // TODO
+        }
 
         filterManager.applyFilter(this, input, output, clear);
 
