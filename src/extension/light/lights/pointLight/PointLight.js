@@ -10,9 +10,8 @@ const Shader = core.Shader;
 
 export default class PointLight extends Light
 {
-    constructor(color, brightness, radius)
+    constructor(options)
     {
-        radius = radius || Infinity;
 
         // TODO : for circle light
         // if (radius !== Infinity) {
@@ -27,9 +26,11 @@ export default class PointLight extends Light
         //     super(color, brightness);
         // }
 
-        super(color, brightness);
+        super(options);
 
-        this.radius = radius;
+        this.radius = options.radius || Infinity;
+        this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
+
         this.shaderName = 'pointLightShader';
 
         this.positionArray = new Float32Array(2);
@@ -54,6 +55,7 @@ export default class PointLight extends Light
         this.positionArray[0] = this.position.x;
         this.positionArray[1] = this.position.y;
         this.shader.uniforms.uLightPosition = this.positionArray;
+        this.shader.uAmbientLightColor = this.ambientLightColor;
     }
 
     static getCircleMesh(radius, totalSegments, vertices, indices)

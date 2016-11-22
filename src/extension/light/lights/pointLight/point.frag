@@ -3,6 +3,7 @@ precision lowp float;
 // imports the common uniforms like samplers, and ambient color
 #pragma glslify: import("../_shared/commonUniforms.glsl");
 
+uniform vec4 uAmbientLightColor;
 uniform float uLightRadius;
 uniform vec2 uLightPosition;
 
@@ -21,15 +22,27 @@ void main()
 
     // compute Distance
     float D = length(lightVector);
-
+    float dis = length(lightVector.xy);
+    float lightRadius = uLightRadius / uViewSize.y;
+    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
+    vec3 intensity = uAmbientLightColor.rgb * uAmbientLightColor.a;
     // bail out early when pixel outside of light sphere
-    if (D > uLightRadius) discard;
+    if (dis < lightRadius) {
+        // normalize vectors
+        vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
+        vec3 L = normalize(lightVector);
 
+        // pre-multiply light color with intensity
+        // then perform N dot L to determine our diffuse
+        vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);
 
-#pragma glslify: import("../_shared/computeDiffuse.glsl");
+        // calculate attenuation
+        float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));
 
-    // calculate attenuation
-    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));
+        // calculate final intesity and color, then combine
+        intensity += diffuse * attenuation;
+    }
 
-#pragma glslify: import("../_shared/combine.glsl");
+    vec3 finalColor = diffuseColor.rgb * intensity;
+    gl_FragColor = vec4(finalColor, diffuseColor.a);
 }

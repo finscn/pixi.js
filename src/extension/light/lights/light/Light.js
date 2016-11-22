@@ -8,43 +8,42 @@ const Quad = core.Quad;
 
 export default class Light extends core.DisplayObject
 {
-    constructor(color, brightness, vertices, indices)
+    constructor(options)
     {
         super();
 
-        this.height = 0.45;
+        this.height = options.height || 0.45;
 
         // x + y * D + z * D * D
-        this.falloff = [0.75, 2, 12];
+        this.falloff = options.falloff || [0.75, 2, 12];
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
         this._colorRgba = [0.3, 0.3, 0.35, 0.8];
 
         // run the color setter
+        const color = options.color;
         if (color || color === 0) {
             this.color = color;
         }
 
         // run the brightness setter
+        const brightness = options.brightness;
         if (brightness || brightness === 0) {
             this.brightness = brightness;
         }
 
+        this._vertices = options.vertices || null;
+        this._indices = options.indices || null;
 
-        this.blendMode = BLEND_MODES.ADD;
-        // this.blendMode = BLEND_MODES.NORMAL;
-
+        this.blendMode = BLEND_MODES.NORMAL;
         this.drawMode = DRAW_MODES.TRIANGLES;
-
-        this._vertices = vertices || null;
-        this._indices = indices || null;
 
         // TODO : disable Light
         this.visible = false;
 
-        // this.shaderName = null;
-        // this.needsUpdate = true;
+        this.shaderName = null;
+        this.needsUpdate = true;
 
         this.inited = false;
     }

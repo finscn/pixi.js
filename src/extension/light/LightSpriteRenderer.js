@@ -33,10 +33,12 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const renderer = this.renderer;
         const gl = renderer.gl;
 
-        let width = sprite.diffuseTexture.width;
-        let height = sprite.diffuseTexture.height;
+        let width;
+        let height;
 
         if (sprite.diffuseTexture) {
+            width = sprite.diffuseTexture.width;
+            height = sprite.diffuseTexture.height;
             this.diffuseRenderTexture.resize(width, height);
             renderer.render(sprite.diffuseTexture, this.diffuseRenderTexture, true);
         } else {
@@ -51,6 +53,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         } else {
             // TODO
         }
+
+        renderer.setObjectRenderer(renderer.plugins.lightsprite);
 
         const lightCount = sprite.lights.length;
 
