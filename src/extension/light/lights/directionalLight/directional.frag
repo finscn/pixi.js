@@ -15,7 +15,7 @@ void main()
     vec3 lightVector = vec3(uLightDirection, uLightHeight);
 
     // compute Distance
-    float D = length(lightVector);
+    // float D = length(lightVector);
 
 #pragma glslify: import("../_shared/computeDiffuse.glsl");
 

@@ -1,12 +1,10 @@
 import * as core from '../../../../core';
 import Light from '../light/Light';
-import { BLEND_MODES } from '../../../../core/const';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
 
 const Shader = core.Shader;
-const Point = core.Point;
 
 export default class DirectionalLight extends Light
 {
@@ -15,9 +13,13 @@ export default class DirectionalLight extends Light
         super(options);
 
         this.target = options.target;
+
         this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
 
-        this._directionVector = new Point();
+        this._directionVector = {
+            x: 0,
+            y: 0,
+        };
 
         this.shaderName = 'directionalLightShader';
 
@@ -32,18 +34,16 @@ export default class DirectionalLight extends Light
         return new Shader(gl, vertexSrc, fragmentSrc);
     }
 
-    updateTransform()
+    updateDirection()
     {
-        super.updateTransform();
 
         const vec = this._directionVector;
-        const wt = this.worldTransform;
-        const tx = this.target.worldTransform ? this.target.worldTransform.tx : this.target.x;
-        const ty = this.target.worldTransform ? this.target.worldTransform.ty : this.target.y;
+        const tx = this.target.x;
+        const ty = this.target.y;
 
         // calculate direction from this light to the target
-        vec.x = wt.tx - tx;
-        vec.y = wt.ty - ty;
+        vec.x = this.position.x - tx;
+        vec.y = this.position.x - ty;
 
         // normalize
         // const len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);

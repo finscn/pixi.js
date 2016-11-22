@@ -13,19 +13,6 @@ export default class PointLight extends Light
     constructor(options)
     {
 
-        // TODO : for circle light
-        // if (radius !== Infinity) {
-        //     // const shape = new Circle(0, 0, radius);
-        //     const mesh = PointLight.getCircleMesh(radius, 36);
-
-        //     super(color, brightness, mesh.vertices, mesh.indices);
-
-        //     this.useCircelVert = true;
-        //     this.drawMode = DRAW_MODES.TRIANGLE_FAN;
-        // } else {
-        //     super(color, brightness);
-        // }
-
         super(options);
 
         this.radius = options.radius || Infinity;
@@ -38,12 +25,7 @@ export default class PointLight extends Light
 
     generateShader(gl)
     {
-        let vertexSrc;
-        if (this.useCircelVert) {
-            vertexSrc = glslify('./point-circle.vert');
-        } else {
-            vertexSrc = glslify('./point.vert');
-        }
+        const vertexSrc = glslify('./point.vert');
         const fragmentSrc = glslify('./point.frag');
         return new Shader(gl, vertexSrc, fragmentSrc);
     }

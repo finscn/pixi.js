@@ -6,11 +6,19 @@ import { BLEND_MODES, DRAW_MODES } from '../../../../core/const';
 
 const Quad = core.Quad;
 
-export default class Light extends core.DisplayObject
+export default class Light
 {
     constructor(options)
     {
-        super();
+        this.position = options.position || {
+            x: 0,
+            y: 0,
+        };
+
+        this.position.set = function(x, y) {
+            this.x = x;
+            this.y = y;
+        };
 
         this.height = options.height || 0.45;
 

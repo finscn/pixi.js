@@ -21,13 +21,15 @@ void main()
     lightVector.x *= uViewSize.x / uViewSize.y;
 
     // compute Distance
-    float D = length(lightVector);
     float dis = length(lightVector.xy);
     float lightRadius = uLightRadius / uViewSize.y;
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 intensity = uAmbientLightColor.rgb * uAmbientLightColor.a;
     // bail out early when pixel outside of light sphere
     if (dis < lightRadius) {
+
+        float D = length(lightVector);
+
         // normalize vectors
         vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
         vec3 L = normalize(lightVector);
