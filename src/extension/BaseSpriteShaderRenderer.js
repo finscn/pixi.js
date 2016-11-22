@@ -12,7 +12,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         super(renderer);
         this.gl = renderer.gl;
         this.textureLocation = 0;
-        this.useUvs = false;
+        this.useNormalVertices = false;
     }
 
     onContextChange()
@@ -52,15 +52,16 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const vertices = quad.vertices;
         const uvs = quad.uvs;
 
-        if (this.useUvs) {
-            vertices[0] = uvsData.x0;
-            vertices[1] = uvsData.y0;
-            vertices[2] = uvsData.x1;
-            vertices[3] = uvsData.y1;
-            vertices[4] = uvsData.x2;
-            vertices[5] = uvsData.y2;
-            vertices[6] = uvsData.x3;
-            vertices[7] = uvsData.y3;
+        if (this.useNormalVertices) {
+            // TODO  normal != uvs , uvs of texture !!!
+            vertices[0] = 0;
+            vertices[1] = 0;
+            vertices[2] = 1;
+            vertices[3] = 0;
+            vertices[4] = 1;
+            vertices[5] = 1;
+            vertices[6] = 0;
+            vertices[7] = 1;
         } else {
             for (let i = 0; i < 8; i++) {
                 vertices[i] = vertexData[i];

@@ -40,12 +40,5 @@ export default class ExtractBrightnessFilter extends core.Filter
         this.minBright = minBright;
 
     }
-
-    apply(filterManager, input, output, clear)
-    {
-        // this.uniforms.minBright = this.minBright;
-        filterManager.applyFilter(this, input, output, clear);
-    }
-
 }
 

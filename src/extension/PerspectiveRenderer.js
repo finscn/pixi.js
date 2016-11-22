@@ -12,7 +12,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     constructor(renderer)
     {
         super(renderer);
-        this.useUvs = true;
+        this.useNormalVertices = true;
         this.uniforms = {};
         this.defaultMatrix = new Float32Array([
             1, 0, 0,

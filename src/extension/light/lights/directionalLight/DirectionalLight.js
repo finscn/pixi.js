@@ -51,9 +51,9 @@ export default class DirectionalLight extends Light
         vec.y /= len;
     }
 
-    syncShader(sprite)
+    syncShader()
     {
-        super.syncShader(sprite);
+        super.syncShader();
         this.directionArray[0] = this._directionVector.x;
         this.directionArray[1] = this._directionVector.y;
         this.shader.uniforms.uLightDirection = this.directionArray;

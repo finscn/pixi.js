@@ -104,7 +104,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             renderer.bindShader(shader);
             renderer.bindVao(quad.vao);
 
-            light.syncShader(sprite);
+            light.syncShader();
 
             shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture);
             shader.uniforms.uNormalSampler = renderer.bindTexture(normalsBaseTexture);

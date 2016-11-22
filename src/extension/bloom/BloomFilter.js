@@ -22,15 +22,15 @@ export default class BloomFilter extends core.Filter
         this.blurYFilter.blendMode = BLEND_MODES.SCREEN;
     }
 
-    apply(filterManager, input, output, clear)
+    apply(filterManager, input, output, clear, currentState)
     {
         const renderTarget = filterManager.getRenderTarget(true);
 
         //TODO - copyTexSubImage2D could be used here?
-        this.defaultFilter.apply(filterManager, input, output, clear);
+        this.defaultFilter.apply(filterManager, input, output, clear, currentState);
 
-        this.blurXFilter.apply(filterManager, input, renderTarget, true);
-        this.blurYFilter.apply(filterManager, renderTarget, output, false);
+        this.blurXFilter.apply(filterManager, input, renderTarget, true, currentState);
+        this.blurYFilter.apply(filterManager, renderTarget, output, false, currentState);
 
         filterManager.returnRenderTarget(renderTarget);
     }

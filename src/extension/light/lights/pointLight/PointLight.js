@@ -47,9 +47,9 @@ export default class PointLight extends Light
         return new Shader(gl, vertexSrc, fragmentSrc);
     }
 
-    syncShader(sprite)
+    syncShader()
     {
-        super.syncShader(sprite);
+        super.syncShader();
         this.shader.uniforms.uLightRadius = this.radius;
         this.positionArray[0] = this.position.x;
         this.positionArray[1] = this.position.y;

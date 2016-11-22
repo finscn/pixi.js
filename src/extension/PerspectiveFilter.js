@@ -128,15 +128,16 @@ export default class PerspectiveFilter extends core.Filter
         }
     }
 
-    apply(filterManager, input, output, clear)
+    apply(filterManager, input, output, clear, currentState)
     {
+        const currentSprite = currentState.target;
         this.uniforms.perspectiveMatrix = this.perspectiveMatrix;
-        this.uniforms.worldMatrix = this.currentSprite.worldTransform.toArray(9);
+        this.uniforms.worldMatrix = currentSprite.worldTransform.toArray(9);
         this.uniforms.worldMatrixT = Matrix3.invert(this.uniforms.worldMatrix, new Float32Array(9));
-        this.uniforms.spriteWidth = this.currentSprite.width;
-        this.uniforms.spriteHeight = this.currentSprite.height;
-        this.uniforms.spriteScaleX = this.currentSprite.scale.x;
-        this.uniforms.spriteScaleY = this.currentSprite.scale.y;
+        this.uniforms.spriteWidth = currentSprite.width;
+        this.uniforms.spriteHeight = currentSprite.height;
+        this.uniforms.spriteScaleX = currentSprite.scale.x;
+        this.uniforms.spriteScaleY = currentSprite.scale.y;
         filterManager.applyFilter(this, input, output, clear);
     }
 
