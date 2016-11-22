@@ -26,7 +26,7 @@ void main()
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 intensity = uAmbientLightColor.rgb * uAmbientLightColor.a;
     // bail out early when pixel outside of light sphere
-    if (dis < lightRadius) {
+    if (dis <= lightRadius) {
 
         float D = length(lightVector);
 
