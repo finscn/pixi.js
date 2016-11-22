@@ -46,9 +46,9 @@ export default class DirectionalLight extends Light
         vec.y = wt.ty - ty;
 
         // normalize
-        const len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
-        vec.x /= len;
-        vec.y /= len;
+        // const len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+        // vec.x /= len;
+        // vec.y /= len;
     }
 
     syncShader()
