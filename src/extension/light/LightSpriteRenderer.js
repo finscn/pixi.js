@@ -33,8 +33,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const renderer = this.renderer;
         const gl = renderer.gl;
 
-        let width = sprite.texture.width;
-        let height = sprite.texture.height;
+        let width = sprite.diffuseTexture.width;
+        let height = sprite.diffuseTexture.height;
 
         if (sprite.diffuseTexture) {
             this.diffuseRenderTexture.resize(width, height);

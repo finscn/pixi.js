@@ -60,6 +60,7 @@ export default class Light extends core.DisplayObject
                 // TODO : for custom vertices && indices
 
             } else {
+                renderer.bindVao(null);
                 this.quad = new Quad(gl, renderer.state.attribState);
                 this.quad.initVao(shader);
             }
