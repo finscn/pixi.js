@@ -9,9 +9,9 @@ const Shader = core.Shader;
 
 export default class AmbientLight extends Light
 {
-    constructor(color, brightness)
+    constructor(options)
     {
-        super(color, brightness);
+        super(options);
 
         this.height = 1;
 

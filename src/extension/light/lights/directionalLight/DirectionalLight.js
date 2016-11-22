@@ -10,13 +10,13 @@ const Point = core.Point;
 
 export default class DirectionalLight extends Light
 {
-    constructor(color, brightness, target)
+    constructor(options)
     {
-        super(color, brightness);
+        super(options);
 
-        this.blendMode = BLEND_MODES.ADD;
+        this.target = options.target;
+        this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
 
-        this.target = target;
         this._directionVector = new Point();
 
         this.shaderName = 'directionalLightShader';
@@ -57,6 +57,7 @@ export default class DirectionalLight extends Light
         this.directionArray[0] = this._directionVector.x;
         this.directionArray[1] = this._directionVector.y;
         this.shader.uniforms.uLightDirection = this.directionArray;
+        this.shader.uniforms.uAmbientLightColor = this.ambientLightColor;
     }
 
 }
