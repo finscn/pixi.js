@@ -16,7 +16,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         this.middleRenderTexture = RenderTexture.create(renderer.width, renderer.height);
         this.middleSprite = new Sprite(this.middleRenderTexture);
         this.diffuseRenderTexture = RenderTexture.create(2, 2);
-        this.normalsRenderTexture = RenderTexture.create(2, 2);
+        this.normalRenderTexture = RenderTexture.create(2, 2);
     }
 
     onContextChange()
@@ -45,11 +45,11 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             // TODO
         }
 
-        if (sprite.normalsTexture) {
-            width = sprite.normalsTexture.width;
-            height = sprite.normalsTexture.height;
-            this.normalsRenderTexture.resize(width, height);
-            renderer.render(sprite.normalsTexture, this.normalsRenderTexture, true);
+        if (sprite.normalTexture) {
+            width = sprite.normalTexture.width;
+            height = sprite.normalTexture.height;
+            this.normalRenderTexture.resize(width, height);
+            renderer.render(sprite.normalTexture, this.normalRenderTexture, true);
         } else {
             // TODO
         }
@@ -73,10 +73,10 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
         const uvsData = sprite._texture._uvs;
-        const uvsDataNormal = sprite.normalsTexture._texture._uvs;
+        const uvsDataNormal = sprite.normalTexture._texture._uvs;
 
         const diffuseBaseTexture = this.diffuseRenderTexture.baseTexture;
-        const normalsBaseTexture = this.normalsRenderTexture.baseTexture;
+        const normalBaseTexture = this.normalRenderTexture.baseTexture;
 
         const lights = sprite.lights;
 
@@ -121,7 +121,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             light.syncShader();
 
             shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture);
-            shader.uniforms.uNormalSampler = renderer.bindTexture(normalsBaseTexture);
+            shader.uniforms.uNormalSampler = renderer.bindTexture(normalBaseTexture);
 
             renderer.state.setBlendMode(light.blendMode);
 
@@ -143,7 +143,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     {
         super.destroy();
         this.diffuseRenderTexture.destroy();
-        this.normalsRenderTexture.destroy();
+        this.normalRenderTexture.destroy();
     }
 
     static applyTo(sprite)
