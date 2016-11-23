@@ -9,7 +9,6 @@ export default class Light
 {
     constructor(options)
     {
-
         // this.height = options.height || 0.45;
         this.position = options.position || {
             x: 0,

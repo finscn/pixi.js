@@ -10,6 +10,7 @@ export default class DirectionalLight extends LightWithAmbient
 {
     constructor(options)
     {
+        options = options || {};
         super(options);
 
         this.target = options.target;

@@ -6,7 +6,6 @@ export default class LightWithAmbient extends Light
 {
     constructor(options)
     {
-
         super(options);
 
         this._ambientColor = null;
