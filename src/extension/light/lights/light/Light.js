@@ -12,14 +12,18 @@ export default class Light
         this.position = options.position || {
             x: 0,
             y: 0,
+            z: 0,
         };
+        this.position.z = this.position.z || 0;
 
-        this.position.set = function(x, y) {
+        this.position.set = function(x, y, z) {
             this.x = x;
             this.y = y;
+            this.z = z !== undefined ? z : this.z;
         };
+        this.positionArray = new Float32Array(3);
 
-        this.height = options.height || 0.45;
+        // this.height = options.height || 0.45;
 
         // x + y * D + z * D * D
         this.falloff = options.falloff || [0.75, 2, 12];
@@ -89,10 +93,7 @@ export default class Light
         const shader = this.shader;
 
         shader.uniforms.uViewSize = this.viewSize;
-
         shader.uniforms.uLightColor = this._colorRgba;
-        shader.uniforms.uLightHeight = this.height;
-
         shader.uniforms.uLightFalloff = this.falloff;
     }
 

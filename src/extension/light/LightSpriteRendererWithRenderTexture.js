@@ -1,4 +1,5 @@
 import * as core from '../../core';
+import LightSpriteRenderer from './LightSpriteRenderer';
 
 const RenderTexture = core.RenderTexture;
 const WebGLRenderer = core.WebGLRenderer;
@@ -6,7 +7,7 @@ const Sprite = core.Sprite;
 
 // const tempArray = new Float32Array(4);
 
-export default class LightSpriteRenderer extends core.ObjectRenderer
+export default class LightSpriteRendererWithRenderTexture extends core.ObjectRenderer
 {
     constructor(renderer)
     {
@@ -15,6 +16,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
         this.middleRenderTexture = RenderTexture.create(renderer.width, renderer.height);
         this.middleSprite = new Sprite(this.middleRenderTexture);
+        this.diffuseRenderTexture = RenderTexture.create(2, 2);
+        this.normalRenderTexture = RenderTexture.create(2, 2);
     }
 
     onContextChange()
@@ -31,8 +34,27 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const renderer = this.renderer;
         const gl = renderer.gl;
 
-        // let width;
-        // let height;
+        let width;
+        let height;
+
+        if (sprite.diffuseTexture) {
+            width = sprite.diffuseTexture.width;
+            height = sprite.diffuseTexture.height;
+            this.diffuseRenderTexture.resize(width, height);
+            renderer.render(sprite.diffuseTexture, this.diffuseRenderTexture, true);
+        } else {
+            // TODO
+        }
+
+        if (sprite.normalTexture) {
+            width = sprite.normalTexture.width;
+            height = sprite.normalTexture.height;
+            this.normalRenderTexture.resize(width, height);
+            renderer.render(sprite.normalTexture, this.normalRenderTexture, true);
+        } else {
+            // TODO
+        }
+        renderer.setObjectRenderer(renderer.plugins.lightsprite);
 
         const lightCount = sprite.lights.length;
 
@@ -41,16 +63,18 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             gl.disable(gl.SCISSOR_TEST);
             renderer.clear(); // [1, 1, 1, 1]);
             gl.enable(gl.SCISSOR_TEST);
+        } else {
+            renderer.bindRenderTarget(renderer.rootRenderTarget);
         }
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
-        const uvsData = sprite.diffuseTexture._texture._uvs;
+        const uvsData = sprite._texture._uvs;
         const uvsDataNormal = sprite.normalTexture._texture._uvs;
 
-        const lights = sprite.lights;
+        const diffuseBaseTexture = this.diffuseRenderTexture.baseTexture;
+        const normalBaseTexture = this.normalRenderTexture.baseTexture;
 
-        const uSamplerLocation = renderer.bindTexture(sprite.diffuseTexture._texture);
-        const uNormalSamplerLocation = renderer.bindTexture(sprite.normalTexture._texture);
+        const lights = sprite.lights;
 
         for (let i = 0; i < lights.length; i++)
         {
@@ -89,10 +113,10 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             renderer.bindShader(shader);
             renderer.bindVao(quad.vao);
 
-            shader.uniforms.uSampler = uSamplerLocation;
-            shader.uniforms.uNormalSampler = uNormalSamplerLocation;
+            light.syncShader();
 
-            light.syncShader(sprite);
+            shader.uniforms.uSampler = renderer.bindTexture(diffuseBaseTexture);
+            shader.uniforms.uNormalSampler = renderer.bindTexture(normalBaseTexture);
 
             renderer.state.setBlendMode(light.blendMode);
 
@@ -141,5 +165,5 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     }
 }
 
-WebGLRenderer.registerPlugin('lightsprite', LightSpriteRenderer);
+WebGLRenderer.registerPlugin('lightsprite2', LightSpriteRendererWithRenderTexture);
 

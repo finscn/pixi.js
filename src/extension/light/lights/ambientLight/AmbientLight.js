@@ -13,8 +13,6 @@ export default class AmbientLight extends Light
     {
         super(options);
 
-        this.height = 1;
-
         // x + y * D + z * D * D
         this.falloff = [1, 0, 0];
 

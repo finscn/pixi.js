@@ -14,17 +14,16 @@ export default class DirectionalLight extends Light
 
         this.target = options.target;
 
-        this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
+        if (!('z' in this.target)) {
+            this.target.z = 0;
+        }
 
-        this._directionVector = {
-            x: 0,
-            y: 0,
-        };
+        this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
 
         this.shaderName = 'directionalLightShader';
 
-        this.directionArray = new Float32Array(2);
-
+        this.directionArray = new Float32Array(3);
+        this.updateDirection();
     }
 
     generateShader(gl)
@@ -36,29 +35,21 @@ export default class DirectionalLight extends Light
 
     updateDirection()
     {
-
-        const vec = this._directionVector;
+        const arr = this.directionArray;
         const tx = this.target.x;
         const ty = this.target.y;
+        const tz = this.target.z;
 
-        // calculate direction from this light to the target
-        vec.x = this.position.x - tx;
-        vec.y = this.position.x - ty;
-
-        // normalize
-        // const len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
-        // vec.x /= len;
-        // vec.y /= len;
+        arr[0] = this.position.x - tx;
+        arr[1] = this.position.y - ty;
+        arr[2] = this.position.z - tz;
     }
 
-    syncShader()
+    syncShader(sprite)
     {
-        super.syncShader();
-        this.directionArray[0] = this._directionVector.x;
-        this.directionArray[1] = this._directionVector.y;
+        super.syncShader(sprite);
+
+        this.shader.uAmbientLightColor = this.ambientLightColor;
         this.shader.uniforms.uLightDirection = this.directionArray;
-        this.shader.uniforms.uAmbientLightColor = this.ambientLightColor;
     }
-
 }
-

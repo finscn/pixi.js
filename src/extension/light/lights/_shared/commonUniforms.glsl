@@ -10,9 +10,6 @@ uniform vec4 uLightColor;
 // light attenuation coefficients (constant, linear, quadratic)
 uniform vec3 uLightFalloff;
 
- // light height above the viewport
-uniform float uLightHeight;
-
 varying vec2 vTextureCoord;
 varying vec2 vNormalTextureCoord;
 

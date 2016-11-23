@@ -3,7 +3,7 @@ precision lowp float;
 // imports the common uniforms like samplers, and ambient/light color
 #pragma glslify: import("../_shared/commonUniforms.glsl")
 
-uniform vec2 uLightDirection;
+uniform vec3 uLightDirection;
 uniform vec4 uAmbientLightColor;
 
 void main()
@@ -12,7 +12,10 @@ void main()
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
     // the directional vector of the light
-    vec3 lightVector = vec3(uLightDirection, uLightHeight);
+    vec3 lightVector = uLightDirection;
+
+    // correct for aspect ratio
+    lightVector.x *= uViewSize.x / uViewSize.y;
 
     // compute Distance
     // float D = length(lightVector);

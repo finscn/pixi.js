@@ -4,31 +4,31 @@ precision lowp float;
 #pragma glslify: import("../_shared/commonUniforms.glsl");
 
 uniform vec4 uAmbientLightColor;
+uniform vec3 uLightPosition;
+
 uniform float uLightRadius;
-uniform vec2 uLightPosition;
 
 void main()
 {
 #pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
-    vec2 lightPosition = uLightPosition / uViewSize;
+    vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.y);
 
     // the directional vector of the light
-    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);
+    vec3 lightVector = vec3(lightPosition.xy - texCoord, lightPosition.z);
 
     // correct for aspect ratio
     lightVector.x *= uViewSize.x / uViewSize.y;
 
     // compute Distance
-    float dis = length(lightVector.xy);
+    float D = length(lightVector);
+
     float lightRadius = uLightRadius / uViewSize.y;
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 intensity = uAmbientLightColor.rgb * uAmbientLightColor.a;
     // bail out early when pixel outside of light sphere
-    if (dis <= lightRadius) {
-
-        float D = length(lightVector);
+    if (D <= lightRadius) {
 
         // normalize vectors
         vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
