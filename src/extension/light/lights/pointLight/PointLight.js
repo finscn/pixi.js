@@ -43,7 +43,7 @@ export default class PointLight extends Light
         this.positionArray[2] = this.position.z + sprite.lightOffsetZ || 0;
         this.shader.uniforms.uLightPosition = this.positionArray;
 
-        this.shader.uAmbientLightColor = this.ambientLightColor;
+        this.shader.uniforms.uAmbientLightColor = this.ambientLightColor;
         this.shader.uniforms.uLightRadius = this.radius;
     }
 }

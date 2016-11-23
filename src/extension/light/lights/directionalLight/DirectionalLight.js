@@ -56,7 +56,7 @@ export default class DirectionalLight extends Light
     {
         super.syncShader(sprite);
 
-        this.shader.uAmbientLightColor = this.ambientLightColor;
+        this.shader.uniforms.uAmbientLightColor = this.ambientLightColor;
         this.shader.uniforms.uLightDirection = this.directionArray;
     }
 }
