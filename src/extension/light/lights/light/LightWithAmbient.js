@@ -9,19 +9,16 @@ export default class LightWithAmbient extends Light
 
         super(options);
 
-        this._ambientColor = 0x000000;
+        this._ambientColor = null;
         this._ambientBrightness = 1;
         this._ambientColorRgba = new Float32Array([0, 0, 0, this._ambientBrightness]);
-        // run the color setter
-        const ambientColor = options.ambientColor;
-        if (ambientColor || ambientColor === 0) {
-            this.ambientColor = ambientColor;
-        }
+        this.blendMode = BLEND_MODES.ADD;
 
-        // run the brightness setter
-        const ambientBrightness = options.ambientBrightness;
-        if (ambientBrightness || ambientBrightness === 0) {
-            this.ambientBrightness = ambientBrightness;
+        if ( "ambientColor" in options) {
+            this.ambientColor = options.ambientColor;
+        }
+        if ( "ambientBrightness" in options) {
+            this.ambientBrightness = options.ambientBrightness;
         }
 
     }
@@ -44,8 +41,8 @@ export default class LightWithAmbient extends Light
     set ambientColor(val)
     {
         this._ambientColor = val;
-        core.utils.hex2rgb(val, this._ambientColorRgba);
-        if (val === 0 && this._ambientBrightness === 0) {
+        core.utils.hex2rgb(val || 0, this._ambientColorRgba);
+        if (val === null) {
             this.blendMode = BLEND_MODES.ADD;
         } else {
             this.blendMode = BLEND_MODES.NORMAL;
@@ -60,11 +57,6 @@ export default class LightWithAmbient extends Light
     set ambientBrightness(val)
     {
         this._ambientBrightness = val;
-        this._ambientColorRgba[3] = val;
-        if (val === 0 && this._ambientColor === 0) {
-            this.blendMode = BLEND_MODES.ADD;
-        } else {
-            this.blendMode = BLEND_MODES.NORMAL;
-        }
+        this._ambientColorRgba[3] = val || 0;
     }
 }
