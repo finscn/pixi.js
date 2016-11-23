@@ -1,4 +1,4 @@
-    vec4 normalColor = texture2D(uNormalSampler, vTextureCoord);
+    vec4 normalColor = texture2D(uNormalSampler, vNormalTextureCoord);
 
     // Green layer is flipped Y coords.
     normalColor.g = 1.0 - normalColor.g;

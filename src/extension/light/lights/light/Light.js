@@ -1,10 +1,9 @@
 import * as core from '../../../../core';
 import { BLEND_MODES, DRAW_MODES } from '../../../../core/const';
+import NormalQuad from '../NormalQuad.js';
 /**
  * Excuse the mess, haven't cleaned this up yet!
  */
-
-const Quad = core.Quad;
 
 export default class Light
 {
@@ -68,7 +67,7 @@ export default class Light
 
             } else {
                 renderer.bindVao(null);
-                this.quad = new Quad(gl, renderer.state.attribState);
+                this.quad = new NormalQuad(gl, renderer.state.attribState);
                 this.quad.initVao(shader);
             }
 

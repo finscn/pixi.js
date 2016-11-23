@@ -73,6 +73,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
         const uvsData = sprite._texture._uvs;
+        const uvsDataNormal = sprite.normalsTexture._texture._uvs;
 
         const diffuseBaseTexture = this.diffuseRenderTexture.baseTexture;
         const normalsBaseTexture = this.normalsRenderTexture.baseTexture;
@@ -94,14 +95,23 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
                 vertices[i] = vertexData[i];
             }
 
-            uvs[0] = uvsData.x0;
-            uvs[1] = uvsData.y0;
-            uvs[2] = uvsData.x1;
-            uvs[3] = uvsData.y1;
-            uvs[4] = uvsData.x2;
-            uvs[5] = uvsData.y2;
-            uvs[6] = uvsData.x3;
-            uvs[7] = uvsData.y3;
+            // uvs[0] = uvsData.x0;
+            // uvs[1] = uvsData.y0;
+            // uvs[2] = uvsData.x1;
+            // uvs[3] = uvsData.y1;
+            // uvs[4] = uvsData.x2;
+            // uvs[5] = uvsData.y2;
+            // uvs[6] = uvsData.x3;
+            // uvs[7] = uvsData.y3;
+
+            // uvs[8] = uvsDataNormal.x0;
+            // uvs[9] = uvsDataNormal.y0;
+            // uvs[10] = uvsDataNormal.x1;
+            // uvs[11] = uvsDataNormal.y1;
+            // uvs[12] = uvsDataNormal.x2;
+            // uvs[13] = uvsDataNormal.y2;
+            // uvs[14] = uvsDataNormal.x3;
+            // uvs[15] = uvsDataNormal.y3;
             quad.upload();
 
 

@@ -14,4 +14,5 @@ uniform vec3 uLightFalloff;
 uniform float uLightHeight;
 
 varying vec2 vTextureCoord;
+varying vec2 vNormalTextureCoord;
 
