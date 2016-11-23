@@ -26,11 +26,11 @@ export default class Light
         // this.height = options.height || 0.45;
 
         // x + y * D + z * D * D
-        this.falloff = options.falloff || [0.75, 2, 12];
+        this.falloff = new Float32Array(options.falloff || [0.75, 2, 12]);
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
-        this._colorRgba = [0.3, 0.3, 0.35, 0.8];
+        this._colorRgba = new Float32Array([0.3, 0.3, 0.35, 0.8]);
 
         // run the color setter
         const color = options.color;
@@ -47,7 +47,7 @@ export default class Light
         this._vertices = options.vertices || null;
         this._indices = options.indices || null;
 
-        this.blendMode = BLEND_MODES.NORMAL;
+        this.blendMode = BLEND_MODES.ADD;
         this.drawMode = DRAW_MODES.TRIANGLES;
 
         // TODO : disable Light

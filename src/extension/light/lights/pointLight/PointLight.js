@@ -1,6 +1,6 @@
 import * as core from '../../../../core';
 import Light from '../light/Light';
-// import { DRAW_MODES } from '../../../../core/const';
+import { BLEND_MODES } from '../../../../core/const';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
@@ -16,7 +16,13 @@ export default class PointLight extends Light
         super(options);
 
         this.radius = options.radius || Infinity;
-        this.ambientLightColor = options.ambientLightColor || [0.6, 0.6, 0.6, 1];
+
+        if (options.ambientLightColor) {
+            this.ambientLightColor = new Float32Array(options.ambientLightColor);
+            this.blendMode = BLEND_MODES.NORMAL;
+        } else {
+            this.ambientLightColor = new Float32Array([0, 0, 0, 0]);
+        }
 
         this.shaderName = 'pointLightShader';
     }

@@ -14,7 +14,7 @@ export default class AmbientLight extends Light
         super(options);
 
         // x + y * D + z * D * D
-        this.falloff = [1, 0, 0];
+        this.falloff = new Float32Array([1, 0, 0]);
 
         this.blendMode = BLEND_MODES.NORMAL;
 
