@@ -9,6 +9,8 @@ export default class Light
 {
     constructor(options)
     {
+
+        // this.height = options.height || 0.45;
         this.position = options.position || {
             x: 0,
             y: 0,
@@ -23,14 +25,13 @@ export default class Light
         };
         this.positionArray = new Float32Array(3);
 
-        // this.height = options.height || 0.45;
-
         // x + y * D + z * D * D
         this.falloff = new Float32Array(options.falloff || [0.75, 2, 12]);
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
-        this._colorRgba = new Float32Array([0.3, 0.3, 0.35, 0.8]);
+        this._brightness = 1;
+        this._colorRgba = new Float32Array([0.3, 0.3, 0.35, this._brightness]);
 
         // run the color setter
         const color = options.color;
@@ -110,11 +111,12 @@ export default class Light
 
     get brightness()
     {
-        return this._colorRgba[3];
+        return this._brightness;
     }
 
     set brightness(val)
     {
+        this._brightness = val;
         this._colorRgba[3] = val;
     }
 }

@@ -3,7 +3,7 @@ precision lowp float;
 // imports the common uniforms like samplers, and ambient color
 #pragma glslify: import("../_shared/commonUniforms.glsl");
 
-uniform vec4 uAmbientLightColor;
+uniform vec4 uAmbientColor;
 uniform vec3 uLightPosition;
 
 uniform float uLightRadius;
@@ -26,7 +26,7 @@ void main()
 
     float lightRadius = uLightRadius / uViewSize.y;
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
-    vec3 intensity = uAmbientLightColor.rgb * uAmbientLightColor.a;
+    vec3 intensity = uAmbientColor.rgb * uAmbientColor.a;
     // bail out early when pixel outside of light sphere
     if (D <= lightRadius) {
 

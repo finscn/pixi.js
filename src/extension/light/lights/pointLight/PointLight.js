@@ -1,14 +1,12 @@
 import * as core from '../../../../core';
-import Light from '../light/Light';
-import { BLEND_MODES } from '../../../../core/const';
+import LightWithAmbient from '../light/LightWithAmbient';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
 
 const Shader = core.Shader;
-// const Circle = core.Graphics.Circle;
 
-export default class PointLight extends Light
+export default class PointLight extends LightWithAmbient
 {
     constructor(options)
     {
@@ -16,13 +14,6 @@ export default class PointLight extends Light
         super(options);
 
         this.radius = options.radius || Infinity;
-
-        if (options.ambientLightColor) {
-            this.ambientLightColor = new Float32Array(options.ambientLightColor);
-            this.blendMode = BLEND_MODES.NORMAL;
-        } else {
-            this.ambientLightColor = new Float32Array([0, 0, 0, 0]);
-        }
 
         this.shaderName = 'pointLightShader';
     }
@@ -43,7 +34,28 @@ export default class PointLight extends Light
         this.positionArray[2] = this.position.z + sprite.lightOffsetZ || 0;
         this.shader.uniforms.uLightPosition = this.positionArray;
 
-        this.shader.uniforms.uAmbientLightColor = this.ambientLightColor;
+        this.shader.uniforms.uAmbientLightColor = this._ambientLightColorRgba;
         this.shader.uniforms.uLightRadius = this.radius;
+    }
+
+    get ambientLightColor()
+    {
+        return this._ambientLightColor;
+    }
+
+    set ambientLightColor(val)
+    {
+        this._ambientLightColor = val;
+        core.utils.hex2rgb(val, this._ambientColorRgba);
+    }
+
+    get ambientLightBrightness()
+    {
+        return this._ambientLightColorRgba[3];
+    }
+
+    set ambientLightBrightness(val)
+    {
+        this._ambientLightColorRgba[3] = val;
     }
 }
