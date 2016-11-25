@@ -59,7 +59,7 @@
     "glslify-import": "^3.0.0",
     "ismobilejs": "^0.4.0",
     "object-assign": "^4.0.1",
-    "pixi-gl-core": "^1.0.3",
+    "pixi-gl-core": "git@github.com:finscn/pixi-gl-core.git",
     "resource-loader": "^1.8.0"
   },
   "devDependencies": {
