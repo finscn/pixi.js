@@ -1,9 +1,10 @@
 precision lowp float;
 
-#pragma glslify: import("../_shared/commonUniforms.glsl");
+#pragma glslify: import("../_shared/commonHead.frag.glsl");
 
 void main(void)
 {
+
 #pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
@@ -18,7 +19,7 @@ void main(void)
 
     // pre-multiply light color with intensity
     // then perform "N dot L" to determine our diffuse
-    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);
+    vec3 diffuse = uLightColor * max(dot(N, L), 0.0);
 
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 finalColor = diffuseColor.rgb * diffuse;

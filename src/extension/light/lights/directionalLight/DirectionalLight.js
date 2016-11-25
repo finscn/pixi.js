@@ -1,10 +1,7 @@
-import * as core from '../../../../core';
 import LightWithAmbient from '../light/LightWithAmbient';
 
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
-
-const Shader = core.Shader;
 
 export default class DirectionalLight extends LightWithAmbient
 {
@@ -21,17 +18,22 @@ export default class DirectionalLight extends LightWithAmbient
             this.target.z = 10;
         }
 
-        this.shaderName = 'directionalLightShader';
-
         this.directionArray = new Float32Array(3);
         this.updateDirection();
+
+        this.shaderName = 'directionalLightShader';
     }
 
-    generateShader(gl)
+    getVertexSource()
     {
-        const vertexSrc = glslify('../light/light.vert');
+        const vertexSrc = glslify('./directional.vert');
+        return vertexSrc;
+    }
+
+    getFragmentSource()
+    {
         const fragmentSrc = glslify('./directional.frag');
-        return new Shader(gl, vertexSrc, fragmentSrc);
+        return fragmentSrc;
     }
 
     updateDirection()

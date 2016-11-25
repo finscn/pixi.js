@@ -23,7 +23,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         }
 
         const renderer = this.renderer;
-        // const gl = renderer.gl;
+        const gl = renderer.gl;
 
         const lights = sprite.lights;
         const lightCount = lights.length;
@@ -35,60 +35,63 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const uvsData = diffuseTexture._uvs;
         const uvsDataNormal = normalTexture._uvs;
 
-        const uSamplerLocation = renderer.bindTexture(diffuseTexture);
+        const uSamplerLocation = renderer.bindTexture(diffuseTexture, 1, true);
         let uNormalSamplerLocation;
         if (diffuseTexture.baseTexture === normalTexture.baseTexture) {
             uNormalSamplerLocation = uSamplerLocation;
         } else {
-            uNormalSamplerLocation = renderer.bindTexture(normalTexture);
+            uNormalSamplerLocation = renderer.bindTexture(normalTexture, 2, true);
         }
 
+        let lastShader = null;
         for (let i = 0; i < lightCount; i++)
         {
             const light = lights[i];
             light.init(renderer, this.contextChanged);
 
             const shader = light.shader;
-            const quad = light.quad;
 
-            const vertices = quad.vertices;
-            const uvs = quad.uvs;
+            if (i === 0) {
+                const quad = light.quad;
+                const vertices = quad.vertices;
+                const uvs = quad.uvs;
 
-            for (let i = 0; i < 8; i++) {
-                vertices[i] = vertexData[i];
+                for (let i = 0; i < 8; i++) {
+                    vertices[i] = vertexData[i];
+                }
+
+                uvs[0] = uvsData.x0;
+                uvs[1] = uvsData.y0;
+                uvs[2] = uvsData.x1;
+                uvs[3] = uvsData.y1;
+                uvs[4] = uvsData.x2;
+                uvs[5] = uvsData.y2;
+                uvs[6] = uvsData.x3;
+                uvs[7] = uvsData.y3;
+                uvs[8] = uvsDataNormal.x0;
+                uvs[9] = uvsDataNormal.y0;
+                uvs[10] = uvsDataNormal.x1;
+                uvs[11] = uvsDataNormal.y1;
+                uvs[12] = uvsDataNormal.x2;
+                uvs[13] = uvsDataNormal.y2;
+                uvs[14] = uvsDataNormal.x3;
+                uvs[15] = uvsDataNormal.y3;
+                quad.upload();
+
+                renderer.bindVao(quad.vao);
             }
 
-            uvs[0] = uvsData.x0;
-            uvs[1] = uvsData.y0;
-            uvs[2] = uvsData.x1;
-            uvs[3] = uvsData.y1;
-            uvs[4] = uvsData.x2;
-            uvs[5] = uvsData.y2;
-            uvs[6] = uvsData.x3;
-            uvs[7] = uvsData.y3;
-            uvs[8] = uvsDataNormal.x0;
-            uvs[9] = uvsDataNormal.y0;
-            uvs[10] = uvsDataNormal.x1;
-            uvs[11] = uvsDataNormal.y1;
-            uvs[12] = uvsDataNormal.x2;
-            uvs[13] = uvsDataNormal.y2;
-            uvs[14] = uvsDataNormal.x3;
-            uvs[15] = uvsDataNormal.y3;
-            quad.upload();
-
-            renderer.bindShader(shader);
-            renderer.bindVao(quad.vao);
-
+            if (lastShader !== shader) {
+                lastShader = shader;
+                renderer.bindShader(shader);
+            }
             shader.uniforms.uSampler = uSamplerLocation;
             shader.uniforms.uNormalSampler = uNormalSamplerLocation;
-
             light.syncShader(sprite);
 
             renderer.state.setBlendMode(light.blendMode);
 
-            light.quad.vao.draw(renderer.drawModes[light.drawMode], 6, 0);
-
-            renderer.drawCount++;
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }
 
         this.contextChanged = false;

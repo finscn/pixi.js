@@ -1,13 +1,14 @@
 precision lowp float;
 
 // imports the common uniforms like samplers, and ambient/light color
-#pragma glslify: import("../_shared/commonUniforms.glsl")
+#pragma glslify: import("../_shared/commonHead.frag.glsl")
 
+uniform vec3 uAmbientColor;
 uniform vec3 uLightDirection;
-uniform vec4 uAmbientColor;
 
 void main()
 {
+
 #pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
@@ -26,7 +27,7 @@ void main()
     float attenuation = 1.0;
 
     // calculate final intesity and color, then combine
-    vec3 intensity = (uAmbientColor.rgb * uAmbientColor.a) + diffuse * attenuation;
+    vec3 intensity = uAmbientColor + diffuse * attenuation;
     vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 finalColor = diffuseColor.rgb * intensity;
 

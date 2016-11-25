@@ -4,5 +4,7 @@
     normalColor.g = 1.0 - normalColor.g;
 
     // bail out early when normal has no data
-    if (normalColor.a == 0.0) discard;
+    if (normalColor.a == 0.0) {
+        discard;
+    }
 

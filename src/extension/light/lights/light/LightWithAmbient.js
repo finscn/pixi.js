@@ -8,10 +8,12 @@ export default class LightWithAmbient extends Light
     {
         super(options);
 
+        this.blendMode = BLEND_MODES.ADD;
+
+        this.ambientColorArray = new Float32Array([0, 0, 0]);
         this._ambientColor = null;
         this._ambientBrightness = 1;
-        this._ambientColorRgba = new Float32Array([0, 0, 0, this._ambientBrightness]);
-        this.blendMode = BLEND_MODES.ADD;
+        this._ambientColorRgb = new Float32Array([0, 0, 0]);
 
         if ( 'ambientColor' in options) {
             this.ambientColor = options.ambientColor;
@@ -22,14 +24,24 @@ export default class LightWithAmbient extends Light
 
     }
 
+    updateAmbientColor()
+    {
+        const arr = this.ambientColorArray;
+        const rgb = this._ambientColorRgb;
+        const b = this._ambientBrightness;
+        arr[0] = rgb[0] * b;
+        arr[1] = rgb[1] * b;
+        arr[2] = rgb[2] * b;
+    }
+
     syncShader()
     {
         const shader = this.shader;
 
         shader.uniforms.uViewSize = this.viewSize;
-        shader.uniforms.uLightColor = this._colorRgba;
+        shader.uniforms.uLightColor = this.colorArray;
         shader.uniforms.uLightFalloff = this.falloff;
-        shader.uniforms.uAmbientColor = this._ambientColorRgba;
+        shader.uniforms.uAmbientColor = this.ambientColorArray;
     }
 
     get ambientColor()
@@ -40,7 +52,8 @@ export default class LightWithAmbient extends Light
     set ambientColor(val)
     {
         this._ambientColor = val;
-        core.utils.hex2rgb(val || 0, this._ambientColorRgba);
+        core.utils.hex2rgb(val || 0, this._ambientColorRgb);
+        this.updateAmbientColor();
         if (val === null) {
             this.blendMode = BLEND_MODES.ADD;
         } else {
@@ -56,6 +69,6 @@ export default class LightWithAmbient extends Light
     set ambientBrightness(val)
     {
         this._ambientBrightness = val;
-        this._ambientColorRgba[3] = val || 0;
+        this.updateAmbientColor();
     }
 }

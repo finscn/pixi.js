@@ -1,6 +1,9 @@
 import * as core from '../../../../core';
-import { BLEND_MODES, DRAW_MODES } from '../../../../core/const';
+import { BLEND_MODES } from '../../../../core/const';
 import NormalQuad from '../NormalQuad.js';
+
+const Shader = core.Shader;
+
 /**
  * Excuse the mess, haven't cleaned this up yet!
  */
@@ -29,9 +32,10 @@ export default class Light
         this.falloff = new Float32Array(options.falloff || [0.75, 3, 20]);
 
         // color and brightness are exposed through setters
-        this._color = 0x4d4d59;
+        this.colorArray = new Float32Array([0, 0, 0]);
+        this._color = 0x555555;
         this._brightness = 1;
-        this._colorRgba = new Float32Array([0.3, 0.3, 0.35, this._brightness]);
+        this._colorRgb = new Float32Array([0.33, 0.33, 0.33]);
 
         // run the color setter
         const color = options.color;
@@ -45,11 +49,7 @@ export default class Light
             this.brightness = brightness;
         }
 
-        this._vertices = options.vertices || null;
-        this._indices = options.indices || null;
-
         this.blendMode = BLEND_MODES.ADD;
-        this.drawMode = DRAW_MODES.TRIANGLES;
 
         // TODO : disable Light
         this.visible = false;
@@ -67,14 +67,13 @@ export default class Light
             this.viewSize = new Float32Array([renderer.width, renderer.height]);
             const shader = this.shader = this.generateShader(gl);
 
-            if (this._vertices && this._indices) {
-                // TODO : for custom vertices && indices
-
-            } else {
-                renderer.bindVao(null);
-                this.quad = new NormalQuad(gl, renderer.state.attribState);
-                this.quad.initVao(shader);
+            renderer.bindVao(null);
+            if (!Light.quad) {
+                const quad = new NormalQuad(gl, renderer.state.attribState);
+                quad.initVao(shader);
+                Light.quad = quad;
             }
+            this.quad = Light.quad;
 
             this.inited = true;
         }
@@ -82,11 +81,34 @@ export default class Light
 
     generateShader(gl)
     {
-        if (!gl) {
-            return null;
+        const vertexSrc = this.getVertexSource();
+        const fragmentSrc = this.getFragmentSource();
+        const id = vertexSrc + '@' + fragmentSrc;
+        let shader = Light.shaderCache[id];
+        if (!shader) {
+            shader = new Shader(gl, vertexSrc, fragmentSrc);
         }
+        return shader;
+    }
+
+    getVertexSource()
+    {
         // TODO
-        return null;
+    }
+
+    getFragmentSource()
+    {
+        // TODO
+    }
+
+    updateColor()
+    {
+        const arr = this.colorArray;
+        const rgb = this._colorRgb;
+        const b = this._brightness;
+        arr[0] = rgb[0] * b;
+        arr[1] = rgb[1] * b;
+        arr[2] = rgb[2] * b;
     }
 
     syncShader()
@@ -94,7 +116,7 @@ export default class Light
         const shader = this.shader;
 
         shader.uniforms.uViewSize = this.viewSize;
-        shader.uniforms.uLightColor = this._colorRgba;
+        shader.uniforms.uLightColor = this.colorArray;
         shader.uniforms.uLightFalloff = this.falloff;
     }
 
@@ -106,7 +128,8 @@ export default class Light
     set color(val)
     {
         this._color = val;
-        core.utils.hex2rgb(val, this._colorRgba);
+        core.utils.hex2rgb(val || 0, this._colorRgb);
+        this.updateColor();
     }
 
     get brightness()
@@ -117,10 +140,10 @@ export default class Light
     set brightness(val)
     {
         this._brightness = val;
-        this._colorRgba[3] = val;
+        this.updateColor();
     }
 }
 
-Light.DRAW_MODES = {
+Light.shaderCache = {};
+Light.quad = null;
 
-};

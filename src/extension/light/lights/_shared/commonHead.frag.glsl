@@ -1,11 +1,8 @@
 uniform sampler2D uSampler;
 uniform sampler2D uNormalSampler;
 
-// size of the viewport
-uniform vec2 uViewSize;
-
-// light color, alpha channel used for intensity.
-uniform vec4 uLightColor;
+// light color, has multiplied bright for intensity.
+uniform vec3 uLightColor;
 
 // light attenuation coefficients (constant, linear, quadratic)
 uniform vec3 uLightFalloff;
@@ -13,3 +10,4 @@ uniform vec3 uLightFalloff;
 varying vec2 vTextureCoord;
 varying vec2 vNormalTextureCoord;
 
+uniform vec2 uViewSize;
