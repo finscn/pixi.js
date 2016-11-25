@@ -13,9 +13,10 @@ export default class Light
         this.position = options.position || {
             x: 0,
             y: 0,
-            z: 0,
         };
-        this.position.z = this.position.z || 0;
+        if (!('z' in this.position)) {
+            this.position.z = 10;
+        }
 
         this.position.set = function(x, y, z) {
             this.x = x;
@@ -25,7 +26,7 @@ export default class Light
         this.positionArray = new Float32Array(3);
 
         // x + y * D + z * D * D
-        this.falloff = new Float32Array(options.falloff || [0.75, 2, 12]);
+        this.falloff = new Float32Array(options.falloff || [0.75, 3, 20]);
 
         // color and brightness are exposed through setters
         this._color = 0x4d4d59;
