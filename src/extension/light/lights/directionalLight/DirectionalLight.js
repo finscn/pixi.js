@@ -13,7 +13,12 @@ export default class DirectionalLight extends LightWithAmbient
         options = options || {};
         super(options);
 
-        this.target = options.target;
+        this.target = options.target || {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        this.target.z = this.target.z || 0;
 
         if (!('z' in this.target)) {
             this.target.z = 0;

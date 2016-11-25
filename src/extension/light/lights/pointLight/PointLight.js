@@ -31,7 +31,7 @@ export default class PointLight extends LightWithAmbient
 
         this.positionArray[0] = this.position.x;
         this.positionArray[1] = this.position.y;
-        this.positionArray[2] = this.position.z + sprite.lightOffsetZ || 0;
+        this.positionArray[2] = this.position.z + (sprite.lightOffsetZ || 0);
         this.shader.uniforms.uLightPosition = this.positionArray;
 
         this.shader.uniforms.uAmbientLightColor = this._ambientLightColorRgba;
