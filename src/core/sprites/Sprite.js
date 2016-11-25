@@ -156,7 +156,7 @@ export default class Sprite extends Container
 
     /**
      * calculates worldTransform * vertices, store it in vertexData
-     * @return {Boolean} whether vertexData changed.
+     * @return {boolean} is vertexData changed.
      */
     calculateVertices()
     {
@@ -232,7 +232,7 @@ export default class Sprite extends Container
     /**
      * calculates worldTransform * vertices for a non texture with a trim. store it in vertexTrimmedData
      * This is used to ensure that the true width and height of a trimmed texture is respected
-     * @return {Boolean} whether vertexTrimmedData changed.
+     * @return {boolean} is vertexTrimmedData changed.
      */
     calculateTrimmedVertices()
     {
