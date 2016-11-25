@@ -156,12 +156,13 @@ export default class Sprite extends Container
 
     /**
      * calculates worldTransform * vertices, store it in vertexData
+     * @return {Boolean} whether vertexData changed.
      */
     calculateVertices()
     {
         if (this._transformID === this.transform._worldID && this._textureID === this._texture._updateID)
         {
-            return;
+            return false;
         }
 
         this._transformID = this.transform._worldID;
@@ -224,14 +225,22 @@ export default class Sprite extends Container
         // xy
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
+
+        return true;
     }
 
     /**
      * calculates worldTransform * vertices for a non texture with a trim. store it in vertexTrimmedData
      * This is used to ensure that the true width and height of a trimmed texture is respected
+     * @return {Boolean} whether vertexTrimmedData changed.
      */
     calculateTrimmedVertices()
     {
+        if (this._transformID === this.transform._worldID && this._textureID === this._texture._updateID)
+        {
+            return false;
+        }
+
         if (!this.vertexTrimmedData)
         {
             this.vertexTrimmedData = new Float32Array(8);
@@ -276,6 +285,8 @@ export default class Sprite extends Container
         // xy
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
+
+        return true;
     }
 
     /**
@@ -318,13 +329,14 @@ export default class Sprite extends Container
         if (!trim || (trim.width === orig.width && trim.height === orig.height))
         {
             // no trim! lets use the usual calculations..
-            this.calculateVertices();
-            this._bounds.addQuad(this.vertexData);
+            if (this.calculateVertices() !== false)
+            {
+                this._bounds.addQuad(this.vertexData);
+            }
         }
-        else
+        else if (this.calculateTrimmedVertices() !== false)
         {
             // lets calculate a special trimmed bounds...
-            this.calculateTrimmedVertices();
             this._bounds.addQuad(this.vertexTrimmedData);
         }
     }
