@@ -1,5 +1,5 @@
 import glCore from 'pixi-gl-core';
-import createIndicesForQuads from '../../../core/utils/createIndicesForQuads';
+import createIndicesForQuads from '../../core/utils/createIndicesForQuads';
 
 /**
  * Helper class to create a quad

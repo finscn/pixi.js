@@ -1,6 +1,5 @@
 import * as core from '../../../../core';
 import { BLEND_MODES } from '../../../../core/const';
-import NormalQuad from '../NormalQuad.js';
 
 const Shader = core.Shader;
 
@@ -65,16 +64,7 @@ export default class Light
         if (!this.inited || force) {
             const gl = renderer.gl;
             this.viewSize = new Float32Array([renderer.width, renderer.height]);
-            const shader = this.shader = this.generateShader(gl);
-
-            renderer.bindVao(null);
-            if (!Light.quad) {
-                const quad = new NormalQuad(gl, renderer.state.attribState);
-                quad.initVao(shader);
-                Light.quad = quad;
-            }
-            this.quad = Light.quad;
-
+            this.shader = this.generateShader(gl);
             this.inited = true;
         }
     }
@@ -86,7 +76,8 @@ export default class Light
         const id = vertexSrc + '@' + fragmentSrc;
         let shader = Light.shaderCache[id];
         if (!shader) {
-            shader = new Shader(gl, vertexSrc, fragmentSrc);
+            Light.shaderCache[id] = shader;
+            shader = new Shader(gl, vertexSrc, fragmentSrc, Light.locationMapping);
         }
         return shader;
     }
@@ -145,5 +136,9 @@ export default class Light
 }
 
 Light.shaderCache = {};
-Light.quad = null;
+Light.locationMapping = {
+    aVertexPosition: 0,
+    aTextureCoord: 1,
+    aNormalTextureCoord: 2,
+};
 

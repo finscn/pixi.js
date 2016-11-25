@@ -1,18 +1,17 @@
 import * as core from '../../core';
+import NormalQuad from './NormalQuad';
+import Light from './lights/light/Light';
 
 const WebGLRenderer = core.WebGLRenderer;
 // const RenderTexture = core.RenderTexture;
 
 export default class LightSpriteRenderer extends core.ObjectRenderer
 {
-    constructor(renderer)
-    {
-        super(renderer);
-        this.gl = renderer.gl;
-    }
-
     onContextChange()
     {
+        this.gl = this.renderer.gl;
+        this.quad = new NormalQuad(this.gl, this.renderer.state.attribState);
+        Light.shaderCache = {};
         this.contextChanged = true;
     }
 
@@ -44,6 +43,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         }
 
         let lastShader = null;
+
         for (let i = 0; i < lightCount; i++)
         {
             const light = lights[i];
@@ -52,7 +52,10 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             const shader = light.shader;
 
             if (i === 0) {
-                const quad = light.quad;
+                const quad = this.quad;
+                renderer.bindVao(null);
+                quad.initVao(shader);
+
                 const vertices = quad.vertices;
                 const uvs = quad.uvs;
 
@@ -77,7 +80,6 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
                 uvs[14] = uvsDataNormal.x3;
                 uvs[15] = uvsDataNormal.y3;
                 quad.upload();
-
                 renderer.bindVao(quad.vao);
             }
 
