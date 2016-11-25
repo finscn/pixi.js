@@ -2,7 +2,7 @@ import * as core from '../core';
 
 const Texture = core.Texture;
 const Rectangle = core.Rectangle;
-const TextureCache = core.TextureCache;
+const TextureCache = core.utils.TextureCache;
 // const tempPoint = new core.Point();
 // const utils = core.utils;
 

@@ -329,14 +329,13 @@ export default class Sprite extends Container
         if (!trim || (trim.width === orig.width && trim.height === orig.height))
         {
             // no trim! lets use the usual calculations..
-            if (this.calculateVertices() !== false)
-            {
-                this._bounds.addQuad(this.vertexData);
-            }
+            this.calculateVertices();
+            this._bounds.addQuad(this.vertexData);
         }
-        else if (this.calculateTrimmedVertices() !== false)
+        else
         {
             // lets calculate a special trimmed bounds...
+            this.calculateTrimmedVertices();
             this._bounds.addQuad(this.vertexTrimmedData);
         }
     }
