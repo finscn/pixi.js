@@ -29,10 +29,15 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const lightCount = lights.length;
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
-        const uvsData = sprite.diffuseTexture._texture._uvs;
-        const uvsDataNormal = sprite.normalTexture._texture._uvs;
-        const uSamplerLocation = renderer.bindTexture(sprite.diffuseTexture._texture);
-        const uNormalSamplerLocation = renderer.bindTexture(sprite.normalTexture._texture);
+        const uvsData = sprite.diffuseTexture._uvs;
+        const uvsDataNormal = sprite.normalTexture._uvs;
+        const uSamplerLocation = renderer.bindTexture(sprite.diffuseTexture);
+        let uNormalSamplerLocation;
+        if (sprite.diffuseTexture.baseTexture === sprite.normalTexture.baseTexture) {
+            uNormalSamplerLocation = uSamplerLocation;
+        } else {
+            uNormalSamplerLocation = renderer.bindTexture(sprite.normalTexture);
+        }
 
         for (let i = 0; i < lightCount; i++)
         {
