@@ -128,6 +128,36 @@ export default class Transform extends TransformBase
     }
 
     /**
+     * Updates only world matrix without parent
+     */
+    updateWorldTransform()
+    {
+        const lt = this.localTransform;
+        const a  =  this._cr * this.scale.x;
+        const b  =  this._sr * this.scale.x;
+        const c  = -this._sr * this.scale.y;
+        const d  =  this._cr * this.scale.y;
+
+        lt.a = (this._cy * a) + (this._sy * c);
+        lt.b = (this._cy * b) + (this._sy * d);
+        lt.c = (this._nsx * a) + (this._cx * c);
+        lt.d = (this._nsx * b) + (this._cx * d);
+
+        lt.tx = this.position.x - ((this.pivot.x * lt.a) + (this.pivot.y * lt.c));
+        lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
+
+        const wt = this.worldTransform;
+        wt.a = lt.a;
+        wt.b = lt.a;
+        wt.c = lt.c;
+        wt.d = lt.c;
+        wt.tx = lt.tx;
+        wt.ty = lt.tx;
+
+        this._worldID ++;
+    }
+
+    /**
      * Decomposes a matrix and sets the transforms properties based on it.
      *
      * @param {PIXI.Matrix} matrix - The matrix to decompose

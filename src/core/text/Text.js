@@ -270,6 +270,54 @@ export default class Text extends Sprite
         this.updateTexture();
     }
 
+
+    /**
+     * Renders simple text and updates it without many computations.
+     *
+     * @private
+     **/
+    updateTextFast()
+    {
+        this.dirtyFast = false;
+        const style = this._style;
+        const text = this._text;
+        const maxLineWidth = this.canvas.width - style.padding * 2;
+
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (!this._textWidth) {
+            this._textWidth = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
+        }
+        const lineWidth = this._textWidth;
+
+        if (!this._fontProperties) {
+            this._fontProperties = Text.calculateFontProperties(this._font);
+        }
+        const fontProperties = this._fontProperties;
+
+        let linePositionX = style.strokeThickness / 2;
+        const linePositionY = (style.strokeThickness / 2) + fontProperties.ascent;
+
+        if (style.align === 'right')
+        {
+            linePositionX += maxLineWidth - lineWidth;
+        }
+        else if (style.align === 'center')
+        {
+            linePositionX += (maxLineWidth - lineWidth) / 2;
+        }
+
+        if (style.stroke && style.strokeThickness)
+        {
+            this.drawLetterSpacing(text, linePositionX + style.padding, linePositionY + style.padding, true);
+        }
+
+        if (style.fill)
+        {
+            this.drawLetterSpacing(text, linePositionX + style.padding, linePositionY + style.padding);
+        }
+    }
+
     /**
      * Render the text with letter-spacing.
      * @param {string} text - The text to draw
@@ -367,7 +415,14 @@ export default class Text extends Sprite
             this.dirty = true;
         }
 
-        this.updateText(true);
+        if (this.dirty)
+        {
+            this.updateText(true);
+        }
+        else if (this.dirtyFast)
+        {
+            this.updateTextFast();
+        }
 
         super.renderWebGL(renderer);
     }
