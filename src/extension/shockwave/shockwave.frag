@@ -1,27 +1,33 @@
+#define GLSLIFY 1
 varying vec2 vTextureCoord;
-
 uniform sampler2D uSampler;
-
-uniform vec2 center;
-uniform vec3 params;
-uniform float time;
+uniform vec2 uCenter;
+uniform float uRadius;
+uniform vec3 uFalloff;
+uniform float uTime;
+uniform vec2 uViewSize;
 
 void main()
 {
+    vec2 texCoord = gl_FragCoord.xy / uViewSize;
+    texCoord.y = 1.0 - texCoord.y;
+
     vec2 uv = vTextureCoord;
-    vec2 texCoord = uv;
 
-    float dist = distance(uv, center);
+    vec2 center = uCenter / uViewSize;
+    float radius = uRadius / uViewSize.y;
 
-    if ( (dist <= (time + params.z)) && (dist >= (time - params.z)) )
+    vec2 vector = vec2(texCoord - center);
+    vector.x *= uViewSize.x / uViewSize.y;
+    float dist = length(vector);
+
+    if (dist < radius && dist <= (uTime + uFalloff.z) && dist >= (uTime - uFalloff.z))
     {
-        float diff = (dist - time);
-        float powDiff = 1.0 - pow(abs(diff*params.x), params.y);
-
-        float diffTime = diff  * powDiff;
-        vec2 diffUV = normalize(uv - center);
-        texCoord = uv + (diffUV * diffTime);
+        float diff = (dist - uTime);
+        float powDiff = 1.0 - pow(abs(diff * uFalloff.x), uFalloff.y);
+        float diffTime = diff * powDiff;
+        vec2 diffUV = normalize(vector);
+        uv = uv + (diffUV * diffTime);
     }
-
-    gl_FragColor = texture2D(uSampler, texCoord);
+    gl_FragColor = texture2D(uSampler, uv);
 }
