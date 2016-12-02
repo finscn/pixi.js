@@ -95,6 +95,7 @@ export default class Transform extends TransformBase
     updateWorldTransform()
     {
         const lt = this.localTransform;
+        const wt = this.worldTransform;
 
         lt.a = this._cx * this.scale._x;
         lt.b = this._sx * this.scale._x;
@@ -104,14 +105,12 @@ export default class Transform extends TransformBase
         lt.tx = this.position._x - ((this.pivot._x * lt.a) + (this.pivot._y * lt.c));
         lt.ty = this.position._y - ((this.pivot._x * lt.b) + (this.pivot._y * lt.d));
 
-        const wt = this.worldTransform;
-
         wt.a = lt.a;
-        wt.b = lt.a;
+        wt.b = lt.b;
         wt.c = lt.c;
-        wt.d = lt.c;
+        wt.d = lt.d;
         wt.tx = lt.tx;
-        wt.ty = lt.tx;
+        wt.ty = lt.ty;
 
         this._worldID ++;
     }
@@ -123,6 +122,8 @@ export default class Transform extends TransformBase
      */
     updateTransform(parentTransform)
     {
+        const pt = parentTransform.worldTransform;
+        const wt = this.worldTransform;
         const lt = this.localTransform;
 
         lt.a = this._cx * this.scale._x;
@@ -134,9 +135,6 @@ export default class Transform extends TransformBase
         lt.ty = this.position.y - ((this.pivot.x * lt.b) + (this.pivot.y * lt.d));
 
         // concat the parent matrix with the objects transform.
-        const pt = parentTransform.worldTransform;
-        const wt = this.worldTransform;
-
         wt.a = (lt.a * pt.a) + (lt.b * pt.c);
         wt.b = (lt.a * pt.b) + (lt.b * pt.d);
         wt.c = (lt.c * pt.a) + (lt.d * pt.c);

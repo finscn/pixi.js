@@ -296,8 +296,6 @@ export default class Container extends DisplayObject
 
     /**
      * Updates the transform on all children of this container for rendering
-     *
-     * @private
      */
     updateTransform()
     {
@@ -315,6 +313,42 @@ export default class Container extends DisplayObject
             if (child.visible)
             {
                 child.updateTransform();
+            }
+        }
+    }
+
+    /**
+     * Updates the transform of this container for rendering
+     *
+     * @param {boolean} [withParent=false] - Whether with parent's transform.
+     * @param {boolean} [withChildren=false] - Whether update children's transform.
+     */
+    updateWorldTransform(withParent, withChildren)
+    {
+        this._boundsID++;
+
+        if (withParent && this.parent)
+        {
+            this.transform.updateTransform(this.parent.transform);
+            // TODO: check render flags, how to process stuff here
+            this.worldAlpha = this.alpha * this.parent.worldAlpha;
+        }
+        else
+        {
+            this.transform.updateWorldTransform();
+            this.worldAlpha = this.alpha;
+        }
+
+        if (withChildren)
+        {
+            for (let i = 0, j = this.children.length; i < j; ++i)
+            {
+                const child = this.children[i];
+
+                if (child.visible)
+                {
+                    child.updateTransform();
+                }
             }
         }
     }
