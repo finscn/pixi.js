@@ -211,6 +211,28 @@ export default class CanvasRenderer extends SystemRenderer
     }
 
     /**
+     * Renders the displayObject to its webGL view
+     *
+     * @param {PIXI.DisplayObject} displayObject - the object to be rendered
+     * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
+     * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
+     */
+    renderLite(displayObject, renderTexture, skipUpdateTransform)
+    {
+        if (!this.view)
+        {
+            return;
+        }
+
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformLite();
+        }
+
+        this.renderLite(displayObject, renderTexture, false, null, true);
+    }
+
+    /**
      * Sets the blend mode of the renderer.
      *
      * @param {number} blendMode - See {@link PIXI.BLEND_MODES} for valid values.

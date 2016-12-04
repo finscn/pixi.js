@@ -318,16 +318,15 @@ export default class Container extends DisplayObject
     }
 
     /**
-     * Updates the transform of this container for rendering
+     * Updates the transform of this container.
      *
-     * @param {boolean} [withParent=false] - Whether with parent's transform.
-     * @param {boolean} [withChildren=false] - Whether update children's transform.
+     * @param {boolean} [includeChildren] - Should we update the transforms of children ?
      */
-    updateWorldTransform(withParent, withChildren)
+    updateTransformLite(includeChildren)
     {
         this._boundsID++;
 
-        if (withParent && this.parent)
+        if (this.parent)
         {
             this.transform.updateTransform(this.parent.transform);
             // TODO: check render flags, how to process stuff here
@@ -339,7 +338,7 @@ export default class Container extends DisplayObject
             this.worldAlpha = this.alpha;
         }
 
-        if (withChildren)
+        if (includeChildren === true)
         {
             for (let i = 0, j = this.children.length; i < j; ++i)
             {
@@ -347,7 +346,7 @@ export default class Container extends DisplayObject
 
                 if (child.visible)
                 {
-                    child.updateTransform();
+                    child.updateTransformLite(true);
                 }
             }
         }

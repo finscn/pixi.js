@@ -90,7 +90,7 @@ export default class Transform extends TransformBase
     }
 
     /**
-     * Updates only world matrix without parent
+     * Updates world matrix(include local matrix) without parent
      */
     updateWorldTransform()
     {
