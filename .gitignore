@@ -31,3 +31,6 @@ dist/
 
 # jetBrains IDE ignores
 .idea
+
+# bak files
+_bak/
