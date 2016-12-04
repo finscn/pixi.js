@@ -34,7 +34,7 @@
     "lintfix": "npm run lint --fix",
     "prebuild": "npm run lint",
     "build": "npm run dist",
-    "dist": "pixify -d dist -n PIXI -o pixi -t babelify",
+    "dist": "pixify -d dist -n PIXI -o pixi -t babelify -r",
     "lib": "babel src --out-dir lib -s",
     "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md",
     "publish:patch": "npm version patch --no-git-tag-version && npm publish",
@@ -79,7 +79,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "parallelshell": "^2.0.0",
-    "pixify": "^1.7.0",
+    "pixify": "git@github.com:finscn/pixify.git",
     "rimraf": "^2.5.3",
     "watch": "^0.19.1"
   },
