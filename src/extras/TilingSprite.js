@@ -22,6 +22,8 @@ export default class TilingSprite extends core.Sprite
     {
         super(texture);
 
+        this.pluginName = 'tilingSprite';
+
         /**
          * Tile transform
          *
@@ -158,8 +160,8 @@ export default class TilingSprite extends core.Sprite
         this.tileTransform.updateLocalTransform();
         this.uvTransform.update();
 
-        renderer.setObjectRenderer(renderer.plugins.tilingSprite);
-        renderer.plugins.tilingSprite.render(this);
+        renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
+        renderer.plugins[this.pluginName].render(this);
     }
 
     /**

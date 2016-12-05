@@ -318,41 +318,6 @@ export default class Container extends DisplayObject
     }
 
     /**
-     * Updates the transform of this container.
-     *
-     * @param {boolean} [includeChildren] - Should we update the transforms of children ?
-     */
-    updateTransformLite(includeChildren)
-    {
-        this._boundsID++;
-
-        if (this.parent)
-        {
-            this.transform.updateTransform(this.parent.transform);
-            // TODO: check render flags, how to process stuff here
-            this.worldAlpha = this.alpha * this.parent.worldAlpha;
-        }
-        else
-        {
-            this.transform.updateWorldTransform();
-            this.worldAlpha = this.alpha;
-        }
-
-        if (includeChildren === true)
-        {
-            for (let i = 0, j = this.children.length; i < j; ++i)
-            {
-                const child = this.children[i];
-
-                if (child.visible)
-                {
-                    child.updateTransformLite(true);
-                }
-            }
-        }
-    }
-
-    /**
      * Recalculates the bounds of the container.
      *
      */

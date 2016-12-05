@@ -22,6 +22,8 @@ export default class Mesh extends core.Container
     {
         super();
 
+        this.pluginName = 'mesh';
+
         /**
          * The texture of the Mesh
          *
@@ -132,8 +134,8 @@ export default class Mesh extends core.Container
      */
     _renderWebGL(renderer)
     {
-        renderer.setObjectRenderer(renderer.plugins.mesh);
-        renderer.plugins.mesh.render(this);
+        renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
+        renderer.plugins[this.pluginName].render(this);
     }
 
     /**
@@ -144,7 +146,7 @@ export default class Mesh extends core.Container
      */
     _renderCanvas(renderer)
     {
-        renderer.plugins.mesh.render(this);
+        renderer.plugins[this.pluginName].render(this);
     }
 
     /**
