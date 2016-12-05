@@ -34,28 +34,21 @@ const ext = extensions;
 for (const key in ext.filters) {
     filters[key] = ext.filters[key];
 }
-const _renderers = ext.renderers;
-const _lights = ext.lights;
-const _Matrix3 = ext.Matrix3;
-const _SimpleContainer = ext.SimpleContainer;
-const _SimpleParticleContainer = ext.SimpleParticleContainer;
-const _SimpleSprite = ext.SimpleSprite;
+const renderers = ext.renderers;
+const lights = ext.lights;
+const Matrix3 = ext.Matrix3;
+const SimpleContainer = ext.SimpleContainer;
+const SimpleParticleContainer = ext.SimpleParticleContainer;
+const SimpleSprite = ext.SimpleSprite;
 export {
     extensions,
-    _renderers as renderers,
-    _lights as lights,
-    _Matrix3 as Matrix3,
-    _SimpleContainer as SimpleContainer,
-    _SimpleParticleContainer as SimpleParticleContainer,
-    _SimpleSprite as SimpleSprite,
+    renderers,
+    lights,
+    Matrix3,
+    SimpleContainer,
+    SimpleParticleContainer,
+    SimpleSprite,
 };
-// export {
-//     renderers,
-//     lights,
-//     SimpleContainer,
-//     SimpleParticleContainer,
-//     SimpleSprite,
-// } from './extensions';
 
 /**
  * A premade instance of the loader that can be used to load resources.
