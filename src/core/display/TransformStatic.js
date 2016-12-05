@@ -166,10 +166,10 @@ export default class TransformStatic extends TransformBase
 
         if (this._parentID !== parentTransform._worldID)
         {
+            // concat the parent matrix with the objects transform.
             const pt = parentTransform.worldTransform;
             const wt = this.worldTransform;
 
-            // concat the parent matrix with the objects transform.
             wt.a = (lt.a * pt.a) + (lt.b * pt.c);
             wt.b = (lt.a * pt.b) + (lt.b * pt.d);
             wt.c = (lt.c * pt.a) + (lt.d * pt.c);
