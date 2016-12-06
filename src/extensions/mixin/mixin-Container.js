@@ -19,7 +19,7 @@ Container.prototype.updateTransformLite = function(includeChildren)
     }
     else
     {
-        this.transform.updateWorldTransform();
+        this.transform.updateTransformAsOrphan();
         this.worldAlpha = this.alpha;
     }
 

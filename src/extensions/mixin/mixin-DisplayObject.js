@@ -15,7 +15,7 @@ DisplayObject.prototype.updateTransformLite = function()
     }
     else
     {
-        this.transform.updateWorldTransform();
+        this.transform.updateTransformAsOrphan();
         this.worldAlpha = this.alpha;
     }
 

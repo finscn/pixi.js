@@ -5,7 +5,7 @@ const Transform = core.Transform;
 /**
  * Updates world matrix(include local matrix) without parent
  */
-Transform.prototype.updateWorldTransform = function()
+Transform.prototype.updateTransformAsOrphan = function()
 {
     const lt = this.localTransform;
 
