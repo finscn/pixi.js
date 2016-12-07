@@ -222,6 +222,12 @@ export default class RenderContext
         this.globalContainer.updateTransformWithParent();
     }
 
+    updateRootContainer()
+    {
+        this.root.updateTransformWithParent();
+        this._transformSN++;
+    }
+
     /**
      *
      *
@@ -236,11 +242,6 @@ export default class RenderContext
         if (this.renderer._activeRenderTarget) {
             this.renderer.clear(clearColor);
         }
-    }
-
-    renderBasic(displayObject, renderTexture, skipUpdateTransform)
-    {
-        this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -309,6 +310,43 @@ export default class RenderContext
         this.renderer.renderBasic(displayObject, renderTexture);
     }
 
+    renderPart(displayObject, sx, sy, sw, sh, dx, dy, dw, dh, renderTexture)
+    {
+        const count = arguments.length;
+
+        this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+
+        const frame = displayObject._texture._frame;
+        frame.x = sx;
+        frame.y = sy;
+        frame.width = sw;
+        frame.height = sh;
+        displayObject._texture._updateUvs();
+
+        displayObject.mask = this.mask;
+        if (count >= 9) {
+            // dx, dy, dw, dh
+            displayObject.width = dw;
+            displayObject.height = dh;
+            displayObject.position.set(dx - t.originalX, dy - t.originalY);
+        } else if (count >= 7) {
+            // dx, dy
+            displayObject.width = sw;
+            displayObject.height = sh;
+            renderTexture = dw;
+            displayObject.position.set(dx - t.originalX, dy - t.originalY);
+        } else if (count >= 5) {
+            displayObject.width = sw;
+            displayObject.height = sh;
+            renderTexture = dx;
+            displayObject.position.set(-t.originalX, -t.originalY);
+        }
+
+        this.renderer.renderBasic(displayObject, renderTexture);
+    }
+
     renderAt(displayObject, dx, dy, renderTexture)
     {
         this.updateGlobalContainer();
@@ -321,6 +359,11 @@ export default class RenderContext
         displayObject.position.set(x, y);
 
         this.renderer.renderBasic(displayObject, renderTexture);
+    }
+
+    renderBasic(displayObject, renderTexture, skipUpdateTransform)
+    {
+        this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
     }
 
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
