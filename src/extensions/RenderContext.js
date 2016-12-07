@@ -331,6 +331,12 @@ export default class RenderContext
         }
     }
 
+    drawImageAt(image, dx, dy)
+    {
+        const sprite = this.createSprite(image, 0, 0, image.width, image.height);
+        this.renderAt(sprite, dx, dy);
+    }
+
     /**
      *
      *

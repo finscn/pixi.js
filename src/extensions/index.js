@@ -1,8 +1,8 @@
-import * as Matrix3 from './Matrix3';
-import * as SimpleContainer from './SimpleContainer';
-import * as SimpleParticleContainer from './SimpleParticleContainer';
-import * as SimpleSprite from './SimpleSprite';
-import * as RenderContext from './RenderContext';
+export { default as Matrix3 } from './Matrix3';
+export { default as SimpleContainer } from './SimpleContainer';
+export { default as SimpleParticleContainer } from './SimpleParticleContainer';
+export { default as SimpleSprite } from './SimpleSprite';
+export { default as RenderContext } from './RenderContext';
 
 import * as filters from './filters';
 import * as renderers from './renderers';
@@ -11,13 +11,4 @@ import * as lights from './renderers/light/lights';
 import './mixin';
 import './patch';
 
-export {
-    filters,
-    renderers,
-    lights,
-    Matrix3,
-    SimpleContainer,
-    SimpleParticleContainer,
-    SimpleSprite,
-    RenderContext,
-};
+export { filters, renderers, lights };
