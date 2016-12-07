@@ -30,8 +30,8 @@ export default class RenderContext
             scaleY: 1,
             rotation: 0,
             alpha: 1,
-            offsetX: 0,
-            offsetY: 0,
+            originalX: 0,
+            originalY: 0,
             blend: BLEND_MODES.NORMAL,
         };
 
@@ -95,8 +95,8 @@ export default class RenderContext
             scaleY: t.scaleY,
             rotation: t.rotation,
             alpha: t.alpha,
-            offsetX: t.offsetX,
-            offsetY: t.offsetY,
+            originalX: t.originalX,
+            originalY: t.originalY,
             blend: t.blend,
         });
     }
@@ -114,8 +114,8 @@ export default class RenderContext
         t.scaleY = lt.scaleY;
         t.rotation = lt.rotation;
         t.alpha = lt.alpha;
-        t.offsetX = lt.offsetX;
-        t.offsetY = lt.offsetY;
+        t.originalX = lt.originalX;
+        t.originalY = lt.originalY;
         t.blend = lt.blend;
         this._transformSN++;
     }
@@ -151,10 +151,10 @@ export default class RenderContext
         return this.globalTransform.alpha;
     }
 
-    setOffset(x, y)
+    setOriginal(x, y)
     {
-        this.globalTransform.offsetX = x;
-        this.globalTransform.offsetY = y;
+        this.globalTransform.originalX = x;
+        this.globalTransform.originalY = y;
         this._transformSN++;
     }
 
@@ -174,8 +174,8 @@ export default class RenderContext
         this.updateGlobalContainer();
 
         const t = this.globalTransform;
-        const dx = x - t.offsetX;
-        const dy = y - t.offsetY;
+        const dx = x - t.originalX;
+        const dy = y - t.originalY;
 
         this.maskShape.clear();
         this.maskShape.updateTransform();
@@ -214,7 +214,7 @@ export default class RenderContext
         }
         this._lastTransformSN = this._transformSN;
         const t = this.globalTransform;
-        this.globalContainer.position.set(t.x + t.offsetX, t.y + t.offsetY);
+        this.globalContainer.position.set(t.x + t.originalX, t.y + t.originalY);
         this.globalContainer.scale.set(t.scaleX, t.scaleY);
         this.globalContainer.rotation = t.rotation;
         this.globalContainer.alpha = t.alpha;
@@ -285,8 +285,8 @@ export default class RenderContext
         this.updateGlobalContainer();
 
         const t = this.globalTransform;
-        const dx = x - t.offsetX;
-        const dy = y - t.offsetY;
+        const dx = x - t.originalX;
+        const dy = y - t.originalY;
 
         this.shape.mask = this.mask;
         this.shape.drawRect(dx, dy, width, height);
@@ -311,8 +311,8 @@ export default class RenderContext
         this.updateGlobalContainer();
 
         const t = this.globalTransform;
-        const x = dx - t.offsetX;
-        const y = dy - t.offsetY;
+        const x = dx - t.originalX;
+        const y = dy - t.originalY;
 
         displayObject.mask = this.mask;
         displayObject.position.set(x, y);
@@ -340,18 +340,18 @@ export default class RenderContext
             // dx, dy, dw, dh
             displayObject.width = dw;
             displayObject.height = dh;
-            displayObject.position.set(dx - t.offsetX, dy - t.offsetY);
+            displayObject.position.set(dx - t.originalX, dy - t.originalY);
         } else if (count >= 7) {
             // dx, dy
             displayObject.width = sw;
             displayObject.height = sh;
             renderTexture = dw;
-            displayObject.position.set(dx - t.offsetX, dy - t.offsetY);
+            displayObject.position.set(dx - t.originalX, dy - t.originalY);
         } else if (count >= 5) {
             displayObject.width = sw;
             displayObject.height = sh;
             renderTexture = dx;
-            displayObject.position.set(-t.offsetX, -t.offsetY);
+            displayObject.position.set(-t.originalX, -t.originalY);
         }
 
         this.renderer.renderBasic(displayObject, renderTexture, false);
@@ -362,8 +362,8 @@ export default class RenderContext
         this.updateGlobalContainer();
 
         const t = this.globalTransform;
-        const x = dx - t.offsetX;
-        const y = dy - t.offsetY;
+        const x = dx - t.originalX;
+        const y = dy - t.originalY;
 
         displayObject.mask = this.mask;
         displayObject.position.set(x, y);
@@ -374,11 +374,19 @@ export default class RenderContext
     renderBasic(displayObject, renderTexture, skipUpdateTransform)
     {
         this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+
         // TODO: add mask ?
         // if (!displayObject.mask) {
         //     displayObject.mask = this.mask;
         // }
+        const x = displayObject.position.x;
+        const y = displayObject.position.y;
+
+        displayObject.position.set(x - t.originalX, y - t.originalY);
         this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
+        displayObject.position.set(x, y);
     }
 
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
