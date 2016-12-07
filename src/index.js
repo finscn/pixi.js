@@ -40,6 +40,7 @@ const Matrix3 = ext.Matrix3;
 const SimpleContainer = ext.SimpleContainer;
 const SimpleParticleContainer = ext.SimpleParticleContainer;
 const SimpleSprite = ext.SimpleSprite;
+const RenderContext = ext.RenderContext;
 export {
     extensions,
     renderers,
@@ -48,6 +49,7 @@ export {
     SimpleContainer,
     SimpleParticleContainer,
     SimpleSprite,
+    RenderContext,
 };
 
 /**

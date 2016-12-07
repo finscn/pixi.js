@@ -2,6 +2,7 @@ import * as Matrix3 from './Matrix3';
 import * as SimpleContainer from './SimpleContainer';
 import * as SimpleParticleContainer from './SimpleParticleContainer';
 import * as SimpleSprite from './SimpleSprite';
+import * as RenderContext from './RenderContext';
 
 import * as filters from './filters';
 import * as renderers from './renderers';
@@ -18,4 +19,5 @@ export {
     SimpleContainer,
     SimpleParticleContainer,
     SimpleSprite,
+    RenderContext,
 };
