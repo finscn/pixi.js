@@ -14,6 +14,7 @@ export default class RenderContext
     constructor(renderer, root)
     {
         this.renderer = renderer;
+        this.canvas = renderer.view;
         this.webgl = renderer.type === RENDERER_TYPE.WEBGL;
 
         this._lastTransformSN = -1;
@@ -48,6 +49,15 @@ export default class RenderContext
         this.shape = new Graphics();
 
         this.resetGlobalContainer();
+    }
+
+    resize(x, y)
+    {
+        this.renderer.resize(x - 1, y);
+        const Me = this;
+        setTimeout(function() {
+            Me.renderer.resize(x, y);
+        }, 1);
     }
 
     colorRgb(r, g, b)
