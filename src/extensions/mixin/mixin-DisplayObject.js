@@ -5,7 +5,7 @@ const DisplayObject = core.DisplayObject;
 /**
  * Updates the transform of this object self
  */
-DisplayObject.prototype.updateTransformLite = function()
+DisplayObject.prototype.updateTransformWithParent = function()
 {
     if (this.parent)
     {

@@ -9,7 +9,7 @@ const WebGLRenderer = core.WebGLRenderer;
  * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
  * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
  */
-WebGLRenderer.prototype.renderLite = function(displayObject, renderTexture, skipUpdateTransform)
+WebGLRenderer.prototype.renderBasic = function(displayObject, renderTexture, skipUpdateTransform)
 {
     // can be handy to know!
     this.renderingToScreen = !renderTexture;
@@ -31,7 +31,7 @@ WebGLRenderer.prototype.renderLite = function(displayObject, renderTexture, skip
 
     if (!skipUpdateTransform)
     {
-        displayObject.updateTransformLite(true);
+        displayObject.updateTransformWithParent(true);
     }
 
     this.bindRenderTexture(renderTexture);

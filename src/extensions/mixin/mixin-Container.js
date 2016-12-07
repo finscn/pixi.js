@@ -7,7 +7,7 @@ const Container = core.Container;
  *
  * @param {boolean} [includeChildren] - Should we update the transforms of children ?
  */
-Container.prototype.updateTransformLite = function(includeChildren)
+Container.prototype.updateTransformWithParent = function(includeChildren)
 {
     this._boundsID++;
 
@@ -31,7 +31,7 @@ Container.prototype.updateTransformLite = function(includeChildren)
 
             if (child.visible)
             {
-                child.updateTransformLite(true);
+                child.updateTransformWithParent(true);
             }
         }
     }
