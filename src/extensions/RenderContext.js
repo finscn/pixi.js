@@ -228,6 +228,16 @@ export default class RenderContext
         this._transformSN++;
     }
 
+    bindDisplayObject(displayObject)
+    {
+        this.globalContainer.addChild(displayObject);
+    }
+
+    unbindDisplayObject(displayObject)
+    {
+        this.globalContainer.removeChild(displayObject);
+    }
+
     /**
      *
      *
