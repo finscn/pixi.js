@@ -22,8 +22,6 @@ export default class TilingSprite extends core.Sprite
     {
         super(texture);
 
-        this.pluginName = 'tilingSprite';
-
         /**
          * Tile transform
          *
@@ -63,6 +61,15 @@ export default class TilingSprite extends core.Sprite
          * @member {PIXI.extras.TextureTransform}
          */
         this.uvTransform = texture.transform || new TextureTransform(texture);
+
+        /**
+         * Plugin that is responsible for rendering this element.
+         * Allows to customize the rendering process without overriding '_renderWebGL' method.
+         *
+         * @member {string}
+         * @default 'tilingSprite'
+         */
+        this.pluginName = 'tilingSprite';
     }
     /**
      * Changes frame clamping in corresponding textureTransform, shortcut

@@ -28,8 +28,6 @@ export default class Sprite extends Container
     {
         super();
 
-        this.pluginName = 'sprite';
-
         /**
          * The anchor sets the origin point of the texture.
          * The default is 0,0 this means the texture's origin is the top left
@@ -122,6 +120,15 @@ export default class Sprite extends Container
 
         this._transformID = -1;
         this._textureID = -1;
+
+        /**
+         * Plugin that is responsible for rendering this element.
+         * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
+         *
+         * @member {string}
+         * @default 'sprite'
+         */
+        this.pluginName = 'sprite';
     }
 
     /**

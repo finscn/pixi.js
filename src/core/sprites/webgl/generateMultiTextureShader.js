@@ -68,6 +68,3 @@ function generateSampleSrc(maxTextures)
 
     return src;
 }
-
-export { generateSampleSrc };
-

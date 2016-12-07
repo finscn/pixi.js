@@ -32,7 +32,7 @@ const fragTemplate = [
 
 ].join('\n');
 
-export default function generateFragRadialBlurSource(kernelSize, horizontal)
+export default function generateRadialBlurFragSource(kernelSize, horizontal)
 {
 
     const kernel = GAUSSIAN_VALUES[kernelSize];
@@ -72,6 +72,4 @@ export default function generateFragRadialBlurSource(kernelSize, horizontal)
     fragSource = fragSource.replace('%blur%', blurLoop);
 
     return fragSource;
-
 }
-

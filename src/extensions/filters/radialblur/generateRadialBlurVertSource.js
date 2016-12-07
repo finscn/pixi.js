@@ -12,7 +12,7 @@ const vertTemplate = [
     '}',
 ].join('\n');
 
-export default function __generateVertRadialBlurSource(kernelSize, horizontal)
+export default function generateRadialBlurVertSource(kernelSize, horizontal)
 {
     if (horizontal) {
         return vertTemplate + ' ';

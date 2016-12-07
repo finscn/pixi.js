@@ -22,8 +22,6 @@ export default class Mesh extends core.Container
     {
         super();
 
-        this.pluginName = 'mesh';
-
         /**
          * The texture of the Mesh
          *
@@ -124,6 +122,15 @@ export default class Mesh extends core.Container
          * @member {object<number, object>}
          */
         this._glDatas = {};
+
+        /**
+         * Plugin that is responsible for rendering this element.
+         * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
+         *
+         * @member {string}
+         * @default 'mesh'
+         */
+        this.pluginName = 'mesh';
     }
 
     /**
