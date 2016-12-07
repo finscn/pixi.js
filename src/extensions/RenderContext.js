@@ -30,6 +30,8 @@ export default class RenderContext
             scaleY: 1,
             rotation: 0,
             alpha: 1,
+            offsetX: 0,
+            offsetY: 0,
             blend: BLEND_MODES.NORMAL,
         };
 
@@ -93,6 +95,8 @@ export default class RenderContext
             scaleY: t.scaleY,
             rotation: t.rotation,
             alpha: t.alpha,
+            offsetX: t.offsetX,
+            offsetY: t.offsetY,
             blend: t.blend,
         });
     }
@@ -110,6 +114,8 @@ export default class RenderContext
         t.scaleY = lt.scaleY;
         t.rotation = lt.rotation;
         t.alpha = lt.alpha;
+        t.offsetX = lt.offsetX;
+        t.offsetY = lt.offsetY;
         t.blend = lt.blend;
         this._transformSN++;
     }
@@ -145,6 +151,13 @@ export default class RenderContext
         return this.globalTransform.alpha;
     }
 
+    setOffset(x, y)
+    {
+        this.globalTransform.offsetX = x;
+        this.globalTransform.offsetY = y;
+        this._transformSN++;
+    }
+
     setBlend(blend)
     {
         this.globalTransform.blend = blend;
@@ -160,10 +173,14 @@ export default class RenderContext
     {
         this.updateGlobalContainer();
 
+        const t = this.globalTransform;
+        const dx = x - t.offsetX;
+        const dy = y - t.offsetY;
+
         this.maskShape.clear();
         this.maskShape.updateTransform();
         this.maskShape.beginFill(0x000000);
-        this.maskShape.drawRect(x, y, width, height);
+        this.maskShape.drawRect(dx, dy, width, height);
         this.maskShape.endFill();
     }
 
@@ -197,7 +214,7 @@ export default class RenderContext
         }
         this._lastTransformSN = this._transformSN;
         const t = this.globalTransform;
-        this.globalContainer.position.set(t.x, t.y);
+        this.globalContainer.position.set(t.x + t.offsetX, t.y + t.offsetY);
         this.globalContainer.scale.set(t.scaleX, t.scaleY);
         this.globalContainer.rotation = t.rotation;
         this.globalContainer.alpha = t.alpha;
@@ -242,7 +259,7 @@ export default class RenderContext
         this.shape.clear();
         this.shape.lineStyle(lineWidth, color);
         this.drawRectShape(x, y, width, height);
-        this.renderer.renderBasic(this.shape);
+        this.renderer.renderBasic(this.shape, null, false);
     }
 
     fillRect(x, y, width, height, color)
@@ -251,7 +268,7 @@ export default class RenderContext
         this.shape.beginFill(color);
         this.drawRectShape(x, y, width, height);
         this.shape.endFill();
-        this.renderer.renderBasic(this.shape);
+        this.renderer.renderBasic(this.shape, null, false);
     }
 
     clearRect(x, y, width, height, color, alpha)
@@ -260,15 +277,19 @@ export default class RenderContext
         this.shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
         this.drawRectShape(x, y, width, height);
         this.shape.endFill();
-        this.renderer.renderBasic(this.shape);
+        this.renderer.renderBasic(this.shape, null, false);
     }
 
     drawRectShape(x, y, width, height)
     {
         this.updateGlobalContainer();
 
+        const t = this.globalTransform;
+        const dx = x - t.offsetX;
+        const dy = y - t.offsetY;
+
         this.shape.mask = this.mask;
-        this.shape.drawRect(x, y, width, height);
+        this.shape.drawRect(dx, dy, width, height);
     }
 
     render(displayObject, dx, dy, dw, dh, renderTexture)
@@ -289,10 +310,14 @@ export default class RenderContext
 
         this.updateGlobalContainer();
 
-        displayObject.mask = this.mask;
-        displayObject.position.set(dx, dy);
+        const t = this.globalTransform;
+        const x = dx - t.offsetX;
+        const y = dy - t.offsetY;
 
-        this.renderer.renderBasic(displayObject, renderTexture);
+        displayObject.mask = this.mask;
+        displayObject.position.set(x, y);
+
+        this.renderer.renderBasic(displayObject, renderTexture, false);
     }
 
     renderPart(displayObject, sx, sy, sw, sh, dx, dy, dw, dh, renderTexture)
@@ -300,6 +325,8 @@ export default class RenderContext
         const count = arguments.length;
 
         this.updateGlobalContainer();
+
+        const t = this.globalTransform;
 
         const frame = displayObject._texture._frame;
         frame.x = sx;
@@ -313,35 +340,44 @@ export default class RenderContext
             // dx, dy, dw, dh
             displayObject.width = dw;
             displayObject.height = dh;
-            displayObject.position.set(dx, dy);
+            displayObject.position.set(dx - t.offsetX, dy - t.offsetY);
         } else if (count >= 7) {
             // dx, dy
             displayObject.width = sw;
             displayObject.height = sh;
             renderTexture = dw;
-            displayObject.position.set(dx, dy);
+            displayObject.position.set(dx - t.offsetX, dy - t.offsetY);
         } else if (count >= 5) {
             displayObject.width = sw;
             displayObject.height = sh;
             renderTexture = dx;
-            displayObject.position.set(0, 0);
+            displayObject.position.set(-t.offsetX, -t.offsetY);
         }
 
-        this.renderer.renderBasic(displayObject, renderTexture);
+        this.renderer.renderBasic(displayObject, renderTexture, false);
     }
 
     renderAt(displayObject, dx, dy, renderTexture)
     {
         this.updateGlobalContainer();
 
-        displayObject.mask = this.mask;
-        displayObject.position.set(dx, dy);
+        const t = this.globalTransform;
+        const x = dx - t.offsetX;
+        const y = dy - t.offsetY;
 
-        this.renderer.renderBasic(displayObject, renderTexture);
+        displayObject.mask = this.mask;
+        displayObject.position.set(x, y);
+
+        this.renderer.renderBasic(displayObject, renderTexture, false);
     }
 
     renderBasic(displayObject, renderTexture, skipUpdateTransform)
     {
+        this.updateGlobalContainer();
+        // TODO: add mask ?
+        // if (!displayObject.mask) {
+        //     displayObject.mask = this.mask;
+        // }
         this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
     }
 
