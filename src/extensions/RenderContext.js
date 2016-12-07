@@ -66,6 +66,15 @@ export default class RenderContext
         return value;
     }
 
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     **/
+
     save()
     {
         const t = this.globalTransform;
@@ -176,18 +185,6 @@ export default class RenderContext
         this.mask = null;
     }
 
-    clear(clearColor)
-    {
-        if (this.renderer._activeRenderTarget) {
-            this.renderer.clear(clearColor);
-        }
-    }
-
-    renderBasic(displayObject, renderTexture, skipUpdateTransform)
-    {
-        this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
-    }
-
     resetGlobalContainer()
     {
         this.globalContainer.removeAllChildren(true);
@@ -213,6 +210,27 @@ export default class RenderContext
         this.globalContainer.alpha = t.alpha;
         this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
         this.globalContainer.updateTransformWithParent();
+    }
+
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     **/
+
+    clear(clearColor)
+    {
+        if (this.renderer._activeRenderTarget) {
+            this.renderer.clear(clearColor);
+        }
+    }
+
+    renderBasic(displayObject, renderTexture, skipUpdateTransform)
+    {
+        this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -313,6 +331,15 @@ export default class RenderContext
         }
     }
 
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     **/
+
     createBaseTexture(image)
     {
         const id = image.id || image.src;
@@ -377,7 +404,7 @@ export default class RenderContext
         return sprite;
     }
 
-    createNineSlicePlane(image, sx, sy, sw, sh, L, T, R, B, container)
+    createNineSliceObject(image, sx, sy, sw, sh, L, T, R, B, container)
     {
         const count = arguments.length;
         let id;
@@ -417,7 +444,8 @@ export default class RenderContext
         sprite.context = context;
         sprite.canvas = canvas;
         sprite.padding = 0;
-        sprite.updateSize = function() {
+        sprite.updateSize = function()
+        {
             const texture = this._texture;
 
             texture.baseTexture.hasLoaded = true;
@@ -450,4 +478,3 @@ export default class RenderContext
         return sprite;
     }
 }
-
