@@ -36,12 +36,17 @@ WebGLRenderer.prototype.renderBasic = function(displayObject, renderTexture, ski
 
     this.bindRenderTexture(renderTexture);
 
-    this.currentRenderer.start();
+    const batched = this.currentRenderer.size > 1;
+    if (!batched) {
+        this.currentRenderer.start();
+    }
 
     displayObject.renderWebGL(this);
 
     // apply transform..
-    this.currentRenderer.flush();
+    if (!batched) {
+        this.currentRenderer.flush();
+    }
 
     // this.setObjectRenderer(this.emptyRenderer);
 
