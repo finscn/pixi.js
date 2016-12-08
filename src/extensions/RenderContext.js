@@ -248,6 +248,14 @@ export default class RenderContext
      *
      **/
 
+    begin(clear)
+    {
+        if (clear) {
+            this.clear();
+        }
+        this.renderer.emit('prerender');
+    }
+
     clear(clearColor)
     {
         const renderer = this.renderer;
@@ -263,12 +271,16 @@ export default class RenderContext
         // if (renderer.currentRenderer && renderer.currentRenderer.size > 1) {
             renderer.currentRenderer.flush();
         }
+    }
 
-        renderer.textureGC.update();
-
+    end()
+    {
+        this.flush();
+        const renderer = this.renderer;
+        if (renderer.textureGC) {
+            renderer.textureGC.update();
+        }
         renderer.emit('postrender');
-
-        renderer.emit('prerender');
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -430,6 +442,17 @@ export default class RenderContext
     renderCore(displayObject, renderTexture, skipUpdateTransform)
     {
         const renderer = this.renderer;
+
+        if (!this.webgl) {
+            if (!renderer.view) {
+                return;
+            }
+            if (!skipUpdateTransform) {
+                displayObject.updateTransformWithParent();
+            }
+            renderer.render(displayObject, renderTexture, false, null, true);
+            return;
+        }
 
         // can be handy to know!
         renderer.renderingToScreen = !renderTexture;

@@ -9,18 +9,7 @@ const CanvasRenderer = core.CanvasRenderer;
  * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
  * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
  */
-CanvasRenderer.prototype.renderBasic = function(displayObject, renderTexture, skipUpdateTransform)
+CanvasRenderer.prototype.renderBasic = function()
 {
-    if (!this.view)
-    {
-        return;
-    }
-
-    if (!skipUpdateTransform)
-    {
-        displayObject.updateTransformWithParent();
-    }
-
-    this.render(displayObject, renderTexture, false, null, true);
+    // TODO
 };
-
