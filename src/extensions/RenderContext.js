@@ -47,7 +47,7 @@ export default class RenderContext
         this.globalContainer.visible = false;
         this.root.addChild(this.globalContainer);
 
-        this.resetGlobalContainer();
+        this.resetGlobalContainer(false);
     }
 
     resize(x, y)
@@ -194,9 +194,9 @@ export default class RenderContext
         this.mask = null;
     }
 
-    resetGlobalContainer()
+    resetGlobalContainer(destroyChildren)
     {
-        this.globalContainer.removeAllChildren(true);
+        this.globalContainer.removeAllChildren(destroyChildren);
         this.shape = new Graphics();
         this.globalContainer.addChild(this.shape);
 
