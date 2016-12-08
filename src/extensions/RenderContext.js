@@ -46,7 +46,6 @@ export default class RenderContext
         this.globalContainer = new Container();
         this.globalContainer.visible = false;
         this.root.addChild(this.globalContainer);
-        this.shape = new Graphics();
 
         this.resetGlobalContainer();
     }
@@ -198,7 +197,9 @@ export default class RenderContext
     resetGlobalContainer()
     {
         this.globalContainer.removeAllChildren(true);
+        this.shape = new Graphics();
         this.globalContainer.addChild(this.shape);
+
         this.transformStack = [];
         this.globalTransform = {};
         for (const p in this.defaultTransform) {
