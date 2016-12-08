@@ -141,7 +141,14 @@ export default class RenderContext
 
     setAlpha(alpha)
     {
+        this._lastAlpha = this.globalTransform.alpha;
         this.globalTransform.alpha = alpha === undefined ? 1 : alpha;
+        this._transformSN++;
+    }
+
+    restoreAlpha()
+    {
+        this.globalTransform.alpha = this._lastAlpha;
         this._transformSN++;
     }
 
@@ -205,6 +212,7 @@ export default class RenderContext
         for (const p in this.defaultTransform) {
             this.globalTransform[p] = this.defaultTransform[p];
         }
+        this._lastAlpha = this.globalTransform.alpha;
         this.updateGlobalContainer(true);
     }
 
