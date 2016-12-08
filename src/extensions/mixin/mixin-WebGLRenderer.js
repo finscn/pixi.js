@@ -9,48 +9,7 @@ const WebGLRenderer = core.WebGLRenderer;
  * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
  * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
  */
-WebGLRenderer.prototype.renderBasic = function(displayObject, renderTexture, skipUpdateTransform)
+WebGLRenderer.prototype.renderBasic = function()
 {
-    // can be handy to know!
-    this.renderingToScreen = !renderTexture;
-
-    this.emit('prerender');
-
-    // no point rendering if our context has been blown up!
-    if (!this.gl || this.gl.isContextLost())
-    {
-        return;
-    }
-
-    this._nextTextureLocation = 0;
-
-    if (!renderTexture)
-    {
-        this._lastObjectRendered = displayObject;
-    }
-
-    if (!skipUpdateTransform)
-    {
-        displayObject.updateTransformWithParent(true);
-    }
-
-    this.bindRenderTexture(renderTexture);
-
-    const batched = this.currentRenderer.size > 1;
-    if (!batched) {
-        this.currentRenderer.start();
-    }
-
-    displayObject.renderWebGL(this);
-
-    // apply transform..
-    if (!batched) {
-        this.currentRenderer.flush();
-    }
-
-    // this.setObjectRenderer(this.emptyRenderer);
-
-    this.textureGC.update();
-
-    this.emit('postrender');
+    // TODO
 };

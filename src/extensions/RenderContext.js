@@ -263,6 +263,12 @@ export default class RenderContext
         // if (renderer.currentRenderer && renderer.currentRenderer.size > 1) {
             renderer.currentRenderer.flush();
         }
+
+        renderer.textureGC.update();
+
+        renderer.emit('postrender');
+
+        renderer.emit('prerender');
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -270,7 +276,7 @@ export default class RenderContext
         this.shape.clear();
         this.shape.lineStyle(lineWidth, color);
         this.drawRectShape(x, y, width, height);
-        this.renderer.renderBasic(this.shape, null, false);
+        this.renderCore(this.shape, null, false);
     }
 
     fillRect(x, y, width, height, color)
@@ -279,7 +285,7 @@ export default class RenderContext
         this.shape.beginFill(color);
         this.drawRectShape(x, y, width, height);
         this.shape.endFill();
-        this.renderer.renderBasic(this.shape, null, false);
+        this.renderCore(this.shape, null, false);
     }
 
     clearRect(x, y, width, height, color, alpha)
@@ -288,7 +294,7 @@ export default class RenderContext
         this.shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
         this.drawRectShape(x, y, width, height);
         this.shape.endFill();
-        this.renderer.renderBasic(this.shape, null, false);
+        this.renderCore(this.shape, null, false);
     }
 
     drawRectShape(x, y, width, height)
@@ -301,6 +307,41 @@ export default class RenderContext
 
         this.shape.mask = this.mask;
         this.shape.drawRect(dx, dy, width, height);
+    }
+
+    renderBasic(displayObject, renderTexture)
+    {
+        this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+        const position = displayObject.transform.position;
+        const x = position.x;
+        const y = position.y;
+        position.set(x - t.originalX, y - t.originalY);
+
+        // TODO: add mask ?
+        // if (!displayObject.mask) {
+        //     displayObject.mask = this.mask;
+        // }
+
+        this.renderCore(displayObject, renderTexture, false);
+
+        position.set(x, y);
+    }
+
+    renderAt(displayObject, dx, dy, renderTexture)
+    {
+        this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+        const x = dx - t.originalX;
+        const y = dy - t.originalY;
+
+        displayObject.transform.position.set(x, y);
+
+        displayObject.mask = this.mask;
+
+        this.renderCore(displayObject, renderTexture, false);
     }
 
     render(displayObject, dx, dy, dw, dh, renderTexture)
@@ -329,10 +370,11 @@ export default class RenderContext
         const x = dx - t.originalX;
         const y = dy - t.originalY;
 
-        displayObject.mask = this.mask;
         displayObject.transform.position.set(x, y);
 
-        this.renderer.renderBasic(displayObject, renderTexture, false);
+        displayObject.mask = this.mask;
+
+        this.renderCore(displayObject, renderTexture, false);
     }
 
     renderPart(displayObject, sx, sy, sw, sh, dx, dy, dw, dh, renderTexture)
@@ -350,7 +392,6 @@ export default class RenderContext
         frame.height = sh;
         displayObject._texture._updateUvs();
 
-        displayObject.mask = this.mask;
         if (count >= 9) {
             // dx, dy, dw, dh
             if (displayObject._width !== dw) {
@@ -381,40 +422,49 @@ export default class RenderContext
             displayObject.transform.position.set(-t.originalX, -t.originalY);
         }
 
-        this.renderer.renderBasic(displayObject, renderTexture, false);
-    }
-
-    renderAt(displayObject, dx, dy, renderTexture)
-    {
-        this.updateGlobalContainer();
-
-        const t = this.globalTransform;
-        const x = dx - t.originalX;
-        const y = dy - t.originalY;
-
         displayObject.mask = this.mask;
-        displayObject.transform.position.set(x, y);
 
-        this.renderer.renderBasic(displayObject, renderTexture, false);
+        this.renderCore(displayObject, renderTexture, false);
     }
 
-    renderBasic(displayObject, renderTexture, skipUpdateTransform)
+    renderCore(displayObject, renderTexture, skipUpdateTransform)
     {
-        this.updateGlobalContainer();
+        const renderer = this.renderer;
 
-        const t = this.globalTransform;
+        // can be handy to know!
+        renderer.renderingToScreen = !renderTexture;
 
-        // TODO: add mask ?
-        // if (!displayObject.mask) {
-        //     displayObject.mask = this.mask;
-        // }
-        const position = displayObject.transform.position;
-        const x = position.x;
-        const y = position.y;
+        // no point rendering if our context has been blown up!
+        if (!renderer.gl || renderer.gl.isContextLost())
+        {
+            return;
+        }
 
-        position.set(x - t.originalX, y - t.originalY);
-        this.renderer.renderBasic(displayObject, renderTexture, skipUpdateTransform);
-        position.set(x, y);
+        renderer._nextTextureLocation = 0;
+
+        if (!renderTexture)
+        {
+            renderer._lastObjectRendered = displayObject;
+        }
+
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformWithParent(true);
+        }
+
+        renderer.bindRenderTexture(renderTexture);
+
+        const batched = renderer.currentRenderer.size > 1;
+        if (!batched) {
+            renderer.currentRenderer.start();
+        }
+
+        displayObject.renderWebGL(renderer);
+
+        // apply transform..
+        if (!batched) {
+            renderer.currentRenderer.flush();
+        }
     }
 
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
