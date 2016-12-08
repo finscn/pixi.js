@@ -254,7 +254,13 @@ export default class RenderContext
         if (clear) {
             this.clear();
         }
-        this.renderer.emit('prerender');
+        const renderer = this.renderer;
+
+        renderer.emit('prerender');
+
+        if (renderer.currentRenderer.size > 1) {
+            renderer.currentRenderer.start();
+        }
     }
 
     clear(clearColor)
@@ -265,11 +271,62 @@ export default class RenderContext
         }
     }
 
+    renderCore(displayObject, renderTexture, skipUpdateTransform)
+    {
+        const renderer = this.renderer;
+
+        if (!this.webgl) {
+            if (!renderer.view) {
+                return;
+            }
+            if (!skipUpdateTransform) {
+                displayObject.updateTransformWithParent();
+            }
+            renderer.render(displayObject, renderTexture, false, null, true);
+            return;
+        }
+
+        // can be handy to know!
+        renderer.renderingToScreen = !renderTexture;
+
+        // no point rendering if our context has been blown up!
+        if (!renderer.gl || renderer.gl.isContextLost())
+        {
+            return;
+        }
+
+        renderer._nextTextureLocation = 0;
+
+        if (!renderTexture)
+        {
+            renderer._lastObjectRendered = displayObject;
+        }
+
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformWithParent(true);
+        }
+
+        renderer.bindRenderTexture(renderTexture);
+
+        const batched = renderer.currentRenderer.size > 1;
+
+        if (!batched) {
+            renderer.currentRenderer.start();
+        }
+
+        displayObject.renderWebGL(renderer);
+
+        // apply transform..
+        if (!batched) {
+            renderer.currentRenderer.flush();
+        }
+    }
+
     flush()
     {
         const renderer = this.renderer;
-        if (renderer.currentRenderer) {
-        // if (renderer.currentRenderer && renderer.currentRenderer.size > 1) {
+        if (renderer.currentRenderer.size > 1) {
             renderer.currentRenderer.flush();
         }
     }
@@ -438,57 +495,6 @@ export default class RenderContext
         displayObject.mask = this.mask;
 
         this.renderCore(displayObject, renderTexture, false);
-    }
-
-    renderCore(displayObject, renderTexture, skipUpdateTransform)
-    {
-        const renderer = this.renderer;
-
-        if (!this.webgl) {
-            if (!renderer.view) {
-                return;
-            }
-            if (!skipUpdateTransform) {
-                displayObject.updateTransformWithParent();
-            }
-            renderer.render(displayObject, renderTexture, false, null, true);
-            return;
-        }
-
-        // can be handy to know!
-        renderer.renderingToScreen = !renderTexture;
-
-        // no point rendering if our context has been blown up!
-        if (!renderer.gl || renderer.gl.isContextLost())
-        {
-            return;
-        }
-
-        renderer._nextTextureLocation = 0;
-
-        if (!renderTexture)
-        {
-            renderer._lastObjectRendered = displayObject;
-        }
-
-        if (!skipUpdateTransform)
-        {
-            displayObject.updateTransformWithParent(true);
-        }
-
-        renderer.bindRenderTexture(renderTexture);
-
-        const batched = renderer.currentRenderer.size > 1;
-        if (!batched) {
-            renderer.currentRenderer.start();
-        }
-
-        displayObject.renderWebGL(renderer);
-
-        // apply transform..
-        if (!batched) {
-            renderer.currentRenderer.flush();
-        }
     }
 
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
