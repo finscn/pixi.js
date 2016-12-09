@@ -232,7 +232,7 @@ export default class AnimationSprite extends Sprite
         while (finding) {
             finding = !oneStep;
             frame = frames[index];
-            if (time < frame.startTime)
+            if (time < frame._startTime)
             {
                 if (index === 0)
                 {
@@ -249,7 +249,7 @@ export default class AnimationSprite extends Sprite
                 continue;
             }
 
-            if (time < frame.endTime)
+            if (time < frame._endTime)
             {
                 // no frame change
                 break;
