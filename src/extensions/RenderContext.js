@@ -315,7 +315,7 @@ export default class RenderContext
             displayObject.updateTransformWithParent(true);
         }
 
-        renderer.bindRenderTexture(renderTexture);
+        renderer.bindRenderTexture(renderTexture, null);
 
         const batched = renderer.currentRenderer.size > 1;
 
