@@ -430,7 +430,7 @@ export default class AnimationSprite extends Sprite
             startTime = endTime;
         }
 
-        if (!this.duration)
+        if (!this.duration || this.duration < endTime)
         {
             this.duration = endTime;
         }
