@@ -333,16 +333,15 @@ export default class RenderContext
 
     flush()
     {
-        const renderer = this.renderer;
-        if (renderer.currentRenderer.size > 1) {
-            renderer.currentRenderer.flush();
-        }
+        this.renderer.currentRenderer.flush();
     }
 
     end()
     {
-        this.flush();
         const renderer = this.renderer;
+        if (renderer.currentRenderer.size > 1) {
+            renderer.currentRenderer.flush();
+        }
         if (renderer.textureGC) {
             renderer.textureGC.update();
         }
