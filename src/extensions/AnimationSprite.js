@@ -92,6 +92,14 @@ export default class AnimationSprite extends Sprite
         this.playing = false;
 
         /**
+         * Whether allow to skip frames if timeStep too large.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.skipFrame = false;
+
+        /**
         * The AnimatedSprites current frame index
         *
         * @member {number}
@@ -203,9 +211,8 @@ export default class AnimationSprite extends Sprite
      * Update the animation by time-step(delta-time)
      *
      * @param {number} timeStep - Time since last tick
-     * @param {boolean} [skipFrame=false] - Whether allow to skip frames if timeStep too large.
      */
-    update(timeStep, skipFrame)
+    update(timeStep)
     {
         if (!this.playing)
         {
@@ -216,7 +223,7 @@ export default class AnimationSprite extends Sprite
 
         this.currentTime += elapsed;
 
-        this.updateByTime(this.currentTime, skipFrame);
+        this.updateByTime(this.currentTime, this.skipFrame);
     }
 
     /**
@@ -235,10 +242,10 @@ export default class AnimationSprite extends Sprite
         let frame;
 
         let completed = false;
-        let finding = true;
+        let endless = true;
 
-        while (finding) {
-            finding = skipFrame;
+        while (endless) {
+            endless = skipFrame;
             frame = frames[index];
             if (time < frame._startTime)
             {
