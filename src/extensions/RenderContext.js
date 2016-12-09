@@ -353,7 +353,7 @@ export default class RenderContext
     {
         this.shape.clear();
         this.shape.lineStyle(lineWidth, color);
-        this.drawRectShape(x, y, width, height);
+        this.drawShapeRect(x, y, width, height);
         this.renderCore(this.shape, null, false);
     }
 
@@ -361,7 +361,7 @@ export default class RenderContext
     {
         this.shape.clear();
         this.shape.beginFill(color);
-        this.drawRectShape(x, y, width, height);
+        this.drawShapeRect(x, y, width, height);
         this.shape.endFill();
         this.renderCore(this.shape, null, false);
     }
@@ -370,12 +370,12 @@ export default class RenderContext
     {
         this.shape.clear();
         this.shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
-        this.drawRectShape(x, y, width, height);
+        this.drawShapeRect(x, y, width, height);
         this.shape.endFill();
         this.renderCore(this.shape, null, false);
     }
 
-    drawRectShape(x, y, width, height)
+    drawShapeRect(x, y, width, height)
     {
         this.updateGlobalContainer();
 
@@ -385,6 +385,35 @@ export default class RenderContext
 
         this.shape.mask = this.mask;
         this.shape.drawRect(dx, dy, width, height);
+    }
+
+    strokeArc(x, y, radius, startAngle, endAngle, anticlockwise, color, lineWidth)
+    {
+        this.shape.clear();
+        this.shape.lineStyle(lineWidth, color);
+        this.drawShapeArc(x, y, radius, startAngle, endAngle, anticlockwise);
+        this.renderCore(this.shape, null, false);
+    }
+
+    fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color)
+    {
+        this.shape.clear();
+        this.shape.beginFill(color);
+        this.drawShapeArc(x, y, radius, startAngle, endAngle, anticlockwise);
+        this.shape.endFill();
+        this.renderCore(this.shape, null, false);
+    }
+
+    drawShapeArc(x, y, radius, startAngle, endAngle, anticlockwise)
+    {
+        this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+        const dx = x - t.originalX;
+        const dy = y - t.originalY;
+
+        this.shape.mask = this.mask;
+        this.shape.arc(dx, dy, radius, startAngle, endAngle, anticlockwise);
     }
 
     renderBasic(displayObject, renderTexture)
