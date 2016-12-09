@@ -11,7 +11,7 @@ const Sprite = core.Sprite;
  * @property {array} [anchor] - the anchor(ratio) of the frame. Index 0 is x; Index 1 is y.
  *
  * If no frame duration, frame.duration will equal animation.duration/frames.length
- * If no frame anchor, frame.anchor will [0.0, 0.0]
+ * If no frame anchor, frame.anchor will be null, then AnimationSprite use its own anchor.
  * Some private fileds will be generated dynamically:
  *     {number} _startTime:
  *     {number} _endTime:
@@ -36,28 +36,6 @@ export default class AnimationSprite extends Sprite
     {
         super(frames[0] instanceof Texture ? frames[0] : frames[0].texture);
 
-        this.duration = duration || 0;
-
-        /**
-         * `frameCount` is the total number of frames in the AnimationSprite
-         *
-         * @member {number}
-         * @default 0
-         */
-        this.frameCount = 0;
-
-        /**
-         * @private
-         */
-        this._maxIndex = -1;
-
-        /**
-         * @private
-         */
-        this._frames = [];
-
-        this.frames = frames;
-
         /**
          * Scale the time step when update animation. Higher is faster, lower is slower
          *
@@ -81,6 +59,14 @@ export default class AnimationSprite extends Sprite
          * @memberof PIXI.extensions.AnimationSprite#
          */
         this.onComplete = null;
+
+        /**
+         * The index of the frame displayed when animation finished.
+         *
+         * @member {number}
+         * @default 0
+         */
+        this.endIndex = 0;
 
         /**
          * Function to call when a AnimationSprite frame changes
@@ -122,6 +108,28 @@ export default class AnimationSprite extends Sprite
         * @readonly
         */
         this.currentFrame = null;
+
+        /**
+         * `frameCount` is the total number of frames in the AnimationSprite
+         *
+         * @member {number}
+         * @default 0
+         */
+        this.frameCount = 0;
+
+        /**
+         * @private
+         */
+        this._maxIndex = -1;
+
+        this.duration = duration || 0;
+
+        /**
+         * @private
+         */
+        this._frames = [];
+
+        this.frames = frames;
     }
 
     /**
@@ -269,15 +277,28 @@ export default class AnimationSprite extends Sprite
             index++;
         }
 
+        if (completed)
+        {
+            const emitEvent = this.onComplete && this.playing;
+
+            this.playing = false;
+            if (lastIndex !== this.endIndex)
+            {
+                this.frameChange(this.endIndex);
+                this.currentTime = this.currentFrame._startTime;
+            }
+            if (emitEvent)
+            {
+                this.onComplete();
+            }
+            return;
+        }
+
         if (lastIndex !== index)
         {
             this.frameChange(index);
         }
-
-        if (completed && this.onComplete)
-        {
-            this.onComplete();
-        }
+        this.currentTime = time;
     }
 
     /**
@@ -290,8 +311,14 @@ export default class AnimationSprite extends Sprite
     {
         this.currentIndex = frameIndex;
         this.currentFrame = this._frames[frameIndex];
+        if (this.currentFrame.anchor)
+        {
+            const a = this.currentFrame.anchor;
+            this.transform.anchor.set(a[0], a[1]);
+        }
 
         this.updateTexture();
+
 
         if (this.onFrameChange)
         {
@@ -338,11 +365,11 @@ export default class AnimationSprite extends Sprite
      */
     set frames(value)
     {
+        this.playing = false;
         this._frames.length = 0;
 
         if (!value)
         {
-            this.playing = false;
             this.frameCount = 0;
             this._maxIndex = -1;
             this.currentTime = 0;
@@ -377,18 +404,25 @@ export default class AnimationSprite extends Sprite
             this._frames.push(frame);
 
             frame.duration = frame.duration || preDuration;
-            frame.anchor = frame.anchor || [0, 0];
+            frame.anchor = frame.anchor || null;
 
             frame._startTime = startTime;
-            frame._endTime = endTime + frame.duration;
+            frame._endTime = (endTime += frame.duration);
 
             startTime = endTime;
-            endTime = frame._endTime;
         }
 
         if (!this.duration)
         {
             this.duration = endTime;
+        }
+
+        this.currentIndex = 0;
+        this.currentFrame = this._frames[0];
+        if (this.currentFrame.anchor)
+        {
+            const a = this.currentFrame.anchor;
+            this.transform.anchor.set(a[0], a[1]);
         }
     }
 
