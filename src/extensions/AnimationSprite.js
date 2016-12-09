@@ -8,10 +8,10 @@ const Sprite = core.Sprite;
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
  * @property {number} [duration] - the duration of the frame in ms
- * @property {array} [anchor] - the anchor(ratio) of the frame. Index 0 is x; Index 1 is y.
+ * @property {array} [pivot] - the pivot(ratio) of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
- * If no `frame.anchor`, frame.anchor will be null, then AnimationSprite use original or previous anchor.
+ * If no `frame.pivot`, frame.pivot will be null, then AnimationSprite use default or original or previous pivot.
  * Some private fileds will be generated dynamically:
  *     {number} _startTime:
  *     {number} _endTime:
@@ -330,10 +330,10 @@ export default class AnimationSprite extends Sprite
 
         const frame = this.currentFrame = this._frames[frameIndex];
 
-        if (frame.anchor)
+        if (frame.pivot)
         {
-            const anchor = frame.anchor;
-            this.transform.anchor.set(anchor[0], anchor[1]);
+            const pivot = frame.pivot;
+            this.transform.pivot.set(pivot[0], pivot[1]);
         }
 
         this.updateTexture();
@@ -422,7 +422,7 @@ export default class AnimationSprite extends Sprite
             this._frames.push(frame);
 
             frame.duration = frame.duration || preDuration;
-            frame.anchor = frame.anchor || null;
+            frame.pivot = frame.pivot || null;
 
             frame._startTime = startTime;
             frame._endTime = (endTime += frame.duration);
@@ -437,10 +437,10 @@ export default class AnimationSprite extends Sprite
 
         this.currentIndex = 0;
         this.currentFrame = this._frames[0];
-        if (this.currentFrame.anchor)
+        if (this.currentFrame.pivot)
         {
-            const a = this.currentFrame.anchor;
-            this.transform.anchor.set(a[0], a[1]);
+            const a = this.currentFrame.pivot;
+            this.transform.pivot.set(a[0], a[1]);
         }
     }
 
