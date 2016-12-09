@@ -277,24 +277,23 @@ export default class AnimationSprite extends Sprite
             index++;
         }
 
+        this.currentTime = time;
+
         if (completed)
         {
-            const emitEvent = this.onComplete && this.playing;
-
             this.playing = false;
+
             if (lastIndex !== this.endIndex)
             {
                 this.frameChange(this.endIndex);
                 this.currentTime = this.currentFrame._startTime;
             }
-            if (emitEvent)
+            if (this.onComplete)
             {
                 this.onComplete();
             }
             return;
         }
-
-        this.currentTime = time;
 
         if (lastIndex !== index)
         {
