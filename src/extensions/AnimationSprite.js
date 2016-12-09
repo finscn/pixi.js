@@ -10,8 +10,8 @@ const Sprite = core.Sprite;
  * @property {number} [duration] - the duration of the frame in ms
  * @property {array} [anchor] - the anchor(ratio) of the frame. Index 0 is x; Index 1 is y.
  *
- * If no frame duration, frame.duration will equal animation.duration/frames.length
- * If no frame anchor, frame.anchor will be null, then AnimationSprite use its own anchor.
+ * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
+ * If no `frame.anchor`, frame.anchor will be null, then AnimationSprite use original or previous anchor.
  * Some private fileds will be generated dynamically:
  *     {number} _startTime:
  *     {number} _endTime:
@@ -29,8 +29,8 @@ export default class AnimationSprite extends Sprite
     /**
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
      *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation
-     *     If no duration , the duration will equal the sum of all `frame.duration`
+     * @param {number} [duration=0] - The total duration of animation in ms
+     *     If no `duration`, the duration will equal the sum of all `frame.duration`
      */
     constructor(frames, duration)
     {
@@ -133,7 +133,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Plays the AnimationSprite
+     * Play the AnimationSprite
      *
      */
     play()
@@ -142,7 +142,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stops the AnimationSprite
+     * Pause the AnimationSprite
      *
      */
     pause()
@@ -160,7 +160,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stops the AnimationSprite
+     * Stop the AnimationSprite
      *
      */
     stop()
@@ -169,7 +169,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Goes to a specific frame and begins playing the AnimationSprite
+     * Go to a specific frame and begins playing the AnimationSprite
      *
      * @param {number} frameIndex - frame index to start at
      */
@@ -184,7 +184,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stops the AnimationSprite and goes to a specific frame
+     * Stop the AnimationSprite and goes to a specific frame
      *
      * @param {number} frameIndex - frame index to stop at
      */
@@ -310,24 +310,25 @@ export default class AnimationSprite extends Sprite
     frameChange(frameIndex)
     {
         this.currentIndex = frameIndex;
-        this.currentFrame = this._frames[frameIndex];
-        if (this.currentFrame.anchor)
+
+        const frame = this.currentFrame = this._frames[frameIndex];
+
+        if (frame.anchor)
         {
-            const a = this.currentFrame.anchor;
-            this.transform.anchor.set(a[0], a[1]);
+            const anchor = frame.anchor;
+            this.transform.anchor.set(anchor[0], anchor[1]);
         }
 
         this.updateTexture();
 
-
         if (this.onFrameChange)
         {
-            this.onFrameChange(frameIndex, this.currentFrame);
+            this.onFrameChange(frameIndex, frame);
         }
     }
 
     /**
-     * Updates the displayed texture to match the current frame index
+     * Update the displayed texture to match the current frame index
      *
      * @private
      */
@@ -338,7 +339,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stops the AnimationSprite and destroys it
+     * Destroy the AnimationSprite
      *
      */
     destroy()
@@ -359,7 +360,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Sets the textures.
+     * Set the frames.
      *
      * @param {PIXI.Texture[]|FrameObject[]} value - The frames to set
      */
