@@ -10,16 +10,15 @@ const Sprite = core.Sprite;
  * @property {number} [duration] - the duration of the frame in ms
  * @property {array} [anchor] - the anchor(ratio) of the frame. Index 0 is x; Index 1 is y.
  *
- * If no frame duration, frame.duration will equal animation.duration/frames.length.
- * If no frame anchor, frame.anchor will [0.0, 0.0].
+ * If no frame duration, frame.duration will equal animation.duration/frames.length
+ * If no frame anchor, frame.anchor will [0.0, 0.0]
  * Some private fileds will be generated dynamically:
  *     {number} _startTime:
  *     {number} _endTime:
  */
 
-
 /**
- * An AnimationSprite is a simple way to display an animation depicted by a list of frames.
+ * An AnimationSprite is a simple way to display an animation depicted by a list of frames
  *
  * @class
  * @extends PIXI.Sprite
@@ -30,8 +29,8 @@ export default class AnimationSprite extends Sprite
     /**
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
      *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation.
-     *   If no duration , the duration will equal the sum of all `frame.duration`.
+     * @param {number} [duration=0] - The total duration of animation
+     *     If no duration , the duration will equal the sum of all `frame.duration`
      */
     constructor(frames, duration)
     {
@@ -40,11 +39,11 @@ export default class AnimationSprite extends Sprite
         this.duration = duration || 0;
 
         /**
-         * frameCount is the total number of frames in the AnimationSprite.
+         * `frameCount` is the total number of frames in the AnimationSprite
          *
          * @member {number}
          * @default 0
-         **/
+         */
         this.frameCount = 0;
 
         /**
@@ -57,12 +56,10 @@ export default class AnimationSprite extends Sprite
          */
         this._frames = [];
 
-
         this.frames = frames;
 
-
         /**
-         * Scale the time step when update animation. Higher is faster, lower is slower.
+         * Scale the time step when update animation. Higher is faster, lower is slower
          *
          * @member {number}
          * @default 1
@@ -70,7 +67,7 @@ export default class AnimationSprite extends Sprite
         this.timeScale = 1;
 
         /**
-         * Whether or not the animate sprite repeats after playing.
+         * Whether or not the animate sprite repeats after playing
          *
          * @member {boolean}
          * @default true
@@ -86,7 +83,7 @@ export default class AnimationSprite extends Sprite
         this.onComplete = null;
 
         /**
-         * Function to call when a AnimationSprite changes which texture is being rendered
+         * Function to call when a AnimationSprite frame changes
          *
          * @method
          * @memberof PIXI.extensions.AnimationSprite#
@@ -109,7 +106,7 @@ export default class AnimationSprite extends Sprite
         this.playing = false;
 
         /**
-        * The AnimatedSprites current frame index.
+        * The AnimatedSprites current frame index
         *
         * @member {number}
         * @memberof PIXI.extras.AnimatedSprite#
@@ -118,16 +115,14 @@ export default class AnimationSprite extends Sprite
         this.currentIndex = -1;
 
         /**
-        * The AnimatedSprites current frame object.
+        * The AnimatedSprites current frame object
         *
         * @member {object}
         * @memberof PIXI.extras.AnimatedSprite#
         * @readonly
         */
         this.currentFrame = null;
-
     }
-
 
     /**
      * Plays the AnimationSprite
@@ -148,7 +143,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Resume playing. In current case , `resume` equals `play`.
+     * Resume playing. In current case , `resume` equals `play`
      *
      */
     resume()
@@ -197,10 +192,10 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Update the animation by time-step(delta-time).
+     * Update the animation by time-step(delta-time)
      *
-     * @param {number} timeStep - Time since last tick.
-     * @param {boolean} [oneStep=false] - set true to search correct frame once.
+     * @param {number} timeStep - Time since last tick
+     * @param {boolean} [oneStep=false] - set true to search correct frame once
      */
     update(timeStep, oneStep)
     {
@@ -214,14 +209,13 @@ export default class AnimationSprite extends Sprite
         this.currentTime += elapsed;
 
         this.updateByTime(this.currentTime, oneStep);
-
     }
 
     /**
-     * Update the animation by played-time(total-time).
+     * Update the animation by played-time(total-time)
      *
-     * @param {number} time - Time since animation has been started.
-     * @param {boolean} [oneStep=false] - set true to search correct frame once.
+     * @param {number} time - Time since animation has been started
+     * @param {boolean} [oneStep=false] - set true to search correct frame once
      */
     updateByTime(time, oneStep)
     {
@@ -286,17 +280,23 @@ export default class AnimationSprite extends Sprite
         }
     }
 
+    /**
+     * Function to call when a AnimationSprite changes which texture is being rendered
+     *
+     * @param {number} frameIndex - new frame index
+     * @private
+     */
     frameChange(frameIndex)
     {
         this.currentIndex = frameIndex;
         this.currentFrame = this._frames[frameIndex];
 
+        this.updateTexture();
+
         if (this.onFrameChange)
         {
             this.onFrameChange(frameIndex, this.currentFrame);
         }
-
-        this.updateTexture();
     }
 
     /**
@@ -306,7 +306,7 @@ export default class AnimationSprite extends Sprite
      */
     updateTexture()
     {
-        this._texture = this._textures[this.currentFrame];
+        this._texture = this.currentFrame.texture;
         this._textureID = -1;
     }
 
@@ -334,7 +334,7 @@ export default class AnimationSprite extends Sprite
     /**
      * Sets the textures.
      *
-     * @param {PIXI.Texture[]|FrameObject[]} value - The frames to set.
+     * @param {PIXI.Texture[]|FrameObject[]} value - The frames to set
      */
     set frames(value)
     {
