@@ -1,4 +1,4 @@
-import * as core from '../../core';
+import * as core from '../core';
 
 const Texture = core.Texture;
 const Sprite = core.Sprite;
@@ -28,9 +28,10 @@ const Sprite = core.Sprite;
 export default class AnimationSprite extends Sprite
 {
     /**
-     * @param {PIXI.Texture[]|FrameObject[]} textures - an array of {@link PIXI.Texture} or frame
+     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
      *  objects that make up the animation
-     * @param {boolean} [autoUpdate=true] - Whether use PIXI.ticker.shared to auto update animation time.
+     * @param {number} [duration=0] - The total duration of animation.
+     *   If no duration , the duration will equal the sum of all `frame.duration`.
      */
     constructor(frames, duration)
     {
@@ -205,10 +206,10 @@ export default class AnimationSprite extends Sprite
     {
         if (!this.playing)
         {
-            return false;
+            return;
         }
         const elapsed = this.timeScale * timeStep;
-        const sign = elapsed < 0 ? -1 : 1;
+        // const sign = elapsed < 0 ? -1 : 1;
 
         this.currentTime += elapsed;
 
@@ -228,7 +229,7 @@ export default class AnimationSprite extends Sprite
         const frames = this._frames;
 
         let index = this.currentIndex;
-        let lastIndex = index;
+        const lastIndex = index;
         let frame;
 
         let completed = false;
@@ -260,7 +261,7 @@ export default class AnimationSprite extends Sprite
                 break;
             }
 
-            if (index == this._maxIndex)
+            if (index === this._maxIndex)
             {
                 if (this.loop === true || (--this.loop) > 0 )
                 {
@@ -355,7 +356,7 @@ export default class AnimationSprite extends Sprite
         this._maxIndex = len - 1;
 
         const preDuration = this.duration / len;
-        const useTexture = value[0] instanceof core.Texture
+        const useTexture = value[0] instanceof core.Texture;
 
         let startTime = 0;
         let endTime = 0;
@@ -378,11 +379,16 @@ export default class AnimationSprite extends Sprite
             frame.duration = frame.duration || preDuration;
             frame.anchor = frame.anchor || [0, 0];
 
-            frame._startTime = startTime
+            frame._startTime = startTime;
             frame._endTime = endTime + frame.duration;
 
             startTime = endTime;
             endTime = frame._endTime;
+        }
+
+        if (!this.duration)
+        {
+            this.duration = endTime;
         }
     }
 
