@@ -299,10 +299,16 @@ export default class AnimationSprite extends Sprite
         if (lastIndex !== index)
         {
             this.frameChange(index);
-            if (!skipFrame)
-            {
-                this.currentTime = this.currentFrame._startTime;
-            }
+
+            // TODO: Whether snap currentTime to frame ?
+            // if (!skipFrame)
+            // {
+                // play forward:
+                // this.currentTime = this.currentFrame._startTime;
+
+                // play backward:
+                // this.currentTime = this.currentFrame._endTime;
+            // }
         }
     }
 
