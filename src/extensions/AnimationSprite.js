@@ -242,13 +242,12 @@ export default class AnimationSprite extends Sprite
         let frame;
 
         let completed = false;
-        let endless = true;
 
-        while (endless) {
-            endless = skipFrame;
+        do {
             frame = frames[index];
             if (time < frame._startTime)
             {
+                // Play backward
                 if (index === 0)
                 {
                     if (this.loop === true || (--this.loop) > 0 )
@@ -266,12 +265,13 @@ export default class AnimationSprite extends Sprite
 
             if (time < frame._endTime)
             {
-                // no frame change
+                // No frame changed
                 break;
             }
 
             if (index === this._maxIndex)
             {
+                // Play forward
                 if (this.loop === true || (--this.loop) > 0 )
                 {
                     time -= duration;
@@ -282,7 +282,7 @@ export default class AnimationSprite extends Sprite
                 break;
             }
             index++;
-        }
+        } while (skipFrame);
 
         this.currentTime = time;
 
@@ -309,10 +309,10 @@ export default class AnimationSprite extends Sprite
             // TODO: Whether snap currentTime to frame ?
             // if (!skipFrame)
             // {
-                // play forward:
+                // Play forward:
                 // this.currentTime = this.currentFrame._startTime;
 
-                // play backward:
+                // Play backward:
                 // this.currentTime = this.currentFrame._endTime;
             // }
         }
