@@ -203,9 +203,9 @@ export default class AnimationSprite extends Sprite
      * Update the animation by time-step(delta-time)
      *
      * @param {number} timeStep - Time since last tick
-     * @param {boolean} [oneStep=false] - set true to search correct frame once
+     * @param {boolean} [skipFrame=false] - Whether allow to skip frames if timeStep too large.
      */
-    update(timeStep, oneStep)
+    update(timeStep, skipFrame)
     {
         if (!this.playing)
         {
@@ -216,16 +216,16 @@ export default class AnimationSprite extends Sprite
 
         this.currentTime += elapsed;
 
-        this.updateByTime(this.currentTime, oneStep);
+        this.updateByTime(this.currentTime, skipFrame);
     }
 
     /**
      * Update the animation by played-time(total-time)
      *
      * @param {number} time - Time since animation has been started
-     * @param {boolean} [oneStep=false] - set true to search correct frame once
+     * @param {boolean} [skipFrame=false] - Whether allow to skip frames if timeStep too large.
      */
-    updateByTime(time, oneStep)
+    updateByTime(time, skipFrame)
     {
         const duration = this.duration;
         const frames = this._frames;
@@ -238,7 +238,7 @@ export default class AnimationSprite extends Sprite
         let finding = true;
 
         while (finding) {
-            finding = !oneStep;
+            finding = skipFrame;
             frame = frames[index];
             if (time < frame._startTime)
             {
@@ -294,11 +294,16 @@ export default class AnimationSprite extends Sprite
             return;
         }
 
+        this.currentTime = time;
+
         if (lastIndex !== index)
         {
             this.frameChange(index);
+            if (!skipFrame)
+            {
+                this.currentTime = this.currentFrame._startTime;
+            }
         }
-        this.currentTime = time;
     }
 
     /**
