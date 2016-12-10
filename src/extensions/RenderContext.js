@@ -203,7 +203,7 @@ export default class RenderContext
 
     resetGlobalContainer(destroyChildren)
     {
-        this.globalContainer.removeAllChildren(destroyChildren);
+        this.unlinkAllDisplayObjects(destroyChildren);
         this.shape = new Graphics();
         this.linkDisplayObject(this.shape);
 
@@ -240,14 +240,43 @@ export default class RenderContext
 
     linkDisplayObject(displayObject)
     {
-        this.globalContainer.addChild(displayObject);
-        displayObject._linkedContext = true;
+        if (displayObject._linkedContext !== true)
+        {
+            this.globalContainer.addChild(displayObject);
+            displayObject._linkedContext = true;
+        }
+        return this;
     }
 
-    unlinkDisplayObject(displayObject)
+    unlinkDisplayObject(displayObject, toDestroy)
     {
-        displayObject._linkedContext = false;
-        this.globalContainer.removeChild(displayObject);
+        if (displayObject._linkedContext !== false)
+        {
+            this.globalContainer.removeChild(displayObject);
+            displayObject._linkedContext = false;
+            if (toDestroy)
+            {
+                displayObject.destroy(toDestroy);
+            }
+        }
+        return this;
+    }
+
+    unlinkAllDisplayObjects(toDestroy)
+    {
+        const container = this.globalContainer;
+        const oldChildren = container.removeChildren(0, container.children.length);
+
+        if (toDestroy)
+        {
+            for (let i = 0; i < oldChildren.length; ++i)
+            {
+                const child = oldChildren[i];
+                child._linkedContext = false;
+                child.destroy(toDestroy);
+            }
+        }
+        return this;
     }
 
     /**
