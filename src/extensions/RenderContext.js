@@ -205,7 +205,7 @@ export default class RenderContext
     {
         this.globalContainer.removeAllChildren(destroyChildren);
         this.shape = new Graphics();
-        this.globalContainer.addChild(this.shape);
+        this.linkDisplayObject(this.shape);
 
         this.transformStack = [];
         this.globalTransform = {};
@@ -241,10 +241,12 @@ export default class RenderContext
     linkDisplayObject(displayObject)
     {
         this.globalContainer.addChild(displayObject);
+        displayObject._linkedContext = true;
     }
 
     unlinkDisplayObject(displayObject)
     {
+        displayObject._linkedContext = false;
         this.globalContainer.removeChild(displayObject);
     }
 
@@ -574,23 +576,25 @@ export default class RenderContext
         const count = arguments.length;
         let sprite;
         if (count === 9) {
-            sprite = this.createSprite(image, sx, sy, sw, sh);
+            sprite = this.createSprite(image, sx, sy, sw, sh, true);
             this.render(sprite, dx, dy, dw, dh);
         } else if (count === 5) {
-            sprite = this.createSprite(image, 0, 0, image.width, image.height);
+            sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
             // dx, dy, dw, dh
             this.render(sprite, sx, sy, sw, sh);
         } else {
-            sprite = this.createSprite(image, 0, 0, image.width, image.height);
+            sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
             // dx, dy
             this.renderAt(sprite, sx, sy);
         }
+        this.unlinkDisplayObject(sprite);
     }
 
     drawImageAt(image, dx, dy)
     {
-        const sprite = this.createSprite(image, 0, 0, image.width, image.height);
+        const sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
         this.renderAt(sprite, dx, dy);
+        this.unlinkDisplayObject(sprite);
     }
 
     /**
