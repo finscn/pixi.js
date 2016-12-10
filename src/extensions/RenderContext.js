@@ -266,9 +266,9 @@ export default class RenderContext
 
         renderer.emit('prerender');
 
-        if (renderer.currentRenderer.size > 1) {
-            renderer.currentRenderer.start();
-        }
+        // if (renderer.currentRenderer.size > 1) {
+        renderer.currentRenderer.start();
+        // }
     }
 
     clear(clearColor)
@@ -317,18 +317,18 @@ export default class RenderContext
 
         renderer.bindRenderTexture(renderTexture, null);
 
-        const batched = renderer.currentRenderer.size > 1;
+        // const batched = renderer.currentRenderer.size > 1;
 
-        if (!batched) {
-            renderer.currentRenderer.start();
-        }
+        // if (!batched) {
+        //     renderer.currentRenderer.start();
+        // }
 
         displayObject.renderWebGL(renderer);
 
         // apply transform..
-        if (!batched) {
-            renderer.currentRenderer.flush();
-        }
+        // if (!batched) {
+        //     renderer.currentRenderer.flush();
+        // }
     }
 
     flush()
@@ -339,9 +339,9 @@ export default class RenderContext
     end()
     {
         const renderer = this.renderer;
-        if (renderer.currentRenderer.size > 1) {
-            renderer.currentRenderer.flush();
-        }
+        // if (renderer.currentRenderer.size > 1) {
+        renderer.currentRenderer.flush();
+        // }
         if (renderer.textureGC) {
             renderer.textureGC.update();
         }
