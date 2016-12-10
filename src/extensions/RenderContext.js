@@ -20,6 +20,8 @@ export default class RenderContext
         this.webgl = renderer.type === RENDERER_TYPE.WEBGL;
         this.renderCore = this.webgl ? this.renderWebGLCore : this.renderCanvasCore;
 
+        this.initBlendModes();
+
         this.defaultTransform = {
             x: 0,
             y: 0,
@@ -29,10 +31,42 @@ export default class RenderContext
             alpha: 1,
             originalX: 0,
             originalY: 0,
-            blend: BLEND_MODES.NORMAL,
+            blend: this.blendModes.normal,
         };
 
         this.reset();
+    }
+
+    initBlendModes()
+    {
+        this.blendModes = {};
+        for (const name in BLEND_MODES)
+        {
+            this.blendModes[name] = BLEND_MODES[name];
+            this.blendModes[name.toLowerCase()] = BLEND_MODES[name];
+        }
+        this.blendModes.LIGHTER = BLEND_MODES.LIGHTEN;
+        this.blendModes.lighter = BLEND_MODES.LIGHTEN;
+        this.blendModes.DARKER = BLEND_MODES.DARKEN;
+        this.blendModes.darker = BLEND_MODES.DARKEN;
+
+        // const gl = this.renderer.gl;
+        // this.compositeOperations = {
+        //     'source-over': [gl.ONE, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     lighter: [gl.ONE, gl.ONE_MINUS_SRC_ALPHA, 0],
+        //     lighten: [gl.ONE, gl.ONE_MINUS_SRC_ALPHA, 0],
+        //     darker: [gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     darken: [gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     'destination-out': [gl.ZERO, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     'destination-over': [gl.ONE_MINUS_DST_ALPHA, gl.ONE, 1],
+        //     'source-atop': [gl.DST_ALPHA, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     xor: [gl.ONE_MINUS_DST_ALPHA, gl.ONE_MINUS_SRC_ALPHA, 1],
+        //     copy: [gl.ONE, gl.ZERO, 1],
+        //     'source-in': [gl.DST_ALPHA, gl.ZERO, 1],
+        //     'destination-in': [gl.ZERO, gl.SRC_ALPHA, 1],
+        //     'source-out': [gl.ONE_MINUS_DST_ALPHA, gl.ZERO, 1],
+        //     'destination-atop': [gl.ONE_MINUS_DST_ALPHA, gl.SRC_ALPHA, 1],
+        // };
     }
 
     noop()
@@ -182,7 +216,7 @@ export default class RenderContext
 
     setBlendByName(name)
     {
-        this.setBlend(BLEND_MODES[name] || 0);
+        this.setBlend(this.blendModes[name] || 0);
     }
 
     getBlend()
