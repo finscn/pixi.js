@@ -155,6 +155,18 @@ export default class RenderContext
         this._transformSN++;
     }
 
+    setOriginal(x, y)
+    {
+        this.globalTransform.originalX = x;
+        this.globalTransform.originalY = y;
+        this._transformSN++;
+    }
+
+    getAlpha()
+    {
+        return this.globalTransform.alpha;
+    }
+
     setAlpha(alpha)
     {
         this._lastAlpha = this.globalTransform.alpha;
@@ -168,27 +180,27 @@ export default class RenderContext
         this._transformSN++;
     }
 
-    getAlpha()
+    setBlendByName(name)
     {
-        return this.globalTransform.alpha;
-    }
-
-    setOriginal(x, y)
-    {
-        this.globalTransform.originalX = x;
-        this.globalTransform.originalY = y;
-        this._transformSN++;
-    }
-
-    setBlend(blend)
-    {
-        this.globalTransform.blend = blend;
-        this._transformSN++;
+        this.setBlend(BLEND_MODES[name] || 0);
     }
 
     getBlend()
     {
         return this.globalTransform.blend;
+    }
+
+    setBlend(blend)
+    {
+        this._lastBlend = this.globalTransform.blend;
+        this.globalTransform.blend = blend;
+        this._transformSN++;
+    }
+
+    restoreBlend()
+    {
+        this.globalTransform.blend = this._lastBlend;
+        this._transformSN++;
     }
 
     updateClipRect(x, y, width, height)
@@ -228,6 +240,7 @@ export default class RenderContext
         for (const p in this.defaultTransform) {
             this.globalTransform[p] = this.defaultTransform[p];
         }
+        this._lastBlend = this.globalTransform.blend;
         this._lastAlpha = this.globalTransform.alpha;
         this.updateGlobalContainer(true);
     }
