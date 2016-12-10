@@ -482,6 +482,7 @@ export default class RenderContext
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
         this.renderCore(shape, null, false);
+        // shape._spriteRect = null;
     }
 
     drawShapeRect(shape, x, y, width, height)

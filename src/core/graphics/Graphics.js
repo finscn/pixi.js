@@ -700,6 +700,7 @@ export default class Graphics extends Container
         }
 
         this.currentPath = null;
+        this._spriteRect = null;
 
         return this;
     }
@@ -736,7 +737,6 @@ export default class Graphics extends Container
         if (this._fastRect)
         {
             this._renderSpriteRect(renderer);
-            renderer.flush();
         }
         else
         {
