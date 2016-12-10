@@ -14,14 +14,11 @@ export default class RenderContext
     constructor(renderer, root)
     {
         this.renderer = renderer;
+        this.root = root;
+
         this.canvas = renderer.view;
         this.webgl = renderer.type === RENDERER_TYPE.WEBGL;
-
-        this._lastTransformSN = -1;
-        this._transformSN = 1;
-
-        this.baseTexturePool = this.baseTexturePool || {};
-        this.texturePool = this.texturePool || {};
+        this.renderCore = this.webgl ? this.renderWebGLCore : this.renderCanvasCore;
 
         this.defaultTransform = {
             x: 0,
@@ -35,7 +32,26 @@ export default class RenderContext
             blend: BLEND_MODES.NORMAL,
         };
 
-        this.root = root || new Container();
+        this.reset();
+    }
+
+    noop()
+    {
+        // noop;
+    }
+
+    reset()
+    {
+        this._renderCore = this.renderCore;
+        this._lastRenderTexture = -1;
+
+        this._lastTransformSN = -1;
+        this._transformSN = 1;
+
+        this.baseTexturePool = this.baseTexturePool || {};
+        this.texturePool = this.texturePool || {};
+
+        this.root = this.root || new Container();
 
         this.maskContainer = new Container();
         this.maskContainer.visible = false;
@@ -297,6 +313,17 @@ export default class RenderContext
 
         renderer.emit('prerender');
 
+        // no point rendering if our context has been blown up!
+        if (!renderer.gl || renderer.gl.isContextLost())
+        {
+            this.renderCore = this.noop;
+            return;
+        }
+        this.renderCore = this._renderCore;
+        this._lastRenderTexture = -1;
+
+        renderer._nextTextureLocation = 0;
+
         // if (renderer.currentRenderer.size > 1) {
         renderer.currentRenderer.start();
         // }
@@ -310,43 +337,29 @@ export default class RenderContext
         }
     }
 
-    renderCore(displayObject, renderTexture, skipUpdateTransform)
+    renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
     {
         const renderer = this.renderer;
-
-        if (!this.webgl) {
-            if (!renderer.view) {
-                return;
-            }
-            if (!skipUpdateTransform) {
-                displayObject.updateTransformWithParent();
-            }
-            renderer.render(displayObject, renderTexture, false, null, true);
-            return;
-        }
 
         // can be handy to know!
         renderer.renderingToScreen = !renderTexture;
 
-        // no point rendering if our context has been blown up!
-        if (!renderer.gl || renderer.gl.isContextLost())
-        {
-            return;
-        }
-
-        renderer._nextTextureLocation = 0;
+        // renderer._nextTextureLocation = 0;
 
         if (!renderTexture)
         {
             renderer._lastObjectRendered = displayObject;
+        }
+        if (renderTexture !== this._lastRenderTexture)
+        {
+            this._lastRenderTexture = renderTexture;
+            renderer.bindRenderTexture(renderTexture, null);
         }
 
         if (!skipUpdateTransform)
         {
             displayObject.updateTransformWithParent(true);
         }
-
-        renderer.bindRenderTexture(renderTexture, null);
 
         // const batched = renderer.currentRenderer.size > 1;
 
@@ -362,6 +375,19 @@ export default class RenderContext
         // }
     }
 
+    renderCanvasCore(displayObject, renderTexture, skipUpdateTransform)
+    {
+        const renderer = this.renderer;
+
+        if (!renderer.view) {
+            return;
+        }
+        if (!skipUpdateTransform) {
+            displayObject.updateTransformWithParent();
+        }
+        renderer.render(displayObject, renderTexture, false, null, true);
+    }
+
     flush()
     {
         this.renderer.currentRenderer.flush();
@@ -370,11 +396,14 @@ export default class RenderContext
     end()
     {
         const renderer = this.renderer;
-        // if (renderer.currentRenderer.size > 1) {
-        renderer.currentRenderer.flush();
-        // }
-        if (renderer.textureGC) {
-            renderer.textureGC.update();
+        if (this.renderCore !== this.noop)
+        {
+            // if (renderer.currentRenderer.size > 1) {
+            renderer.currentRenderer.flush();
+            // }
+            if (renderer.textureGC) {
+                renderer.textureGC.update();
+            }
         }
         renderer.emit('postrender');
     }
@@ -749,6 +778,16 @@ export default class RenderContext
             container.addChild(sprite);
         }
         return sprite;
+    }
+
+    destroy()
+    {
+        this._lastRenderTexture = -1;
+        this.baseTexturePool = null;
+        this.texturePool = null;
+        this.renderer = null;
+        this.canvas = null;
+        this.root.destroy(true);
     }
 
     _updateTextContent()
