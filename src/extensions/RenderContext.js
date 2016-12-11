@@ -378,10 +378,7 @@ export default class RenderContext
 
     clear(clearColor)
     {
-        const renderer = this.renderer;
-        if (renderer._activeRenderTarget) {
-            renderer.clear(clearColor);
-        }
+        this.renderer.clear(clearColor);
     }
 
     renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
