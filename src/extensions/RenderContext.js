@@ -102,8 +102,9 @@ export default class RenderContext
 
     resize(x, y)
     {
-        this.renderer.resize(x - 1, y);
         const Me = this;
+
+        Me.renderer.resize(x - 1, y);
         setTimeout(function() {
             Me.renderer.resize(x, y);
         }, 1);
@@ -137,6 +138,7 @@ export default class RenderContext
     save()
     {
         const t = this.globalTransform;
+
         this.transformStack.push({
             x: t.x,
             y: t.y,
@@ -153,10 +155,13 @@ export default class RenderContext
     restore()
     {
         const lt = this.transformStack.pop();
+
         if (!lt) {
             return;
         }
+
         const t = this.globalTransform;
+
         t.x = lt.x;
         t.y = lt.y;
         t.scaleX = lt.scaleX;
@@ -285,8 +290,10 @@ export default class RenderContext
             return;
         }
         this._lastTransformSN = this._transformSN;
+
         const t = this.globalTransform;
         const ct = this.globalContainer.transform;
+
         ct.position.set(t.x + t.originalX, t.y + t.originalY);
         ct.scale.set(t.scaleX, t.scaleY);
         ct.rotation = t.rotation;
@@ -335,6 +342,7 @@ export default class RenderContext
             for (let i = 0; i < oldChildren.length; ++i)
             {
                 const child = oldChildren[i];
+
                 child._linkedContext = false;
                 child.destroy(toDestroy);
             }
@@ -356,6 +364,7 @@ export default class RenderContext
         if (clear) {
             this.clear();
         }
+
         const renderer = this.renderer;
 
         renderer.emit('prerender');
@@ -440,6 +449,7 @@ export default class RenderContext
     end()
     {
         const renderer = this.renderer;
+
         if (this.renderCore !== this.noop)
         {
             // if (renderer.currentRenderer.size > 1) {
@@ -455,6 +465,7 @@ export default class RenderContext
     clearRect(x, y, width, height, color, alpha)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
         this.drawShapeRect(shape, x, y, width, height);
@@ -465,6 +476,7 @@ export default class RenderContext
     strokeRect(x, y, width, height, color, lineWidth)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeRect(shape, x, y, width, height);
@@ -474,6 +486,7 @@ export default class RenderContext
     fillRect(x, y, width, height, color)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.beginFill(color);
         this.drawShapeRect(shape, x, y, width, height);
@@ -497,6 +510,7 @@ export default class RenderContext
     strokeCircle(x, y, radius, color, lineWidth)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeCircle(shape, x, y, radius);
@@ -506,6 +520,7 @@ export default class RenderContext
     fillCircle(x, y, radius, color)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.beginFill(color);
         this.drawShapeCircle(shape, x, y, radius);
@@ -528,6 +543,7 @@ export default class RenderContext
     strokeArc(x, y, radius, startAngle, endAngle, anticlockwise, color, lineWidth)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
@@ -537,6 +553,7 @@ export default class RenderContext
     fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color)
     {
         const shape = this.shape;
+
         shape.clear();
         shape.beginFill(color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
@@ -564,6 +581,7 @@ export default class RenderContext
         const position = displayObject.transform.position;
         const x = position.x;
         const y = position.y;
+
         position.set(x - t.originalX, y - t.originalY);
 
         // TODO: add mask ?
@@ -594,6 +612,7 @@ export default class RenderContext
     render(displayObject, dx, dy, dw, dh, renderTexture)
     {
         const count = arguments.length;
+
         if (count >= 5) {
             // dx, dy, dw, dh
             if (displayObject._width !== dw) {
@@ -607,9 +626,11 @@ export default class RenderContext
             // dx, dy
         } else {
             renderTexture = dx;
-            const p = displayObject.position;
-            dx = p.x;
-            dy = p.y;
+
+            const position = displayObject.position;
+
+            dx = position.x;
+            dy = position.y;
         }
 
         this.updateGlobalContainer();
@@ -632,6 +653,7 @@ export default class RenderContext
         this.updateGlobalContainer();
 
         const frame = displayObject._texture._frame;
+
         frame.x = sx;
         frame.y = sy;
         frame.width = sw;
@@ -663,9 +685,11 @@ export default class RenderContext
                 displayObject.height = sh;
             }
             renderTexture = dx;
-            const p = displayObject.position;
-            dx = p.x;
-            dy = p.y;
+
+            const position = displayObject.position;
+
+            dx = position.x;
+            dy = position.y;
         }
 
         const t = this.globalTransform;
@@ -683,6 +707,7 @@ export default class RenderContext
     {
         const count = arguments.length;
         let sprite;
+
         if (count === 9) {
             sprite = this.createSprite(image, sx, sy, sw, sh, true);
             this.render(sprite, dx, dy, dw, dh);
@@ -701,6 +726,7 @@ export default class RenderContext
     drawImageAt(image, dx, dy)
     {
         const sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
+
         this.renderAt(sprite, dx, dy);
         this.unlinkDisplayObject(sprite);
     }
@@ -718,6 +744,7 @@ export default class RenderContext
     {
         const id = image.id || image.src;
         let baseTexture;
+
         if (id) {
             baseTexture = this.baseTexturePool[id];
             if (!baseTexture) {
@@ -734,17 +761,20 @@ export default class RenderContext
     {
         const count = arguments.length;
         const baseTexture = this.createBaseTexture(image);
+        let texture;
+
         if (count === 2) {
             id = sx;
         }
-        let texture;
         if (id) {
             texture = this.texturePool[id];
             if (texture) {
                 return texture;
             }
         }
+
         let rect;
+
         if (count > 2) {
             rect = new Rectangle(sx, sy, sw, sh);
         }
@@ -760,6 +790,7 @@ export default class RenderContext
         const count = arguments.length;
         let id;
         let texture;
+
         if (count > 2) {
             // id = [image.id || image.src, sx, sy, sw, sh].join('-');
             texture = this.createTexture(image, sx, sy, sw, sh, id);
@@ -768,7 +799,9 @@ export default class RenderContext
             // id = image.id || image.src;
             texture = this.createTexture(image, id);
         }
+
         const sprite = Sprite.from(texture);
+
         if (container) {
             if (container === true) {
                 container = this.globalContainer;
@@ -783,6 +816,7 @@ export default class RenderContext
         const count = arguments.length;
         let id;
         let texture;
+
         if (count >= 9) {
             // id = [image.id || image.src, sx, sy, sw, sh].join('-');
             texture = this.createTexture(image, sx, sy, sw, sh, id);
@@ -797,7 +831,9 @@ export default class RenderContext
             R = sw;
             B = sh;
         }
+
         const sprite = new mesh.NineSlicePlane(texture, L, T, R, B);
+
         if (container) {
             if (container === true) {
                 container = this.globalContainer;
@@ -811,9 +847,12 @@ export default class RenderContext
     {
         const canvas = context.canvas;
         const texture = Texture.fromCanvas(canvas);
+
         texture.orig = new Rectangle();
         texture.trim = new Rectangle();
+
         const sprite = Sprite.from(texture);
+
         sprite.resolution = this.renderer.resolution;
         sprite.context = context;
         sprite.canvas = canvas;
@@ -843,6 +882,7 @@ export default class RenderContext
     _updateTextContent()
     {
         const texture = this._texture;
+
         this._textureID = -1;
         texture.baseTexture.emit('update', texture.baseTexture);
     }
