@@ -607,8 +607,9 @@ export default class RenderContext
             // dx, dy
         } else {
             renderTexture = dx;
-            dx = 0;
-            dy = 0;
+            const p = displayObject.position;
+            dx = p.x;
+            dy = p.y;
         }
 
         this.updateGlobalContainer();
@@ -630,8 +631,6 @@ export default class RenderContext
 
         this.updateGlobalContainer();
 
-        const t = this.globalTransform;
-
         const frame = displayObject._texture._frame;
         frame.x = sx;
         frame.y = sy;
@@ -647,7 +646,6 @@ export default class RenderContext
             if (displayObject._height !== dh) {
                 displayObject.height = dh;
             }
-            displayObject.transform.position.set(dx - t.originalX, dy - t.originalY);
         } else if (count >= 7) {
             // dx, dy
             if (displayObject._width !== sw) {
@@ -657,7 +655,6 @@ export default class RenderContext
                 displayObject.height = sh;
             }
             renderTexture = dw;
-            displayObject.transform.position.set(dx - t.originalX, dy - t.originalY);
         } else if (count >= 5) {
             if (displayObject._width !== sw) {
                 displayObject.width = sw;
@@ -666,8 +663,16 @@ export default class RenderContext
                 displayObject.height = sh;
             }
             renderTexture = dx;
-            displayObject.transform.position.set(-t.originalX, -t.originalY);
+            const p = displayObject.position;
+            dx = p.x;
+            dy = p.y;
         }
+
+        const t = this.globalTransform;
+        const x = dx - t.originalX;
+        const y = dy - t.originalY;
+
+        displayObject.transform.position.set(x, y);
 
         displayObject.mask = this.mask;
 
