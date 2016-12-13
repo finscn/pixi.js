@@ -27,6 +27,17 @@ export default class Rope extends Mesh
         super(texture);
 
         /**
+         * The anchor sets the origin point of the texture.
+         * The default is 0,0 this means the texture's origin is the top left
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         *
+         * @member {PIXI.ObservablePoint}
+         * @private
+         */
+        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+
+        /**
          * Whether the rope is _vertical.
          *
          * @member {boolean}
@@ -104,7 +115,8 @@ export default class Rope extends Mesh
         const indices = this.indices;
         const colors = this.colors;
 
-        const textureUvs = this._texture._uvs;
+        const texture = this._texture;
+        const textureUvs = texture._uvs;
         const offset = new core.Point(textureUvs.x0, textureUvs.y0);
         const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
 
@@ -159,9 +171,44 @@ export default class Rope extends Mesh
             indices[index + 1] = index + 1;
         }
 
+        const trim = texture.trim;
+        const orig = texture.orig;
+        const anchor = this._anchor;
+
+        // calculate the space around pivot point.
+        if (trim)
+        {
+            this._leftSpace = orig.width * anchor.x - trim.x;
+            this._rightSpace = trim.width - this._leftSpace;
+            this._topSpace = orig.height * anchor.y - trim.y;
+            this._bottomSpace = trim.height - this._topSpace;
+        }
+        else
+        {
+            this._leftSpace = orig.width * anchor.x;
+            this._rightSpace = orig.width - this._leftSpace;
+            this._topSpace = orig.height * anchor.y;
+            this._bottomSpace = orig.height - this._topSpace;
+        }
+
         // ensure that the changes are uploaded
         this.dirty++;
         this.indexDirty++;
+    }
+
+    /**
+     * Called when the anchor position updates.
+     *
+     * @private
+     */
+    _onAnchorUpdate()
+    {
+        this._transformID = -1;
+
+        if (this._ready)
+        {
+            this.refresh();
+        }
     }
 
     /**
@@ -204,7 +251,7 @@ export default class Rope extends Mesh
         const vertices = this.vertices;
         const total = points.length;
 
-        const num = (this._vertical ? this._texture.frame.width : this._texture.frame.height) / 2;
+        // const num = (this._vertical ? this._texture.frame.width : this._texture.frame.height) / 2;
 
         for (let i = 0; i < total; i++)
         {
@@ -237,13 +284,10 @@ export default class Rope extends Mesh
             perpX /= perpLength;
             perpY /= perpLength;
 
-            perpX *= num;
-            perpY *= num;
-
-            vertices[index] = point.x + perpX;
-            vertices[index + 1] = point.y + perpY;
-            vertices[index + 2] = point.x - perpX;
-            vertices[index + 3] = point.y - perpY;
+            vertices[index] = point.x + perpX * this._leftSpace;
+            vertices[index + 1] = point.y + perpY * this._topSpace;
+            vertices[index + 2] = point.x - perpX * this._rightSpace;
+            vertices[index + 3] = point.y - perpY * this._topSpace;
 
             lastPoint = point;
         }
@@ -280,5 +324,29 @@ export default class Rope extends Mesh
         const dy = last.y - first.y;
 
         this._vertical = dx === 0 || Math.abs(dy / dx) > 1;
+    }
+
+    /**
+     * The anchor sets the origin point of the texture.
+     * The default is 0,0 this means the texture's origin is the top left
+     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+     *
+     * @member {PIXI.ObservablePoint}
+     * @memberof PIXI.Sprite#
+     */
+    get anchor()
+    {
+        return this._anchor;
+    }
+
+    /**
+     * Copies the anchor to the rope.
+     *
+     * @param {number} value - The value to set to.
+     */
+    set anchor(value)
+    {
+        this._anchor.copy(value);
     }
 }
