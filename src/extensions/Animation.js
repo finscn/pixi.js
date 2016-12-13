@@ -368,18 +368,22 @@ export default class Animation
      * Add the animation to a display object.
      *
      * @param {PIXI.DisplayObject} host - The host of Animation
-     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {string} [bindName='anim'] - The property name of host for binding
      */
-    plugInto(host, slotName)
+    bind(host, bindName)
+    {
+        this.unbind();
+        this._host = host;
+        this._bindName = bindName || 'anim';
+        this._host[this._bindName] = this;
+    }
+
+    unbind()
     {
         if (this._host)
         {
-            delete this._host[this._slotName];
+            delete this._host[this._bindName];
         }
-        this._host = host;
-        this._slotName = slotName || 'anim';
-
-        this._host[this._slotName] = this;
     }
 
     /**
@@ -490,16 +494,16 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {string} [bindName='anim'] - The slot name to plug
      *
      * @return {PIXI.Sprite} a sprite with animation
      */
-    static createSprite(frames, duration, slotName)
+    static createSprite(frames, duration, bindName)
     {
         const anim = new Animation(frames, duration);
         const sprite = new Sprite(anim.currentTexure);
 
-        anim.plugInto(sprite, slotName);
+        anim.bind(sprite, bindName);
 
         return sprite;
     }
@@ -511,17 +515,17 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {string} [bindName='anim'] - The slot name to plug
      * @param {PIXI.Point[]} points - An array of {@link PIXI.Point} objects to construct this rope.
      *
      * @return {PIXI.mesh.Rope} a mesh rope with animation
      */
-    static createMeshRope(frames, duration, slotName, points)
+    static createMeshRope(frames, duration, bindName, points)
     {
         const anim = new Animation(frames, duration);
         const rope = new Rope(anim.currentTexure, points);
 
-        anim.plugInto(rope, slotName);
+        anim.bind(rope, bindName);
 
         return rope;
     }
@@ -533,18 +537,18 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {string} [bindName='anim'] - The slot name to plug
      * @param {number} verticesX - The number of vertices in the x-axis
      * @param {number} verticesY - The number of vertices in the y-axis
      *
      * @return {PIXI.mesh.Plane} a mesh plane with animation
      */
-    static createMeshPlane(frames, duration, slotName, verticesX, verticesY)
+    static createMeshPlane(frames, duration, bindName, verticesX, verticesY)
     {
         const anim = new Animation(frames, duration);
         const plane = new Plane(anim.currentTexure, verticesX, verticesY);
 
-        anim.plugInto(plane, slotName);
+        anim.bind(plane, bindName);
 
         return plane;
     }
