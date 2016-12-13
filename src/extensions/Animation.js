@@ -350,8 +350,12 @@ export default class Animation
             this._host.transform.pivot.set(pivot[0], pivot[1]);
         }
 
-        this._host._texture = this.currentFrame.texture;
+        this._host._texture = this.currentTexure;
         this._host._textureID = -1;
+        if (this._host.refresh)
+        {
+            this._host.refresh();
+        }
 
         if (this.onFrameChange)
         {
