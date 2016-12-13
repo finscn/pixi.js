@@ -1,7 +1,11 @@
 import * as core from '../core';
+import * as mesh from '../mesh';
 
 const Texture = core.Texture;
+
 const Sprite = core.Sprite;
+const Rope = mesh.Rope;
+const Plane = mesh.Plane;
 
 /**
  * @typedef FrameObject
@@ -11,20 +15,20 @@ const Sprite = core.Sprite;
  * @property {array} [pivot] - the pivot(ratio) of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
- * If no `frame.pivot`, frame.pivot will be null, then AnimationSprite use default or original or previous pivot.
+ * If no `frame.pivot`, frame.pivot will be null, then Animation use default or original or previous pivot.
  * Some private fileds will be generated dynamically:
  *     {number} _startTime:
  *     {number} _endTime:
  */
 
 /**
- * An AnimationSprite is a simple way to display an animation depicted by a list of frames
+ * An Animation is a simple way to display an animation depicted by a list of frames
  *
  * @class
  * @extends PIXI.Sprite
  * @memberof PIXI.extensions
  */
-export default class AnimationSprite extends Sprite
+export default class Animation
 {
     /**
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
@@ -34,8 +38,6 @@ export default class AnimationSprite extends Sprite
      */
     constructor(frames, duration)
     {
-        super(frames[0] instanceof Texture ? frames[0] : frames[0].texture);
-
         /**
          * Scale the time step when update animation. Higher is faster, lower is slower
          *
@@ -53,10 +55,10 @@ export default class AnimationSprite extends Sprite
         this.loop = true;
 
         /**
-         * Function to call when a AnimationSprite finishes playing
+         * Function to call when a Animation finishes playing
          *
          * @method
-         * @memberof PIXI.extensions.AnimationSprite#
+         * @memberof PIXI.extensions.Animation#
          */
         this.onComplete = null;
 
@@ -69,10 +71,10 @@ export default class AnimationSprite extends Sprite
         this.endIndex = 0;
 
         /**
-         * Function to call when a AnimationSprite frame changes
+         * Function to call when a Animation frame changes
          *
          * @method
-         * @memberof PIXI.extensions.AnimationSprite#
+         * @memberof PIXI.extensions.Animation#
          */
         this.onFrameChange = null;
 
@@ -84,7 +86,7 @@ export default class AnimationSprite extends Sprite
         this.currentTime = 0;
 
         /**
-         * Indicates if the AnimationSprite is currently playing
+         * Indicates if the Animation is currently playing
          *
          * @member {boolean}
          * @readonly
@@ -100,25 +102,34 @@ export default class AnimationSprite extends Sprite
         this.skipFrame = false;
 
         /**
-        * The AnimatedSprites current frame index
+        * The animation current frame index
         *
         * @member {number}
-        * @memberof PIXI.extras.AnimatedSprite#
         * @readonly
         */
         this.currentIndex = -1;
 
         /**
-        * The AnimatedSprites current frame object
+        * The animation current frame object
         *
-        * @member {object}
-        * @memberof PIXI.extras.AnimatedSprite#
+        * @member {FrameObject}
+        * @memberof PIXI.extensions.Animation#
         * @readonly
         */
         this.currentFrame = null;
 
+
         /**
-         * `frameCount` is the total number of frames in the AnimationSprite
+        * The animation current frame object
+        *
+        * @member {PIXI.Texture}
+        * @readonly
+        */
+        this.currentTexture = null;
+
+
+        /**
+         * `frameCount` is the total number of frames in the Animation
          *
          * @member {number}
          * @default 0
@@ -140,8 +151,9 @@ export default class AnimationSprite extends Sprite
         this.frames = frames;
     }
 
+
     /**
-     * Play the AnimationSprite
+     * Play the Animation
      *
      */
     play()
@@ -150,7 +162,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Pause the AnimationSprite
+     * Pause the Animation
      *
      */
     pause()
@@ -168,7 +180,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stop the AnimationSprite
+     * Stop the Animation
      *
      */
     stop()
@@ -177,7 +189,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Go to a specific frame and begins playing the AnimationSprite
+     * Go to a specific frame and begins playing the Animation
      *
      * @param {number} frameIndex - frame index to start at
      */
@@ -192,7 +204,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Stop the AnimationSprite and goes to a specific frame
+     * Stop the Animation and goes to a specific frame
      *
      * @param {number} frameIndex - frame index to stop at
      */
@@ -319,7 +331,7 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * Function to call when a AnimationSprite changes which texture is being rendered
+     * Function to call when a Animation changes which texture is being rendered
      *
      * @param {number} frameIndex - new frame index
      * @private
@@ -330,13 +342,16 @@ export default class AnimationSprite extends Sprite
 
         const frame = this.currentFrame = this._frames[frameIndex];
 
+        this.currentTexure = frame.texture;
+
         if (frame.pivot)
         {
             const pivot = frame.pivot;
-            this.transform.pivot.set(pivot[0], pivot[1]);
+            this._host.transform.pivot.set(pivot[0], pivot[1]);
         }
 
-        this.updateTexture();
+        this._host._texture = this.currentFrame.texture;
+        this._host._textureID = -1;
 
         if (this.onFrameChange)
         {
@@ -344,19 +359,27 @@ export default class AnimationSprite extends Sprite
         }
     }
 
+
     /**
-     * Update the displayed texture to match the current frame index
+     * Add the animation to a display object.
      *
-     * @private
+     * @param {PIXI.DisplayObject} host - The host of Animation
+     * @param {string} [slotName='anim'] - The slot name to plug
      */
-    updateTexture()
+    plugInto(host, slotName)
     {
-        this._texture = this.currentFrame.texture;
-        this._textureID = -1;
+        if (this._host)
+        {
+            delete this._host[this._slotName];
+        }
+        this._host = host;
+        this._slotName = slotName || 'anim';
+
+        this._host[this._slotName] = this;
     }
 
     /**
-     * Destroy the AnimationSprite
+     * Destroy the Animation
      *
      */
     destroy()
@@ -366,10 +389,20 @@ export default class AnimationSprite extends Sprite
     }
 
     /**
-     * The array of frame objects used for this AnimationSprite
+     * Get the host of Animation
+     *
+     * @member {PIXI.DisplayObject}
+     */
+    get host()
+    {
+        return this._host;
+    }
+
+    /**
+     * The array of frame objects used for this Animation
      *
      * @member {FrameObject[]}
-     * @memberof PIXI.extensions.AnimationSprite#
+     * @memberof PIXI.extensions.Animation#
      */
     get frames()
     {
@@ -393,6 +426,7 @@ export default class AnimationSprite extends Sprite
             this.currentTime = 0;
             this.currentIndex = -1;
             this.currentFrame = null;
+            this.currentTexure = null;
             return;
         }
 
@@ -401,7 +435,7 @@ export default class AnimationSprite extends Sprite
         this._maxIndex = len - 1;
 
         const preDuration = this.duration / len;
-        const useTexture = value[0] instanceof core.Texture;
+        const useTexture = value[0] instanceof Texture;
 
         let startTime = 0;
         let endTime = 0;
@@ -437,11 +471,78 @@ export default class AnimationSprite extends Sprite
 
         this.currentIndex = 0;
         this.currentFrame = this._frames[0];
+        this.currentTexure = this.currentFrame.texture;
         if (this.currentFrame.pivot)
         {
             const a = this.currentFrame.pivot;
-            this.transform.pivot.set(a[0], a[1]);
+            this._host.transform.pivot.set(a[0], a[1]);
         }
+    }
+
+    /**
+     * Create a Sprite with animation
+     *
+     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+     *  objects that make up the animation
+     * @param {number} [duration=0] - The total duration of animation in ms
+     *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     * @param {string} [slotName='anim'] - The slot name to plug
+     *
+     * @return {PIXI.Sprite} a sprite with animation
+     */
+    static createSprite(frames, duration, slotName)
+    {
+        const anim = new Animation(frames, duration);
+        const sprite = new Sprite(anim.currentTexure);
+
+        anim.plugInto(sprite, slotName);
+
+        return sprite;
+    }
+
+    /**
+     * Create a Mesh Rope with animation
+     *
+     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+     *  objects that make up the animation
+     * @param {number} [duration=0] - The total duration of animation in ms
+     *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {PIXI.Point[]} points - An array of {@link PIXI.Point} objects to construct this rope.
+     *
+     * @return {PIXI.mesh.Rope} a mesh rope with animation
+     */
+    static createMeshRope(frames, duration, slotName, points)
+    {
+        const anim = new Animation(frames, duration);
+        const rope = new Rope(anim.currentTexure, points);
+
+        anim.plugInto(rope, slotName);
+
+        return rope;
+    }
+
+    /**
+     * Create a Mesh Plane with animation
+     *
+     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+     *  objects that make up the animation
+     * @param {number} [duration=0] - The total duration of animation in ms
+     *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     * @param {string} [slotName='anim'] - The slot name to plug
+     * @param {number} verticesX - The number of vertices in the x-axis
+     * @param {number} verticesY - The number of vertices in the y-axis
+     *
+     * @return {PIXI.mesh.Plane} a mesh plane with animation
+     */
+    static createMeshPlane(frames, duration, slotName, verticesX, verticesY)
+    {
+        const anim = new Animation(frames, duration);
+        const plane = new Plane(anim.currentTexure, verticesX, verticesY);
+
+        anim.plugInto(plane, slotName);
+
+        return plane;
     }
 
 }
