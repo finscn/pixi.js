@@ -111,8 +111,16 @@ export default class Rope extends Mesh
 
         uvs[0] = 0 + offset.x;
         uvs[1] = 0 + offset.y;
-        uvs[2] = 0 + offset.x;
-        uvs[3] = factor.y + offset.y;
+        if (this._vertical)
+        {
+            uvs[2] = factor.x + offset.x;
+            uvs[3] = 0 + offset.y;
+        }
+        else
+        {
+            uvs[2] = 0 + offset.x;
+            uvs[3] = factor.y + offset.y;
+        }
 
         colors[0] = 1;
         colors[1] = 1;
@@ -128,11 +136,20 @@ export default class Rope extends Mesh
             let index = i * 4;
             const amount = i / (total - 1);
 
-            uvs[index + 0] = (amount * factor.x) + offset.x;
-            uvs[index + 1] = 0 + offset.y;
-
-            uvs[index + 2] = (amount * factor.x) + offset.x;
-            uvs[index + 3] = factor.y + offset.y;
+            if (this._vertical)
+            {
+                uvs[index + 0] = 0 + offset.x;
+                uvs[index + 1] = amount * factor.y + offset.y;
+                uvs[index + 2] = factor.x + offset.x;
+                uvs[index + 3] = amount * factor.y + offset.y;
+            }
+            else
+            {
+                uvs[index + 0] = (amount * factor.x) + offset.x;
+                uvs[index + 1] = 0 + offset.y;
+                uvs[index + 2] = (amount * factor.x) + offset.x;
+                uvs[index + 3] = factor.y + offset.y;
+            }
 
             index = i * 2;
             colors[index] = 1;
@@ -188,6 +205,8 @@ export default class Rope extends Mesh
         const vertices = this.vertices;
         const total = points.length;
 
+        const num = (this._vertical ? this._texture.width : this._texture.height) / 2;
+
         for (let i = 0; i < total; i++)
         {
             const point = points[i];
@@ -214,7 +233,7 @@ export default class Rope extends Mesh
             // }
 
             // const num = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
-            const num = this._texture.height / 2;
+
             const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
 
             perpX /= perpLength;
