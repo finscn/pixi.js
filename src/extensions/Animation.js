@@ -557,17 +557,15 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [bindName='anim'] - The slot name to plug
      *
      * @return {PIXI.Sprite} a sprite with animation
      */
-    static createSprite(frames, duration, bindName)
+    static createSprite(frames, duration)
     {
-        const anim = new Animation(frames, duration);
-        const sprite = new Sprite(anim.currentTexure);
+        const sprite = new Sprite(Texture.EMPTY);
 
-        anim.bind(sprite, bindName);
-
+        Animation.applyTo(sprite);
+        sprite.initAnimation(frames, duration);
         return sprite;
     }
 
@@ -578,18 +576,16 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [bindName='anim'] - The slot name to plug
      * @param {PIXI.Point[]} points - An array of {@link PIXI.Point} objects to construct this rope.
      *
      * @return {PIXI.mesh.Rope} a mesh rope with animation
      */
-    static createMeshRope(frames, duration, bindName, points)
+    static createMeshRope(frames, duration, points)
     {
-        const anim = new Animation(frames, duration);
-        const rope = new Rope(anim.currentTexure, points);
+        const rope = new Rope(Texture.EMPTY, points);
 
-        anim.bind(rope, bindName);
-
+        Animation.applyTo(rope);
+        rope.initAnimation(frames, duration);
         return rope;
     }
 
@@ -600,19 +596,17 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {string} [bindName='anim'] - The slot name to plug
      * @param {number} verticesX - The number of vertices in the x-axis
      * @param {number} verticesY - The number of vertices in the y-axis
      *
      * @return {PIXI.mesh.Plane} a mesh plane with animation
      */
-    static createMeshPlane(frames, duration, bindName, verticesX, verticesY)
+    static createMeshPlane(frames, duration, verticesX, verticesY)
     {
-        const anim = new Animation(frames, duration);
-        const plane = new Plane(anim.currentTexure, verticesX, verticesY);
+        const plane = new Plane(Texture.EMPTY, verticesX, verticesY);
 
-        anim.bind(plane, bindName);
-
+        Animation.applyTo(plane);
+        plane.initAnimation(frames, duration);
         return plane;
     }
 
