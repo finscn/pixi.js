@@ -116,6 +116,41 @@ export default class Rope extends Mesh
         const colors = this.colors;
 
         const texture = this._texture;
+
+        const trim = texture.trim;
+        const orig = texture.orig;
+        const anchor = this._anchor;
+
+        // calculate the space around pivot point.
+        this._pivotX = orig.width * anchor.x;
+        this._pivotY = orig.height * anchor.y;
+
+        if (trim)
+        {
+            this._leftSpace = this._pivotX - trim.x;
+            this._rightSpace = trim.width - this._leftSpace;
+            this._topSpace = this._pivotY - trim.y;
+            this._bottomSpace = trim.height - this._topSpace;
+        }
+        else
+        {
+            this._leftSpace = this._pivotX;
+            this._rightSpace = orig.width - this._leftSpace;
+            this._topSpace = this._pivotY;
+            this._bottomSpace = orig.height - this._topSpace;
+        }
+
+        if (this._vertical)
+        {
+            this._offsetHalf = -texture.frame.width / 2;
+            this._leftSpace += this._offsetHalf;
+        }
+        else
+        {
+            this._offsetHalf = texture.frame.height / 2;
+            this._topSpace -= this._offsetHalf;
+        }
+
         const textureUvs = texture._uvs;
         const offset = new core.Point(textureUvs.x0, textureUvs.y0);
         const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
@@ -171,29 +206,81 @@ export default class Rope extends Mesh
             indices[index + 1] = index + 1;
         }
 
-        const trim = texture.trim;
-        const orig = texture.orig;
-        const anchor = this._anchor;
-
-        // calculate the space around pivot point.
-        if (trim)
-        {
-            this._leftSpace = orig.width * anchor.x - trim.x;
-            this._rightSpace = trim.width - this._leftSpace;
-            this._topSpace = orig.height * anchor.y - trim.y;
-            this._bottomSpace = trim.height - this._topSpace;
-        }
-        else
-        {
-            this._leftSpace = orig.width * anchor.x;
-            this._rightSpace = orig.width - this._leftSpace;
-            this._topSpace = orig.height * anchor.y;
-            this._bottomSpace = orig.height - this._topSpace;
-        }
-
         // ensure that the changes are uploaded
         this.dirty++;
         this.indexDirty++;
+    }
+
+    /**
+     * Updates the object transform for rendering
+     *
+     * @private
+     */
+    updateTransform()
+    {
+        const points = this._points;
+
+        if (points.length < 1)
+        {
+            return;
+        }
+
+        let lastPoint = points[0];
+        let nextPoint;
+        let perpX = 0;
+        let perpY = 0;
+
+        // this.count -= 0.2;
+
+        const vertices = this.vertices;
+        const total = points.length;
+
+        // const num = (this._vertical ? -this._texture.frame.width : this._texture.frame.height) / 2;
+        const offsetHalf = this._offsetHalf;
+
+        for (let i = 0; i < total; i++)
+        {
+            const point = points[i];
+            const index = i * 4;
+
+            if (i < points.length - 1)
+            {
+                nextPoint = points[i + 1];
+            }
+            else
+            {
+                nextPoint = point;
+            }
+
+            perpY = -(nextPoint.x - lastPoint.x);
+            perpX = nextPoint.y - lastPoint.y;
+
+            // let ratio = (1 - (i / (total - 1))) * 10;
+
+            // if (ratio > 1)
+            // {
+            //     ratio = 1;
+            // }
+
+            // const offsetHalf = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
+
+            const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
+
+            perpX /= perpLength;
+            perpY /= perpLength;
+
+            perpX *= offsetHalf;
+            perpY *= offsetHalf;
+
+            vertices[index] = point.x + perpX - this._leftSpace;
+            vertices[index + 1] = point.y + perpY - this._topSpace;
+            vertices[index + 2] = point.x - perpX - this._leftSpace;
+            vertices[index + 3] = point.y - perpY - this._topSpace;
+
+            lastPoint = point;
+        }
+
+        this.containerUpdateTransform();
     }
 
     /**
@@ -225,74 +312,6 @@ export default class Rope extends Mesh
         {
             this.refresh();
         }
-    }
-
-    /**
-     * Updates the object transform for rendering
-     *
-     * @private
-     */
-    updateTransform()
-    {
-        const points = this._points;
-
-        if (points.length < 1)
-        {
-            return;
-        }
-
-        let lastPoint = points[0];
-        let nextPoint;
-        let perpX = 0;
-        let perpY = 0;
-
-        // this.count -= 0.2;
-
-        const vertices = this.vertices;
-        const total = points.length;
-
-        // const num = (this._vertical ? this._texture.frame.width : this._texture.frame.height) / 2;
-
-        for (let i = 0; i < total; i++)
-        {
-            const point = points[i];
-            const index = i * 4;
-
-            if (i < points.length - 1)
-            {
-                nextPoint = points[i + 1];
-            }
-            else
-            {
-                nextPoint = point;
-            }
-
-            perpY = -(nextPoint.x - lastPoint.x);
-            perpX = nextPoint.y - lastPoint.y;
-
-            // let ratio = (1 - (i / (total - 1))) * 10;
-
-            // if (ratio > 1)
-            // {
-            //     ratio = 1;
-            // }
-
-            // const num = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
-
-            const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
-
-            perpX /= perpLength;
-            perpY /= perpLength;
-
-            vertices[index] = point.x + perpX * this._leftSpace;
-            vertices[index + 1] = point.y + perpY * this._topSpace;
-            vertices[index + 2] = point.x - perpX * this._rightSpace;
-            vertices[index + 3] = point.y - perpY * this._topSpace;
-
-            lastPoint = point;
-        }
-
-        this.containerUpdateTransform();
     }
 
     /**
