@@ -514,6 +514,43 @@ export default class Animation
     }
 
     /**
+     * Mixin properties of Animation to a display object , let it become a animation object
+     *
+     *@param {PIXI.Sprite|PIXI.mesh.Rope} displayObject - the object to apply
+     */
+    static applyTo(displayObject)
+    {
+        const properties = [
+            // 'initAnimation',
+            'play',
+            'pause',
+            'resume',
+            'stop',
+            'gotoAndPlay',
+            'gotoAndStop',
+            'update',
+            'updateByTime',
+            'frameChange',
+            'updateTexture',
+            'getHost',
+            'getFrames',
+            'setFrames',
+            'onFrameChange',
+            'onComplete',
+        ];
+
+        properties.forEach(function(p) {
+            displayObject[p] = Animation.prototype[p];
+        });
+        displayObject._initAnimation = Animation.prototype.initAnimation;
+        displayObject.initAnimation = function(frames, duration) {
+            this._initAnimation(frames, duration);
+            this._host = this;
+            this._bindName = '_anim';
+        };
+    }
+
+    /**
      * Create a Sprite with animation
      *
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
@@ -577,43 +614,6 @@ export default class Animation
         anim.bind(plane, bindName);
 
         return plane;
-    }
-
-    /**
-     * Mixin properties of Animation to a display object , let it become a animation object
-     *
-     *@param {PIXI.Sprite|PIXI.mesh.Rope} displayObject - the object to apply
-     */
-    static applyTo(displayObject)
-    {
-        const properties = [
-            // 'initAnimation',
-            'play',
-            'pause',
-            'resume',
-            'stop',
-            'gotoAndPlay',
-            'gotoAndStop',
-            'update',
-            'updateByTime',
-            'frameChange',
-            'updateTexture',
-            'getHost',
-            'getFrames',
-            'setFrames',
-            'onFrameChange',
-            'onComplete',
-        ];
-
-        properties.forEach(function(p) {
-            displayObject[p] = Animation.prototype[p];
-        });
-        displayObject._initAnimation = Animation.prototype.initAnimation;
-        displayObject.initAnimation = function(frames, duration) {
-            this._initAnimation(frames, duration);
-            this._host = this;
-            this._bindName = '_anim';
-        };
     }
 
 }
