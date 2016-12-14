@@ -27,6 +27,17 @@ export default class Rope extends Mesh
         super(texture);
 
         /**
+         * The anchor sets the origin point of the texture.
+         * The default is 0,0 this means the texture's origin is the top left
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         *
+         * @member {PIXI.ObservablePoint}
+         * @private
+         */
+        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+
+        /**
          * Whether the rope is _vertical.
          *
          * @member {boolean}
@@ -106,7 +117,39 @@ export default class Rope extends Mesh
 
         const texture = this._texture;
 
-        this._halfSpace = (this._vertical ? -texture.frame.width : texture.frame.height) / 2;
+        const trim = texture.trim;
+        const orig = texture.orig;
+        const anchor = this._anchor;
+
+        // calculate the space around pivot point.
+        this._pivotX = orig.width * anchor.x;
+        this._pivotY = orig.height * anchor.y;
+
+        if (trim)
+        {
+            this._leftSpace = this._pivotX - trim.x;
+            this._rightSpace = trim.width - this._leftSpace;
+            this._topSpace = this._pivotY - trim.y;
+            this._bottomSpace = trim.height - this._topSpace;
+        }
+        else
+        {
+            this._leftSpace = this._pivotX;
+            this._rightSpace = orig.width - this._leftSpace;
+            this._topSpace = this._pivotY;
+            this._bottomSpace = orig.height - this._topSpace;
+        }
+
+        if (this._vertical)
+        {
+            this._offsetHalf = -texture.frame.width / 2;
+            this._leftSpace += this._offsetHalf;
+        }
+        else
+        {
+            this._offsetHalf = texture.frame.height / 2;
+            this._topSpace -= this._offsetHalf;
+        }
 
         const textureUvs = texture._uvs;
         const offset = new core.Point(textureUvs.x0, textureUvs.y0);
@@ -169,22 +212,6 @@ export default class Rope extends Mesh
     }
 
     /**
-     * Clear texture UVs when new texture is set
-     *
-     * @private
-     */
-    _onTextureUpdate()
-    {
-        super._onTextureUpdate();
-
-        // wait for the Rope ctor to finish before calling refresh
-        if (this._ready)
-        {
-            this.refresh();
-        }
-    }
-
-    /**
      * Updates the object transform for rendering
      *
      * @private
@@ -208,8 +235,8 @@ export default class Rope extends Mesh
         const vertices = this.vertices;
         const total = points.length;
 
-        // const halfSpace = (this._vertical ? -this._texture.frame.width : this._texture.frame.height) / 2;
-        const halfSpace = this._halfSpace;
+        // const offsetHalf = (this._vertical ? -this._texture.frame.width : this._texture.frame.height) / 2;
+        const offsetHalf = this._offsetHalf;
 
         for (let i = 0; i < total; i++)
         {
@@ -235,25 +262,56 @@ export default class Rope extends Mesh
             //     ratio = 1;
             // }
 
-            // const halfSpace = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
+            // const offsetHalf = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
 
             const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
 
             perpX /= perpLength;
             perpY /= perpLength;
 
-            perpX *= halfSpace;
-            perpY *= halfSpace;
+            perpX *= offsetHalf;
+            perpY *= offsetHalf;
 
-            vertices[index] = point.x + perpX;
-            vertices[index + 1] = point.y + perpY;
-            vertices[index + 2] = point.x - perpX;
-            vertices[index + 3] = point.y - perpY;
+            vertices[index] = point.x + perpX - this._leftSpace;
+            vertices[index + 1] = point.y + perpY - this._topSpace;
+            vertices[index + 2] = point.x - perpX - this._leftSpace;
+            vertices[index + 3] = point.y - perpY - this._topSpace;
 
             lastPoint = point;
         }
 
         this.containerUpdateTransform();
+    }
+
+    /**
+     * Called when the anchor position updates.
+     *
+     * @private
+     */
+    _onAnchorUpdate()
+    {
+        this._transformID = -1;
+
+        if (this._ready)
+        {
+            this.refresh();
+        }
+    }
+
+    /**
+     * Clear texture UVs when new texture is set
+     *
+     * @private
+     */
+    _onTextureUpdate()
+    {
+        super._onTextureUpdate();
+
+        // wait for the Rope ctor to finish before calling refresh
+        if (this._ready)
+        {
+            this.refresh();
+        }
     }
 
     /**
@@ -285,5 +343,29 @@ export default class Rope extends Mesh
         const dy = last.y - first.y;
 
         this._vertical = dx === 0 || Math.abs(dy / dx) > 1;
+    }
+
+    /**
+     * The anchor sets the origin point of the texture.
+     * The default is 0,0 this means the texture's origin is the top left
+     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+     *
+     * @member {PIXI.ObservablePoint}
+     * @memberof PIXI.Sprite#
+     */
+    get anchor()
+    {
+        return this._anchor;
+    }
+
+    /**
+     * Copies the anchor to the rope.
+     *
+     * @param {number} value - The value to set to.
+     */
+    set anchor(value)
+    {
+        this._anchor.copy(value);
     }
 }
