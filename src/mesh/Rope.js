@@ -104,7 +104,11 @@ export default class Rope extends Mesh
         const indices = this.indices;
         const colors = this.colors;
 
-        const textureUvs = this._texture._uvs;
+        const texture = this._texture;
+
+        this._halfSpace = (this._vertical ? -texture.frame.width : texture.frame.height) / 2;
+
+        const textureUvs = texture._uvs;
         const offset = new core.Point(textureUvs.x0, textureUvs.y0);
         const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
 
@@ -204,7 +208,8 @@ export default class Rope extends Mesh
         const vertices = this.vertices;
         const total = points.length;
 
-        const num = (this._vertical ? -this._texture.frame.width : this._texture.frame.height) / 2;
+        // const halfSpace = (this._vertical ? -this._texture.frame.width : this._texture.frame.height) / 2;
+        const halfSpace = this._halfSpace;
 
         for (let i = 0; i < total; i++)
         {
@@ -230,15 +235,15 @@ export default class Rope extends Mesh
             //     ratio = 1;
             // }
 
-            // const num = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
+            // const halfSpace = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
 
             const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
 
             perpX /= perpLength;
             perpY /= perpLength;
 
-            perpX *= num;
-            perpY *= num;
+            perpX *= halfSpace;
+            perpY *= halfSpace;
 
             vertices[index] = point.x + perpX;
             vertices[index + 1] = point.y + perpY;
