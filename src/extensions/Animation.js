@@ -378,6 +378,9 @@ export default class Animation
         this._host[this._bindName] = this;
     }
 
+    /**
+     * Remove the animation from the display object binded.
+     */
     unbind()
     {
         if (this._host)
