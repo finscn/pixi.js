@@ -125,30 +125,45 @@ export default class Rope extends Mesh
         this._pivotX = orig.width * anchor.x;
         this._pivotY = orig.height * anchor.y;
 
-        if (trim)
-        {
-            this._leftSpace = this._pivotX - trim.x;
-            this._rightSpace = trim.width - this._leftSpace;
-            this._topSpace = this._pivotY - trim.y;
-            this._bottomSpace = trim.height - this._topSpace;
-        }
-        else
-        {
-            this._leftSpace = this._pivotX;
-            this._rightSpace = orig.width - this._leftSpace;
-            this._topSpace = this._pivotY;
-            this._bottomSpace = orig.height - this._topSpace;
-        }
-
         if (this._vertical)
         {
             this._offsetHalf = -texture.frame.width / 2;
+
+            if (trim)
+            {
+                this._leftSpace = this._pivotX - trim.x;
+                this._rightSpace = trim.width - this._leftSpace;
+            }
+            else
+            {
+                this._leftSpace = this._pivotX;
+                this._rightSpace = orig.width - this._leftSpace;
+            }
+            this._topSpace = this._pivotY;
+            this._bottomSpace = orig.height - this._topSpace;
+
             this._leftSpace += this._offsetHalf;
+            this._rightSpace += this._offsetHalf;
         }
         else
         {
             this._offsetHalf = texture.frame.height / 2;
+
+            this._leftSpace = this._pivotX;
+            this._rightSpace = orig.width - this._leftSpace;
+            if (trim)
+            {
+                this._topSpace = this._pivotY - trim.y;
+                this._bottomSpace = trim.height - this._topSpace;
+            }
+            else
+            {
+                this._topSpace = this._pivotY;
+                this._bottomSpace = orig.height - this._topSpace;
+            }
+
             this._topSpace -= this._offsetHalf;
+            this._bottomSpace -= this._offsetHalf;
         }
 
         const textureUvs = texture._uvs;
