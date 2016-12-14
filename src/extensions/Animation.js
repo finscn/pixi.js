@@ -38,6 +38,17 @@ export default class Animation
      */
     constructor(frames, duration)
     {
+        this.initAnimation(frames, duration);
+    }
+
+    /**
+     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+     *  objects that make up the animation
+     * @param {number} [duration=0] - The total duration of animation in ms
+     *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     */
+    initAnimation(frames, duration)
+    {
         /**
          * Scale the time step when update animation. Higher is faster, lower is slower
          *
@@ -118,7 +129,6 @@ export default class Animation
         */
         this.currentFrame = null;
 
-
         /**
         * The animation current frame object
         *
@@ -126,7 +136,6 @@ export default class Animation
         * @readonly
         */
         this.currentTexture = null;
-
 
         /**
          * `frameCount` is the total number of frames in the Animation
@@ -148,9 +157,8 @@ export default class Animation
          */
         this._frames = [];
 
-        this.frames = frames;
+        this.setFrames(frames);
     }
-
 
     /**
      * Play the Animation
@@ -376,57 +384,12 @@ export default class Animation
     }
 
     /**
-     * Add the animation to a display object.
+     * Get the array of frame objects used for this Animation
      *
-     * @param {PIXI.DisplayObject} host - The host of Animation
-     * @param {string} [bindName='anim'] - The property name of host for binding
-     */
-    bind(host, bindName)
-    {
-        this.unbind();
-        this._host = host;
-        this._bindName = bindName || 'anim';
-        this._host[this._bindName] = this;
-    }
-
-    /**
-     * Remove the animation from the display object binded.
-     */
-    unbind()
-    {
-        if (this._host)
-        {
-            delete this._host[this._bindName];
-        }
-    }
-
-    /**
-     * Destroy the Animation
-     *
-     */
-    destroy()
-    {
-        this.frames = null;
-        super.destroy();
-    }
-
-    /**
-     * Get the host of Animation
-     *
-     * @member {PIXI.DisplayObject}
-     */
-    get host()
-    {
-        return this._host;
-    }
-
-    /**
-     * The array of frame objects used for this Animation
-     *
-     * @member {FrameObject[]}
+     * @return {FrameObject[]} The array of frame objects in animation
      * @memberof PIXI.extensions.Animation#
      */
-    get frames()
+    getFrames()
     {
         return this._frames;
     }
@@ -434,14 +397,14 @@ export default class Animation
     /**
      * Set the frames.
      *
-     * @param {PIXI.Texture[]|FrameObject[]} value - The frames to set
+     * @param {PIXI.Texture[]|FrameObject[]} frames - The frames to set
      */
-    set frames(value)
+    setFrames(frames)
     {
         this.playing = false;
         this._frames.length = 0;
 
-        if (!value)
+        if (!frames)
         {
             this.frameCount = 0;
             this._maxIndex = -1;
@@ -452,12 +415,12 @@ export default class Animation
             return;
         }
 
-        const len = this.frameCount = value.length;
+        const len = this.frameCount = frames.length;
 
         this._maxIndex = len - 1;
 
         const preDuration = this.duration / len;
-        const useTexture = value[0] instanceof Texture;
+        const useTexture = frames[0] instanceof Texture;
 
         let startTime = 0;
         let endTime = 0;
@@ -468,12 +431,12 @@ export default class Animation
             if (useTexture)
             {
                 frame = {
-                    texture: value[i],
+                    texture: frames[i],
                 };
             }
             else
             {
-                frame = value[i];
+                frame = frames[i];
             }
             this._frames.push(frame);
 
@@ -499,6 +462,52 @@ export default class Animation
             const a = this.currentFrame.pivot;
             this._host.transform.pivot.set(a[0], a[1]);
         }
+    }
+
+    /**
+     * Get the host of Animation
+     *
+     * @return {PIXI.DisplayObject} The host of Animation
+     */
+    getHost()
+    {
+        return this._host;
+    }
+
+    /**
+     * Add the animation to a display object.
+     *
+     * @param {PIXI.DisplayObject} host - The host of Animation
+     * @param {string} [bindName='anim'] - The property name of host for binding
+     */
+    bind(host, bindName)
+    {
+        this.unbind();
+        this._host = host;
+        this._bindName = bindName || 'anim';
+        this._host[this._bindName] = this;
+    }
+
+    /**
+     * Remove the animation from the display object binded.
+     */
+    unbind()
+    {
+        if (this._host)
+        {
+            delete this._host[this._bindName];
+            this._host = null;
+        }
+    }
+
+    /**
+     * Destroy the Animation
+     *
+     */
+    destroy()
+    {
+        this.setFrames(null);
+        super.destroy();
     }
 
     /**
@@ -565,6 +574,43 @@ export default class Animation
         anim.bind(plane, bindName);
 
         return plane;
+    }
+
+    /**
+     * Mixin properties of Animation to a display object , let it become a animation object
+     *
+     *@param {PIXI.Sprite|PIXI.mesh.Rope} displayObject - the object to apply
+     */
+    static applyTo(displayObject)
+    {
+        const properties = [
+            // 'initAnimation',
+            'play',
+            'pause',
+            'resume',
+            'stop',
+            'gotoAndPlay',
+            'gotoAndStop',
+            'update',
+            'updateByTime',
+            'frameChange',
+            'updateTexture',
+            'getHost',
+            'getFrames',
+            'setFrames',
+            'onFrameChange',
+            'onComplete',
+        ];
+
+        properties.forEach(function(p) {
+            displayObject[p] = Animation.prototype[p];
+        });
+        displayObject._initAnimation = Animation.prototype.initAnimation;
+        displayObject.initAnimation = function(frames, duration) {
+            this._initAnimation(frames, duration);
+            this._host = this;
+            this._bindName = '_anim';
+        };
     }
 
 }
