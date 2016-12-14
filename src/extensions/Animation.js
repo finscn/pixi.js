@@ -206,7 +206,7 @@ export default class Animation
     {
         if (frameIndex !== this.currentIndex)
         {
-            this.frameChange(frameIndex);
+            this.changeFrame(frameIndex);
         }
         this.currentTime = this.currentFrame._startTime;
         this.play();
@@ -223,7 +223,7 @@ export default class Animation
 
         if (frameIndex !== this.currentIndex)
         {
-            this.frameChange(frameIndex);
+            this.changeFrame(frameIndex);
         }
         this.currentTime = this.currentFrame._startTime;
     }
@@ -296,7 +296,7 @@ export default class Animation
                 if (this.loop === true || (--this.loop) > 0 )
                 {
                     time -= duration;
-                    index = 0;
+                    index = this._minIndex;
                     continue;
                 }
                 completed = true;
@@ -313,7 +313,7 @@ export default class Animation
 
             if (lastIndex !== this.endIndex)
             {
-                this.frameChange(this.endIndex);
+                this.changeFrame(this.endIndex);
                 this.currentTime = this.currentFrame._startTime;
             }
             if (this.onComplete)
@@ -325,7 +325,7 @@ export default class Animation
 
         if (lastIndex !== index)
         {
-            this.frameChange(index);
+            this.changeFrame(index);
 
             // TODO: Whether snap currentTime to frame ?
             // if (!skipFrame)
@@ -345,7 +345,7 @@ export default class Animation
      * @param {number} frameIndex - new frame index
      * @private
      */
-    frameChange(frameIndex)
+    changeFrame(frameIndex)
     {
         this.currentIndex = frameIndex;
 
@@ -405,15 +405,18 @@ export default class Animation
         this.playing = false;
         this._frames.length = 0;
 
+        this.currentTime = 0;
+        this.currentIndex = -1;
+        this.currentFrame = null;
+        this.currentTexure = null;
+
         if (!frames)
         {
             this.frameCount = 0;
             this._minIndex = -1;
             this._maxIndex = -1;
-            this.currentTime = 0;
-            this.currentIndex = -1;
-            this.currentFrame = null;
-            this.currentTexure = null;
+            this.endIndex = 0;
+            this.firstTexure = null;
             return;
         }
 
@@ -421,6 +424,7 @@ export default class Animation
 
         this._minIndex = 0;
         this._maxIndex = len - 1;
+        this.endIndex = this._maxIndex;
 
         const preDuration = this.duration / len;
         const useTexture = frames[0] instanceof Texture;
@@ -457,14 +461,7 @@ export default class Animation
             this.duration = endTime;
         }
 
-        this.currentIndex = 0;
-        this.currentFrame = this._frames[0];
-        this.currentTexure = this.currentFrame.texture;
-        if (this.currentFrame.pivot)
-        {
-            const a = this.currentFrame.pivot;
-            this._host.transform.pivot.set(a[0], a[1]);
-        }
+        this.firstTexure = this._frames[0].texture;
     }
 
     /**
@@ -489,6 +486,7 @@ export default class Animation
         this._host = host;
         this._bindName = bindName || 'anim';
         this._host[this._bindName] = this;
+        this.changeFrame(this._minIndex);
     }
 
     /**
@@ -530,7 +528,7 @@ export default class Animation
             'gotoAndStop',
             'update',
             'updateByTime',
-            'frameChange',
+            'changeFrame',
             'updateTexture',
             'getHost',
             'getFrames',
@@ -547,6 +545,7 @@ export default class Animation
             this._initAnimation(frames, duration);
             this._host = this;
             this._bindName = '_anim';
+            this.changeFrame(this._minIndex);
         };
     }
 
