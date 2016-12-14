@@ -148,6 +148,7 @@ export default class Animation
         /**
          * @private
          */
+        this._minIndex = -1;
         this._maxIndex = -1;
 
         this.duration = duration || 0;
@@ -268,7 +269,7 @@ export default class Animation
             if (time < frame._startTime)
             {
                 // Play backward
-                if (index === 0)
+                if (index === this._minIndex)
                 {
                     if (this.loop === true || (--this.loop) > 0 )
                     {
@@ -407,6 +408,7 @@ export default class Animation
         if (!frames)
         {
             this.frameCount = 0;
+            this._minIndex = -1;
             this._maxIndex = -1;
             this.currentTime = 0;
             this.currentIndex = -1;
@@ -417,6 +419,7 @@ export default class Animation
 
         const len = this.frameCount = frames.length;
 
+        this._minIndex = 0;
         this._maxIndex = len - 1;
 
         const preDuration = this.duration / len;
