@@ -773,11 +773,8 @@ export default class RenderContext
             }
         }
 
-        let rect;
+        const rect = sw && sh ? new Rectangle(sx, sy, sw, sh) : null;
 
-        if (count > 2) {
-            rect = new Rectangle(sx, sy, sw, sh);
-        }
         texture = new Texture(baseTexture, rect);
         if (id) {
             this.texturePool[id] = texture;
