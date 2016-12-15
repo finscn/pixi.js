@@ -66,7 +66,7 @@ export default class Animation
         this.loop = true;
 
         /**
-         * Function to call when a Animation finishes playing
+         * Function to call when a Animation completes playing
          *
          * @method
          * @memberof PIXI.extensions.Animation#
@@ -79,7 +79,7 @@ export default class Animation
          * @member {number}
          * @default 0
          */
-        this.endIndex = 0;
+        this.completeIndex = 0;
 
         /**
          * Function to call when a Animation frame changes
@@ -311,9 +311,9 @@ export default class Animation
         {
             this.playing = false;
 
-            if (lastIndex !== this.endIndex)
+            if (lastIndex !== this.completeIndex)
             {
-                this.changeFrame(this.endIndex);
+                this.changeFrame(this.completeIndex);
                 this.currentTime = this.currentFrame._startTime;
             }
             if (this.onComplete)
@@ -413,10 +413,10 @@ export default class Animation
         if (!frames)
         {
             this.frameCount = 0;
+            this.completeIndex = 0;
+            this.firstTexure = null;
             this._minIndex = -1;
             this._maxIndex = -1;
-            this.endIndex = 0;
-            this.firstTexure = null;
             return;
         }
 
@@ -424,7 +424,7 @@ export default class Animation
 
         this._minIndex = 0;
         this._maxIndex = len - 1;
-        this.endIndex = this._maxIndex;
+        this.completeIndex = this._maxIndex;
 
         const preDuration = this.duration / len;
         const useTexture = frames[0] instanceof Texture;
@@ -507,7 +507,9 @@ export default class Animation
      */
     destroy()
     {
+        this.unbind();
         this.setFrames(null);
+        this._frames = null;
         super.destroy();
     }
 
