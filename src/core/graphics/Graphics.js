@@ -836,7 +836,6 @@ export default class Graphics extends Container
             this.boundsDirty = this.dirty;
             this.updateLocalBounds();
 
-            this.dirty++;
             this.cachedSpriteDirty = true;
         }
 

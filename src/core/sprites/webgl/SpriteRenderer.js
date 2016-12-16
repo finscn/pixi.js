@@ -292,13 +292,6 @@ export default class SpriteRenderer extends ObjectRenderer
                                 break;
                             }
                         }
-                        if (nextTexture._virtalBoundId === -1)
-                        {
-                            TEXTURE_TICK++;
-                            nextTexture._virtalBoundId = 0;
-                            boundTextures[0]._virtalBoundId = -1;
-                            boundTextures[0] = nextTexture;
-                        }
                     }
 
                     nextTexture._enabled = TICK;
