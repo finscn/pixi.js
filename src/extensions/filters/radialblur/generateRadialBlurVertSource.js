@@ -15,7 +15,7 @@ const vertTemplate = [
 export default function generateRadialBlurVertSource(kernelSize, horizontal)
 {
     if (horizontal) {
-        return vertTemplate + ' ';
+        return String(vertTemplate);
     }
     return vertTemplate;
 }

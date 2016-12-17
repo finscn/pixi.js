@@ -20,7 +20,7 @@ export default class Light
             this.position.z = 10;
         }
 
-        this.position.set = function(x, y, z) {
+        this.position.set = function (x, y, z) {
             this.x = x;
             this.y = y;
             this.z = z !== undefined ? z : this.z;

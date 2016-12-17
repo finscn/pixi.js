@@ -38,7 +38,7 @@ export default class ExtractBrightnessFilter extends core.Filter
         );
 
         this.minBright = minBright;
-
     }
+
 }
 

@@ -9,7 +9,7 @@ const WebGLRenderer = core.WebGLRenderer;
  * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
  * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
  */
-WebGLRenderer.prototype.renderBasic = function()
+WebGLRenderer.prototype.renderBasic = function ()
 {
     // TODO
 };

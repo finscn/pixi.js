@@ -1,6 +1,5 @@
 import * as core from '../core';
 
-
 export default class SimpleContainer extends core.Container
 {
 

@@ -8,7 +8,7 @@ const Text = core.Text;
  *
  * @private
  **/
-Text.prototype.updateTextFast = function()
+Text.prototype.updateTextFast = function ()
 {
     this.dirtyFast = false;
     const style = this._style;
@@ -55,7 +55,7 @@ Text.prototype.updateTextFast = function()
  *
  * @param {PIXI.WebGLRenderer} renderer - The renderer
  */
-Text.prototype.renderWebGL = function(renderer)
+Text.prototype.renderWebGL = function (renderer)
 {
     if (this.resolution !== renderer.resolution)
     {

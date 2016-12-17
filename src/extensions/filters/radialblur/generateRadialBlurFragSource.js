@@ -34,20 +34,22 @@ const fragTemplate = [
 
 export default function generateRadialBlurFragSource(kernelSize, horizontal)
 {
-
     const kernel = GAUSSIAN_VALUES[kernelSize];
     const halfLength = kernel.length;
 
     let fragSource = fragTemplate;
 
-
     let blurLoop = '';
     let template;
-    if (horizontal) {
+    if (horizontal)
+    {
         template = 'gl_FragColor += texture2D(uSampler, vTextureCoord + vec2( %sampleIndex% * disStrength, 0.0)) * %value%;';
-    } else {
+    }
+    else
+    {
         template = 'gl_FragColor += texture2D(uSampler, vTextureCoord + vec2(0.0, %sampleIndex% * disStrength)) * %value%;';
     }
+
     let value;
 
     for (let i = 0; i < kernelSize; i++)

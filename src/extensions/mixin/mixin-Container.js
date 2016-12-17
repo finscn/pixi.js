@@ -8,7 +8,7 @@ const Container = core.Container;
  * @param {boolean} [destroyChildren=false] - If set to true, all the children will have their destroy
  *  method called as well.
  */
-Container.prototype.removeAllChildren = function(destroyChildren)
+Container.prototype.removeAllChildren = function (destroyChildren)
 {
     const oldChildren = this.removeChildren(0, this.children.length);
 
@@ -26,7 +26,7 @@ Container.prototype.removeAllChildren = function(destroyChildren)
  *
  * @param {boolean} [includeChildren] - Should we update the transforms of children ?
  */
-Container.prototype.updateTransformWithParent = function(includeChildren)
+Container.prototype.updateTransformWithParent = function (includeChildren)
 {
     this._boundsID++;
 
@@ -56,7 +56,7 @@ Container.prototype.updateTransformWithParent = function(includeChildren)
     }
 };
 
-Container.prototype._removeChildAt = function(index, child)
+Container.prototype._removeChildAt = function (index, child)
 {
     this.children.splice(index, 1);
     child.parent = null;
@@ -65,7 +65,7 @@ Container.prototype._removeChildAt = function(index, child)
     return child;
 };
 
-Container.prototype.renderWebGLChildren = function(renderer)
+Container.prototype.renderWebGLChildren = function (renderer)
 {
     let i = 0;
     let len = this.children.length;
@@ -79,10 +79,9 @@ Container.prototype.renderWebGLChildren = function(renderer)
         child.renderWebGL(renderer);
         i++;
     }
-
 };
 
-Container.prototype.renderCanvasChildren = function(renderer)
+Container.prototype.renderCanvasChildren = function (renderer)
 {
     let i = 0;
     let len = this.children.length;

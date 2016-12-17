@@ -2,7 +2,7 @@ import * as core from '../../core';
 
 const Sprite = core.Sprite;
 
-Sprite.prototype.perspectivePoint = function(mat, x, y, scaleX, scaleY) {
+Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
     // var mat = this.perspectiveMatrix;
     const a = x * mat[0] + y * mat[3] + mat[6];
     const b = x * mat[1] + y * mat[4] + mat[7];
@@ -10,7 +10,7 @@ Sprite.prototype.perspectivePoint = function(mat, x, y, scaleX, scaleY) {
     return [scaleX * a / c, scaleY * b / c];
 };
 
-// Sprite.prototype.calculateVerticesWithoutTransform = function(normal) {
+// Sprite.prototype.calculateVerticesWithoutTransform = function (normal) {
 //     if (this._textureID === this._texture._updateID) {
 //         return;
 //     }
@@ -72,8 +72,5 @@ Sprite.prototype.perspectivePoint = function(mat, x, y, scaleX, scaleY) {
 //         vertexData[6] = w1;
 //         vertexData[7] = h0;
 //     }
-
-//     this.origRealWidth = w0 - w1;
-//     this.origRealHeight = h0 - h1;
 
 // };

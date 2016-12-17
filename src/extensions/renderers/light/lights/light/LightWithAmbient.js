@@ -15,13 +15,14 @@ export default class LightWithAmbient extends Light
         this._ambientBrightness = 1;
         this._ambientColorRgb = new Float32Array([0, 0, 0]);
 
-        if ( 'ambientColor' in options) {
+        if ('ambientColor' in options)
+        {
             this.ambientColor = options.ambientColor;
         }
-        if ( 'ambientBrightness' in options) {
+        if ('ambientBrightness' in options)
+        {
             this.ambientBrightness = options.ambientBrightness;
         }
-
     }
 
     updateAmbientColor()
@@ -54,9 +55,12 @@ export default class LightWithAmbient extends Light
         this._ambientColor = val;
         core.utils.hex2rgb(val || 0, this._ambientColorRgb);
         this.updateAmbientColor();
-        if (val === null) {
+        if (val === null)
+        {
             this.blendMode = BLEND_MODES.ADD;
-        } else {
+        }
+        else
+        {
             this.blendMode = BLEND_MODES.NORMAL;
         }
     }

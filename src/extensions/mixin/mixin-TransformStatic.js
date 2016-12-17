@@ -5,7 +5,7 @@ const TransformStatic = core.TransformStatic;
 /**
  * Updates world matrix(include local matrix) without parent
  */
-TransformStatic.prototype.updateTransformAsOrphan = function()
+TransformStatic.prototype.updateTransformAsOrphan = function ()
 {
     const lt = this.localTransform;
 

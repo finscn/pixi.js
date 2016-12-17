@@ -4,10 +4,11 @@ import BlurXFilter from '../../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../../filters/blur/BlurYFilter';
 import VoidFilter from '../../../filters/void/VoidFilter';
 
-export default class BloomBrightnessFilter extends core.Filter {
+export default class BloomBrightnessFilter extends core.Filter
+{
 
-    constructor(sampleCount, minBright, toneScale) {
-
+    constructor(sampleCount, minBright, toneScale)
+    {
         const vertSrc = [
             'attribute vec2 aVertexPosition;',
             'attribute vec2 aTextureCoord;',

@@ -3,7 +3,6 @@ import generateRadialBlurVertSource from './generateRadialBlurVertSource';
 import generateRadialBlurFragSource from './generateRadialBlurFragSource';
 import getMaxBlurKernelSize from '../../../filters/blur/getMaxBlurKernelSize';
 
-
 export default class RadialBlurXFilter extends core.Filter
 {
 

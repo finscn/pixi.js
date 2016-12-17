@@ -6,7 +6,6 @@ const TextureCache = core.utils.TextureCache;
 // const tempPoint = new core.Point();
 // const utils = core.utils;
 
-
 export default class SimpleSprite extends core.Sprite
 {
 
@@ -96,7 +95,6 @@ export default class SimpleSprite extends core.Sprite
         }
     }
 
-
     renderCanvas(renderer)
     {
         // if not visible or the alpha is 0 then no need to render this
@@ -118,7 +116,6 @@ export default class SimpleSprite extends core.Sprite
         }
     }
 
-
     calculateBounds()
     {
         this._bounds.clear();
@@ -131,7 +128,6 @@ export default class SimpleSprite extends core.Sprite
 
         this._boundsID = this._lastBoundsID;
     }
-
 
     getLocalBounds(rect)
     {
@@ -152,7 +148,6 @@ export default class SimpleSprite extends core.Sprite
 
         return this._bounds.getRectangle(rect);
     }
-
 
     // some helper functions..
 

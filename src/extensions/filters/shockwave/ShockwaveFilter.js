@@ -3,12 +3,10 @@ import * as core from '../../../core';
 // @see https://github.com/substack/brfs/issues/25
 const glslify = require('glslify'); // eslint-disable-line no-undef
 
-
 export default class ShockwaveFilter extends core.Filter
 {
     constructor()
     {
-
         const vertSrc = glslify('../../../filters/fragments/default.vert');
         const fragSrc = glslify('./shockwave.frag');
 
@@ -28,7 +26,6 @@ export default class ShockwaveFilter extends core.Filter
 
     apply(filterManager, input, output, clear)
     {
-
         if (!this.viewSize) {
             this.viewSize = new Float32Array([
                 filterManager.renderer.width,

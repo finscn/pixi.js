@@ -105,7 +105,7 @@ export default class RenderContext
         const Me = this;
 
         Me.renderer.resize(x - 1, y);
-        setTimeout(function() {
+        setTimeout(function () {
             Me.renderer.resize(x, y);
         }, 1);
     }

@@ -1,4 +1,3 @@
-
 const Matrix3 = {};
 
 export default Matrix3;
@@ -19,7 +18,8 @@ export default Matrix3;
  * @returns {mat3} out
  */
 
-Matrix3.create = function(m00, m01, m02, m10, m11, m12, m20, m21, m22, out) {
+Matrix3.create = function (m00, m01, m02, m10, m11, m12, m20, m21, m22, out)
+{
     out = out || new Float32Array(9);
     out[0] = m00;
     out[1] = m01;
@@ -33,7 +33,8 @@ Matrix3.create = function(m00, m01, m02, m10, m11, m12, m20, m21, m22, out) {
     return out;
 };
 
-Matrix3.multiply = function (a, b, out) {
+Matrix3.multiply = function (a, b, out)
+{
     const a00 = a[0];
     const a01 = a[1];
     const a02 = a[2];
@@ -67,17 +68,19 @@ Matrix3.multiply = function (a, b, out) {
     return out;
 };
 
-
-Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out) {
-
+Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
+{
     const sx = x0 - x1 + x2 - x3;
     const sy = y0 - y1 + y2 - y3;
-    if (sx === 0.0 && sy === 0.0) {
+    if (sx === 0.0 && sy === 0.0)
+    {
         out = Matrix3.create(
           x1 - x0, y1 - y0, 0.0,
           x2 - x1, y2 - y1, 0.0,
           x0, y0, 1.0, out);
-    } else {
+    }
+    else
+    {
         const dx1 = x1 - x2;
         const dy1 = y1 - y2;
         const dx2 = x3 - x2;
@@ -97,8 +100,8 @@ Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out) {
     return out;
 };
 
-Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3, out) {
-
+Matrix3.quadrilateralToSquare = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
+{
     // const sToq = Matrix3.squareToQuadrilateral(x0, y0, x1, y1, x2, y2, x3, y3);
     // const qToS = new Float32Array(9);
     // Matrix3.adjoint(qToS, sToq);
@@ -147,7 +150,8 @@ Matrix3.quadrilateralToSquare = function(x0, y0, x1, y1, x2, y2, x3, y3, out) {
     return out;
 };
 
-Matrix3.perspective = function(fromQuad, toQuad, out) {
+Matrix3.perspective = function (fromQuad, toQuad, out)
+{
     const qToS = Matrix3.quadrilateralToSquare(
         fromQuad[0], fromQuad[1],
         fromQuad[2], fromQuad[3],
@@ -165,15 +169,16 @@ Matrix3.perspective = function(fromQuad, toQuad, out) {
     return out;
 };
 
-Matrix3.perspectiveTransfromPoint = function(mat, x, y) {
+Matrix3.perspectiveTransfromPoint = function (mat, x, y)
+{
     const a = x * mat[0] + y * mat[1] + mat[2];
     const b = x * mat[3] + y * mat[4] + mat[5];
     const c = x * mat[6] + y * mat[7] + mat[8];
     return [a / c, b / c];
 };
 
-
-Matrix3.adjoint = function(a, out) {
+Matrix3.adjoint = function (a, out)
+{
     out = out || new Float32Array(9);
 
     const a00 = a[0];
@@ -198,7 +203,8 @@ Matrix3.adjoint = function(a, out) {
     return out;
 };
 
-Matrix3.invert = function(a, out) {
+Matrix3.invert = function (a, out)
+{
     out = out || new Float32Array(9);
 
     const a00 = a[0];
@@ -218,9 +224,11 @@ Matrix3.invert = function(a, out) {
     // Calculate the determinant
     let det = a00 * b01 + a01 * b11 + a02 * b21;
 
-    if (!det) {
+    if (!det)
+    {
         return null;
     }
+
     det = 1.0 / det;
 
     out[0] = b01 * det;
@@ -235,7 +243,8 @@ Matrix3.invert = function(a, out) {
     return out;
 };
 
-Matrix3.str = function (a) {
+Matrix3.str = function (a)
+{
     return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', '
             + a[3] + ', ' + a[4] + ', ' + a[5] + ', '
             + a[6] + ', ' + a[7] + ', ' + a[8] + ')';

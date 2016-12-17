@@ -26,7 +26,7 @@ export default class BloomFilter extends core.Filter
     {
         const renderTarget = filterManager.getRenderTarget(true);
 
-        //TODO - copyTexSubImage2D could be used here?
+        // TODO - copyTexSubImage2D could be used here?
         this.defaultFilter.apply(filterManager, input, output, clear, currentState);
 
         this.blurXFilter.apply(filterManager, input, renderTarget, true, currentState);

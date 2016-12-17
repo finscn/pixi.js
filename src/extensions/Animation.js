@@ -271,7 +271,7 @@ export default class Animation
                 // Play backward
                 if (index === this._minIndex)
                 {
-                    if (this.loop === true || (--this.loop) > 0 )
+                    if (this.loop === true || (--this.loop) > 0)
                     {
                         time += duration;
                         index = this._maxIndex;
@@ -293,7 +293,7 @@ export default class Animation
             if (index === this._maxIndex)
             {
                 // Play forward
-                if (this.loop === true || (--this.loop) > 0 )
+                if (this.loop === true || (--this.loop) > 0)
                 {
                     time -= duration;
                     index = this._minIndex;
@@ -539,11 +539,11 @@ export default class Animation
             'onComplete',
         ];
 
-        properties.forEach(function(p) {
+        properties.forEach(function (p) {
             displayObject[p] = Animation.prototype[p];
         });
         displayObject._initAnimation = Animation.prototype.initAnimation;
-        displayObject.initAnimation = function(frames, duration) {
+        displayObject.initAnimation = function (frames, duration) {
             this._initAnimation(frames, duration);
             this._host = this;
             this._bindName = '_anim';

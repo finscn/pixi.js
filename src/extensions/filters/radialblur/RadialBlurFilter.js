@@ -2,7 +2,6 @@ import * as core from '../../../core';
 import RadialBlurXFilter from './RadialBlurXFilter';
 import RadialBlurYFilter from './RadialBlurYFilter';
 
-
 export default class RadialBlurFilter extends core.Filter
 {
 

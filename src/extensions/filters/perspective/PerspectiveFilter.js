@@ -27,12 +27,12 @@ export default class PerspectiveFilter extends core.Filter
         ]);
 
         this.updateMatrix(fromQuad, toQuad);
-
     }
 
     updateMatrix(fromQuad, toQuad)
     {
-        if (fromQuad && toQuad) {
+        if (fromQuad && toQuad)
+        {
             const qToS = Matrix3.quadrilateralToSquare(
                 fromQuad[0], fromQuad[1],
                 fromQuad[2], fromQuad[3],
@@ -47,8 +47,9 @@ export default class PerspectiveFilter extends core.Filter
             );
 
             Matrix3.multiply(qToS, sToQ, this.perspectiveMatrix);
-
-        } else if (fromQuad) {
+        }
+        else if (fromQuad)
+        {
             toQuad = fromQuad;
             Matrix3.squareToQuadrilateral(
                 toQuad[0], toQuad[1],
