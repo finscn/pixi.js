@@ -17,7 +17,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     render(sprite)
     {
-        if (!sprite.texture._uvs || !sprite.lights) {
+        if (!sprite._texture._uvs || !sprite.lights) {
             return;
         }
 

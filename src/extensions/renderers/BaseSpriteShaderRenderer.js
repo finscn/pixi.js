@@ -36,7 +36,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 
     render(sprite)
     {
-        if (!sprite.texture._uvs) {
+        if (!sprite._texture._uvs) {
             return;
         }
 
