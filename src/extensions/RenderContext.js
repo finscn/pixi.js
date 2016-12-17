@@ -213,6 +213,16 @@ export default class RenderContext
         this._transformSN++;
     }
 
+    get globalAlpha()
+    {
+        return this.globalTransform.alpha;
+    }
+
+    set globalAlpha(value)
+    {
+        this.globalTransform.alpha = value;
+    }
+
     restoreAlpha()
     {
         this.globalTransform.alpha = this._lastAlpha;

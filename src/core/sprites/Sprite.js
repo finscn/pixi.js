@@ -71,7 +71,7 @@ export default class Sprite extends Container
         this.textureWidth = 0;
 
         /**
-         * The height of the texture's original width
+         * The height of the texture's original height
          *
          * @member {number}
          */
@@ -154,8 +154,8 @@ export default class Sprite extends Container
     {
         this._textureID = -1;
 
-        this.textureWidth = this.texture.orig.width;
-        this.textureHeight = this.texture.orig.height;
+        this.textureWidth = this._texture.orig.width;
+        this.textureHeight = this._texture.orig.height;
 
         // so if _width is 0 then width was not set..
         if (this._width)
@@ -181,13 +181,12 @@ export default class Sprite extends Container
 
     /**
      * calculates worldTransform * vertices, store it in vertexData
-     * @return {boolean} is vertexData changed.
      */
     calculateVertices()
     {
         if (this._transformID === this.transform._worldID && this._textureID === this._texture._updateID)
         {
-            return false;
+            return;
         }
 
         this._transformID = this.transform._worldID;
@@ -247,20 +246,17 @@ export default class Sprite extends Container
         // xy
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
-
-        return true;
     }
 
     /**
      * calculates worldTransform * vertices for a non texture with a trim. store it in vertexTrimmedData
      * This is used to ensure that the true width and height of a trimmed texture is respected
-     * @return {boolean} is vertexTrimmedData changed.
      */
     calculateTrimmedVertices()
     {
         if (this._transformID === this.transform._worldID && this._textureID === this._texture._updateID)
         {
-            return false;
+            return;
         }
 
         if (!this.vertexTrimmedData)
@@ -304,8 +300,6 @@ export default class Sprite extends Container
         // xy
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
-
-        return true;
     }
 
     /**
@@ -507,7 +501,7 @@ export default class Sprite extends Container
      */
     get width()
     {
-        return Math.abs(this.scale.x) * this.texture.orig.width;
+        return Math.abs(this.scale.x) * this._texture.orig.width;
     }
 
     /**
@@ -519,7 +513,7 @@ export default class Sprite extends Container
     {
         const s = sign(this.scale.x) || 1;
 
-        this.scale.x = s * value / this.texture.orig.width;
+        this.scale.x = s * value / this._texture.orig.width;
         this._width = value;
     }
 
@@ -531,7 +525,7 @@ export default class Sprite extends Container
      */
     get height()
     {
-        return Math.abs(this.scale.y) * this.texture.orig.height;
+        return Math.abs(this.scale.y) * this._texture.orig.height;
     }
 
     /**
@@ -543,7 +537,7 @@ export default class Sprite extends Container
     {
         const s = sign(this.scale.y) || 1;
 
-        this.scale.y = s * value / this.texture.orig.height;
+        this.scale.y = s * value / this._texture.orig.height;
         this._height = value;
     }
 
