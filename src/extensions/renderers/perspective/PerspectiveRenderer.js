@@ -26,8 +26,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     updateShaderParameters(shader, sprite)
     {
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
-        shader.uniforms.origWidth = sprite.origRealWidth;
-        shader.uniforms.origHeight = sprite.origRealHeight;
+        shader.uniforms.origWidth = sprite.textureWidth;
+        shader.uniforms.origHeight = sprite.textureHeight;
         shader.uniforms.anchorX = sprite._anchor._x;
         shader.uniforms.anchorY = sprite._anchor._y;
         // shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
@@ -66,7 +66,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
     static unapplyTo(sprite)
     {
-        if (sprite._perspectiveRendererBakRenderWebGL) {
+        if (sprite._perspectiveRendererBakRenderWebGL)
+        {
             sprite._renderWebGL = sprite._renderWebGLBakPerspectiveRenderer;
             sprite._renderWebGLBakPerspectiveRenderer = null;
             sprite._calculateBounds = sprite._perspectivePcalculateBoundsWebGL;
@@ -88,7 +89,8 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     {
         const sprite = this;
 
-        if (fromQuad && toQuad) {
+        if (fromQuad && toQuad)
+        {
             const qToS = Matrix3.quadrilateralToSquare(
                 fromQuad[0], fromQuad[1],
                 fromQuad[2], fromQuad[3],
@@ -105,9 +107,11 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             // sprite.quadToSquareMatrix = qToS;
             // sprite.squareToQuadMatrix = sToQ;
             Matrix3.multiply(qToS, sToQ, sprite.perspectiveMatrix);
-
-        } else if (fromQuad) {
-            // if (!sprite._texture) {
+        }
+        else if (fromQuad)
+        {
+            // if (!sprite._texture)
+            // {
             //     return false;
             // }
             // toQuad = fromQuad;
@@ -146,7 +150,6 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         renderer.plugins.perspective.render(sprite);
     }
 
-
     static __calculateBoundsSprite()
     {
         const sprite = this;
@@ -154,19 +157,24 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         const trim = sprite._texture.trim;
         const orig = sprite._texture.orig;
 
-        if (sprite.perspectiveMatrix) {
+        if (sprite.perspectiveMatrix)
+        {
             const changed = sprite.calculatePerspectiveVertices();
-            if (changed !== false) {
+            if (changed !== false)
+            {
                 sprite._bounds.addQuad(sprite.vertexPerspective);
             }
             return;
         }
         // First lets check to see if the current texture has a trim..
-        if (!trim || trim.width === orig.width && trim.height === orig.height) {
+        if (!trim || trim.width === orig.width && trim.height === orig.height)
+        {
             // no trim! lets use the usual calculations..
             sprite.calculateVertices();
             sprite._bounds.addQuad(sprite.vertexData);
-        } else {
+        }
+        else
+        {
             // lets calculate a special trimmed bounds...
             sprite.calculateTrimmedVertices();
             sprite._bounds.addQuad(sprite.vertexTrimmedData);

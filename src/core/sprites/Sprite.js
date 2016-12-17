@@ -64,6 +64,20 @@ export default class Sprite extends Container
         this._height = 0;
 
         /**
+         * The width of the texture's original width
+         *
+         * @member {number}
+         */
+        this.textureWidth = 0;
+
+        /**
+         * The height of the texture's original width
+         *
+         * @member {number}
+         */
+        this.textureHeight = 0;
+
+        /**
          * The tint applied to the sprite. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
          *
          * @private
@@ -140,15 +154,18 @@ export default class Sprite extends Container
     {
         this._textureID = -1;
 
+        this.textureWidth = this.texture.orig.width;
+        this.textureHeight = this.texture.orig.height;
+
         // so if _width is 0 then width was not set..
         if (this._width)
         {
-            this.scale.x = sign(this.scale.x) * this._width / this.texture.orig.width;
+            this.scale.x = sign(this.scale.x) * this._width / this.textureWidth;
         }
 
         if (this._height)
         {
-            this.scale.y = sign(this.scale.y) * this._height / this.texture.orig.height;
+            this.scale.y = sign(this.scale.y) * this._height / this.textureHeight;
         }
     }
 
@@ -215,9 +232,6 @@ export default class Sprite extends Container
             h1 = orig.height * -anchor._y;
         }
 
-        this.origRealWidth = w0 - w1;
-        this.origRealHeight = h0 - h1;
-
         // xy
         vertexData[0] = (a * w1) + (c * h1) + tx;
         vertexData[1] = (d * h1) + (b * w1) + ty;
@@ -274,9 +288,6 @@ export default class Sprite extends Container
 
         const h0 = orig.height * (1 - anchor._y);
         const h1 = orig.height * -anchor._y;
-
-        // this.origRealWidth = w0 - w1;
-        // this.origRealHeight = h0 - h1;
 
         // xy
         vertexData[0] = (a * w1) + (c * h1) + tx;
