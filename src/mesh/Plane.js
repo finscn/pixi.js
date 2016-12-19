@@ -7,10 +7,8 @@ const Point = core.Point;
  * The Plane allows you to draw a texture across several points and them manipulate these points
  *
  *```js
- * for (let i = 0; i < 20; i++) {
- *     points.push(new PIXI.Point(i * 50, 0));
- * };
- * let Plane = new PIXI.Plane(PIXI.Texture.fromImage("snake.png"), points);
+ * let plane = new PIXI.Plane(PIXI.Texture.fromImage("snake.png"), 8, 8);
+ * let points = plane.points; // it's a 2D array with 8 * 8 .
  *  ```
  *
  * @class
@@ -40,6 +38,13 @@ export default class Plane extends Mesh
          */
         this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
 
+        this.verticesX = verticesX || 10;
+        this.verticesY = verticesY || 10;
+
+        this.drawMode = Mesh.DRAW_MODES.TRIANGLES;
+
+        this.initPoints();
+
         /**
          * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
          * call _onTextureUpdated which could call refresh too early.
@@ -49,12 +54,6 @@ export default class Plane extends Mesh
          */
         this._ready = true;
 
-        this.verticesX = verticesX || 10;
-        this.verticesY = verticesY || 10;
-
-        this.drawMode = Mesh.DRAW_MODES.TRIANGLES;
-
-        this.initPoints();
         this.refresh();
     }
 
@@ -64,7 +63,12 @@ export default class Plane extends Mesh
      */
     initPoints()
     {
+        /**
+         * The points of mesh. It's a 2D array , this.verticesY rows , this.verticesX colums.
+         * Users could change those points for mesh transforming.
+         */
         this.points = [];
+
         for (let i = 0; i < this.verticesY; i++)
         {
             const row = [];
