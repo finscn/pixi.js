@@ -351,7 +351,7 @@ export default class Animation
 
         const frame = this.currentFrame = this._frames[frameIndex];
 
-        this.currentTexure = frame.texture;
+        this.currentTexture = frame.texture;
 
         if (frame.pivot)
         {
@@ -374,14 +374,16 @@ export default class Animation
      */
     updateTexture()
     {
-        this._host._texture = this.currentTexure;
         this._host._textureID = -1;
+        this._host._texture = this.currentTexture;
 
-        // TODO: `refresh` is hard code , not good enough.
-        if (this._host.refresh)
-        {
-            this._host.refresh();
-        }
+        // // TODO: `refresh` is hard code , not good enough.
+        // if (this._host.refresh)
+        // {
+        //     this._host.refresh();
+        // }
+
+        this._host._onTextureUpdate();
     }
 
     /**
@@ -408,7 +410,7 @@ export default class Animation
         this.currentTime = 0;
         this.currentIndex = -1;
         this.currentFrame = null;
-        this.currentTexure = null;
+        this.currentTexture = null;
 
         if (!frames)
         {
