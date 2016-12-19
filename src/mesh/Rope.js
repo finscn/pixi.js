@@ -27,17 +27,6 @@ export default class Rope extends Mesh
         super(texture);
 
         /**
-         * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-         *
-         * @member {PIXI.ObservablePoint}
-         * @private
-         */
-        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
-
-        /**
          * Whether the rope is _vertical.
          *
          * @member {boolean}
@@ -75,13 +64,6 @@ export default class Rope extends Mesh
          */
         this.indices = new Uint16Array(points.length * 2);
 
-        /**
-         * Tracker for if the rope is ready to be drawn. Needed because Mesh ctor can
-         * call _onTextureUpdated which could call refresh too early.
-         *
-         * @member {boolean}
-         * @private
-         */
         this._ready = true;
 
         this.refresh();
@@ -298,21 +280,6 @@ export default class Rope extends Mesh
     }
 
     /**
-     * Called when the anchor position updates.
-     *
-     * @private
-     */
-    _onAnchorUpdate()
-    {
-        this._transformID = -1;
-
-        if (this._ready)
-        {
-            this.refresh();
-        }
-    }
-
-    /**
      * Clear texture UVs when new texture is set
      *
      * @private
@@ -357,29 +324,5 @@ export default class Rope extends Mesh
         const dy = last.y - first.y;
 
         this._vertical = dx === 0 || Math.abs(dy / dx) > 1;
-    }
-
-    /**
-     * The anchor sets the origin point of the texture.
-     * The default is 0,0 this means the texture's origin is the top left
-     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-     *
-     * @member {PIXI.ObservablePoint}
-     * @memberof PIXI.Sprite#
-     */
-    get anchor()
-    {
-        return this._anchor;
-    }
-
-    /**
-     * Copies the anchor to the rope.
-     *
-     * @param {number} value - The value to set to.
-     */
-    set anchor(value)
-    {
-        this._anchor.copy(value);
     }
 }

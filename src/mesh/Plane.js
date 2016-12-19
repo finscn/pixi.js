@@ -27,17 +27,6 @@ export default class Plane extends Mesh
     {
         super(texture);
 
-        /**
-         * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-         *
-         * @member {PIXI.ObservablePoint}
-         * @private
-         */
-        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
-
         this.verticesX = verticesX || 10;
         this.verticesY = verticesY || 10;
 
@@ -45,13 +34,6 @@ export default class Plane extends Mesh
 
         this.initPoints();
 
-        /**
-         * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
-         * call _onTextureUpdated which could call refresh too early.
-         *
-         * @member {boolean}
-         * @private
-         */
         this._ready = true;
 
         this.refresh();
@@ -72,10 +54,12 @@ export default class Plane extends Mesh
         for (let i = 0; i < this.verticesY; i++)
         {
             const row = [];
+
             this.points.push(row);
             for (let j = 0; j < this.verticesX; j++)
             {
                 const point = new Point(j, i);
+
                 point.originalX = point.x;
                 point.originalY = point.y;
                 row.push(point);
@@ -176,21 +160,6 @@ export default class Plane extends Mesh
     }
 
     /**
-     * Called when the anchor position updates.
-     *
-     * @private
-     */
-    _onAnchorUpdate()
-    {
-        this._transformID = -1;
-
-        if (this._ready)
-        {
-            this.refresh();
-        }
-    }
-
-    /**
      * Clear texture UVs when new texture is set
      *
      * @private
@@ -204,29 +173,5 @@ export default class Plane extends Mesh
         {
             this.refresh();
         }
-    }
-
-    /**
-     * The anchor sets the origin point of the texture.
-     * The default is 0,0 this means the texture's origin is the top left
-     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-     *
-     * @member {PIXI.ObservablePoint}
-     * @memberof PIXI.Sprite#
-     */
-    get anchor()
-    {
-        return this._anchor;
-    }
-
-    /**
-     * Copies the anchor to the plane.
-     *
-     * @param {number} value - The value to set to.
-     */
-    set anchor(value)
-    {
-        this._anchor.copy(value);
     }
 }
