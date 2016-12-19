@@ -2,7 +2,8 @@ import * as core from '../../core';
 
 const Sprite = core.Sprite;
 
-Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
+Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY)
+{
     // var mat = this.perspectiveMatrix;
     const a = x * mat[0] + y * mat[3] + mat[6];
     const b = x * mat[1] + y * mat[4] + mat[7];
@@ -11,8 +12,10 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
     return [scaleX * a / c, scaleY * b / c];
 };
 
-// Sprite.prototype.calculateVerticesWithoutTransform = function (normal) {
-//     if (this._textureID === this._texture._updateID) {
+// Sprite.prototype.calculateVerticesWithoutTransform = function (normal)
+// {
+//     if (this._textureID === this._texture._updateID)
+//     {
 //         return;
 //     }
 //     this._textureID = this._texture._updateID;
@@ -31,13 +34,16 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 //     let h0 = 0;
 //     let h1 = 0;
 
-//     if (trim) {
+//     if (trim)
+//     {
 //         w1 = trim.x - (anchor._x * width);
 //         w0 = w1 + trim.width;
 
 //         h1 = trim.y - (anchor._y * height);
 //         h0 = h1 + trim.height;
-//     } else {
+//     }
+//     else
+//     {
 //         w0 = width * (1 - anchor._x);
 //         w1 = width * -anchor._x;
 
@@ -45,7 +51,8 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 //         h1 = height * -anchor._y;
 //     }
 
-//     if (normal) {
+//     if (normal)
+//     {
 //         const ax = anchor._x;
 //         const ay = anchor._y;
 
@@ -60,7 +67,9 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 
 //         vertexData[6] = w1 / width + ax;
 //         vertexData[7] = h0 / height + ay;
-//     } else {
+//     }
+//     else
+//     {
 //         vertexData[0] = w1;
 //         vertexData[1] = h1;
 
@@ -73,5 +82,4 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 //         vertexData[6] = w1;
 //         vertexData[7] = h0;
 //     }
-
 // };

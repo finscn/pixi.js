@@ -264,7 +264,8 @@ export default class Animation
 
         let completed = false;
 
-        do {
+        do
+        {
             frame = frames[index];
             if (time < frame._startTime)
             {
@@ -544,11 +545,13 @@ export default class Animation
             'onComplete',
         ];
 
-        properties.forEach(function (p) {
+        properties.forEach(function (p)
+        {
             displayObject[p] = Animation.prototype[p];
         });
         displayObject._initAnimation = Animation.prototype.initAnimation;
-        displayObject.initAnimation = function (frames, duration) {
+        displayObject.initAnimation = function (frames, duration)
+        {
             this._initAnimation(frames, duration);
             this._host = this;
             this._bindName = '_anim';

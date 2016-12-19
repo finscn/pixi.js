@@ -16,11 +16,13 @@ export default class Light
             x: 0,
             y: 0,
         };
-        if (!('z' in this.position)) {
+        if (!('z' in this.position))
+        {
             this.position.z = 10;
         }
 
-        this.position.set = function (x, y, z) {
+        this.position.set = function (x, y, z)
+        {
             this.x = x;
             this.y = y;
             this.z = z !== undefined ? z : this.z;
@@ -39,14 +41,16 @@ export default class Light
         // run the color setter
         const color = options.color;
 
-        if (color || color === 0) {
+        if (color || color === 0)
+        {
             this.color = color;
         }
 
         // run the brightness setter
         const brightness = options.brightness;
 
-        if (brightness || brightness === 0) {
+        if (brightness || brightness === 0)
+        {
             this.brightness = brightness;
         }
 
@@ -63,7 +67,8 @@ export default class Light
 
     init(renderer, force)
     {
-        if (!this.inited || force) {
+        if (!this.inited || force)
+        {
             const gl = renderer.gl;
 
             this.viewSize = new Float32Array([renderer.width, renderer.height]);
@@ -79,7 +84,8 @@ export default class Light
         const id = vertexSrc + '@' + fragmentSrc;
         let shader = Light.shaderCache[id];
 
-        if (!shader) {
+        if (!shader)
+        {
             Light.shaderCache[id] = shader;
             shader = new Shader(gl, vertexSrc, fragmentSrc, Light.locationMapping);
         }

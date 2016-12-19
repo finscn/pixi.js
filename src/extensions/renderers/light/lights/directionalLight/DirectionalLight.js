@@ -15,7 +15,8 @@ export default class DirectionalLight extends LightWithAmbient
             x: 0,
             y: 0,
         };
-        if (!('z' in this.target)) {
+        if (!('z' in this.target))
+        {
             this.target.z = 10;
         }
 

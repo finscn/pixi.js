@@ -120,7 +120,8 @@ export default class SimpleSprite extends core.Sprite
     {
         this._bounds.clear();
 
-        if (!this.visible) {
+        if (!this.visible)
+        {
             return;
         }
 

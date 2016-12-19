@@ -105,7 +105,8 @@ export default class RenderContext
         const Me = this;
 
         Me.renderer.resize(x - 1, y);
-        setTimeout(function () {
+        setTimeout(function ()
+        {
             Me.renderer.resize(x, y);
         }, 1);
     }
@@ -156,7 +157,8 @@ export default class RenderContext
     {
         const lt = this.transformStack.pop();
 
-        if (!lt) {
+        if (!lt)
+        {
             return;
         }
 
@@ -286,7 +288,8 @@ export default class RenderContext
 
         this.transformStack = [];
         this.globalTransform = {};
-        for (const p in this.defaultTransform) {
+        for (const p in this.defaultTransform)
+        {
             this.globalTransform[p] = this.defaultTransform[p];
         }
         this._lastBlend = this.globalTransform.blend;
@@ -296,7 +299,8 @@ export default class RenderContext
 
     updateGlobalContainer(force)
     {
-        if (force !== true && this._lastTransformSN === this._transformSN) {
+        if (force !== true && this._lastTransformSN === this._transformSN)
+        {
             return;
         }
         this._lastTransformSN = this._transformSN;
@@ -374,7 +378,8 @@ export default class RenderContext
 
     begin(clear)
     {
-        if (clear) {
+        if (clear)
+        {
             this.clear();
         }
 
@@ -394,7 +399,8 @@ export default class RenderContext
 
         renderer._nextTextureLocation = 0;
 
-        // if (renderer.currentRenderer.size > 1) {
+        // if (renderer.currentRenderer.size > 1)
+        // {
         renderer.currentRenderer.start();
         // }
     }
@@ -430,14 +436,16 @@ export default class RenderContext
 
         // const batched = renderer.currentRenderer.size > 1;
 
-        // if (!batched) {
+        // if (!batched)
+        // {
         //     renderer.currentRenderer.start();
         // }
 
         displayObject.renderWebGL(renderer);
 
         // apply transform..
-        // if (!batched) {
+        // if (!batched)
+        // {
         //     renderer.currentRenderer.flush();
         // }
     }
@@ -446,10 +454,12 @@ export default class RenderContext
     {
         const renderer = this.renderer;
 
-        if (!renderer.view) {
+        if (!renderer.view)
+        {
             return;
         }
-        if (!skipUpdateTransform) {
+        if (!skipUpdateTransform)
+        {
             displayObject.updateTransformWithParent();
         }
         renderer.render(displayObject, renderTexture, false, null, true);
@@ -466,10 +476,12 @@ export default class RenderContext
 
         if (this.renderCore !== this.noop)
         {
-            // if (renderer.currentRenderer.size > 1) {
+            // if (renderer.currentRenderer.size > 1)
+            // {
             renderer.currentRenderer.flush();
             // }
-            if (renderer.textureGC) {
+            if (renderer.textureGC)
+            {
                 renderer.textureGC.update();
             }
         }
@@ -599,7 +611,8 @@ export default class RenderContext
         position.set(x - t.originalX, y - t.originalY);
 
         // TODO: add mask ?
-        // if (!displayObject.mask) {
+        // if (!displayObject.mask)
+        // {
         //     displayObject.mask = this.mask;
         // }
 
@@ -627,18 +640,25 @@ export default class RenderContext
     {
         const count = arguments.length;
 
-        if (count >= 5) {
+        if (count >= 5)
+        {
             // dx, dy, dw, dh
-            if (displayObject._width !== dw) {
+            if (displayObject._width !== dw)
+            {
                 displayObject.width = dw;
             }
-            if (displayObject._height !== dh) {
+            if (displayObject._height !== dh)
+            {
                 displayObject.height = dh;
             }
-        } else if (count === 3) {
+        }
+        else if (count === 3)
+        {
             renderTexture = dw;
             // dx, dy
-        } else {
+        }
+        else
+        {
             renderTexture = dx;
 
             const position = displayObject.position;
@@ -674,28 +694,39 @@ export default class RenderContext
         frame.height = sh;
         displayObject._texture._updateUvs();
 
-        if (count >= 9) {
+        if (count >= 9)
+        {
             // dx, dy, dw, dh
-            if (displayObject._width !== dw) {
+            if (displayObject._width !== dw)
+            {
                 displayObject.width = dw;
             }
-            if (displayObject._height !== dh) {
+            if (displayObject._height !== dh)
+            {
                 displayObject.height = dh;
             }
-        } else if (count >= 7) {
+        }
+        else if (count >= 7)
+        {
             // dx, dy
-            if (displayObject._width !== sw) {
+            if (displayObject._width !== sw)
+            {
                 displayObject.width = sw;
             }
-            if (displayObject._height !== sh) {
+            if (displayObject._height !== sh)
+            {
                 displayObject.height = sh;
             }
             renderTexture = dw;
-        } else if (count >= 5) {
-            if (displayObject._width !== sw) {
+        }
+        else if (count >= 5)
+        {
+            if (displayObject._width !== sw)
+            {
                 displayObject.width = sw;
             }
-            if (displayObject._height !== sh) {
+            if (displayObject._height !== sh)
+            {
                 displayObject.height = sh;
             }
             renderTexture = dx;
@@ -722,14 +753,19 @@ export default class RenderContext
         const count = arguments.length;
         let sprite;
 
-        if (count === 9) {
+        if (count === 9)
+        {
             sprite = this.createSprite(image, sx, sy, sw, sh, true);
             this.render(sprite, dx, dy, dw, dh);
-        } else if (count === 5) {
+        }
+        else if (count === 5)
+        {
             sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
             // dx, dy, dw, dh
             this.render(sprite, sx, sy, sw, sh);
-        } else {
+        }
+        else
+        {
             sprite = this.createSprite(image, 0, 0, image.width, image.height, true);
             // dx, dy
             this.renderAt(sprite, sx, sy);
@@ -759,13 +795,17 @@ export default class RenderContext
         const id = image.id || image.src;
         let baseTexture;
 
-        if (id) {
+        if (id)
+        {
             baseTexture = this.baseTexturePool[id];
-            if (!baseTexture) {
+            if (!baseTexture)
+            {
                 baseTexture = new BaseTexture(image);
                 this.baseTexturePool[id] = baseTexture;
             }
-        } else {
+        }
+        else
+        {
             baseTexture = new BaseTexture(image);
         }
 
@@ -778,12 +818,15 @@ export default class RenderContext
         const baseTexture = this.createBaseTexture(image);
         let texture;
 
-        if (count === 2) {
+        if (count === 2)
+        {
             id = sx;
         }
-        if (id) {
+        if (id)
+        {
             texture = this.texturePool[id];
-            if (texture) {
+            if (texture)
+            {
                 return texture;
             }
         }
@@ -791,7 +834,8 @@ export default class RenderContext
         const rect = sw && sh ? new Rectangle(sx, sy, sw, sh) : null;
 
         texture = new Texture(baseTexture, rect);
-        if (id) {
+        if (id)
+        {
             this.texturePool[id] = texture;
         }
 
@@ -804,10 +848,13 @@ export default class RenderContext
         let id;
         let texture;
 
-        if (count > 2) {
+        if (count > 2)
+        {
             // id = [image.id || image.src, sx, sy, sw, sh].join('-');
             texture = this.createTexture(image, sx, sy, sw, sh, id);
-        } else {
+        }
+        else
+        {
             container = sx;
             // id = image.id || image.src;
             texture = this.createTexture(image, id);
@@ -815,8 +862,10 @@ export default class RenderContext
 
         const sprite = Sprite.from(texture);
 
-        if (container) {
-            if (container === true) {
+        if (container)
+        {
+            if (container === true)
+            {
                 container = this.globalContainer;
             }
             container.addChild(sprite);
@@ -831,13 +880,17 @@ export default class RenderContext
         let id;
         let texture;
 
-        if (count >= 9) {
+        if (count >= 9)
+        {
             // id = [image.id || image.src, sx, sy, sw, sh].join('-');
             texture = this.createTexture(image, sx, sy, sw, sh, id);
-        } else {
+        }
+        else
+        {
             // id = image.id || image.src;
             texture = this.createTexture(image, id);
-            if (count === 6) {
+            if (count === 6)
+            {
                 container = L;
             }
             L = sx;
@@ -848,8 +901,10 @@ export default class RenderContext
 
         const sprite = new mesh.NineSlicePlane(texture, L, T, R, B);
 
-        if (container) {
-            if (container === true) {
+        if (container)
+        {
+            if (container === true)
+            {
                 container = this.globalContainer;
             }
             container.addChild(sprite);
@@ -875,8 +930,10 @@ export default class RenderContext
         sprite.updateSize = this._updateTextSize;
         sprite.updateContent = this._updateTextContent;
 
-        if (container) {
-            if (container === true) {
+        if (container)
+        {
+            if (container === true)
+            {
                 container = this.globalContainer;
             }
             container.addChild(sprite);

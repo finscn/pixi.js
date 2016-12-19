@@ -17,12 +17,14 @@ Text.prototype.updateTextFast = function ()
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    if (!this._textWidth) {
+    if (!this._textWidth)
+    {
         this._textWidth = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
     }
     const lineWidth = this._textWidth;
 
-    if (!this._fontProperties) {
+    if (!this._fontProperties)
+    {
         this._fontProperties = Text.calculateFontProperties(this._font);
     }
     const fontProperties = this._fontProperties;

@@ -28,7 +28,8 @@ export default class OutlineFilter extends core.Filter
 
         this.uniforms.thickness = thickness;
         this.uniforms.outlineColor = new Float32Array([0, 0, 0, 1]);
-        if (color) {
+        if (color)
+        {
             this.color = color;
         }
     }

@@ -26,7 +26,8 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 
     generateShader(gl, args)
     {
-        if (args) {
+        if (args)
+        {
             // noop
         }
         const vertexSrc = this.getVertexSrc();
@@ -38,7 +39,8 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
 
     render(sprite)
     {
-        if (!sprite._texture._uvs) {
+        if (!sprite._texture._uvs)
+        {
             return;
         }
 
@@ -54,7 +56,8 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const vertices = quad.vertices;
         const uvs = quad.uvs;
 
-        if (this.useNormalVertices) {
+        if (this.useNormalVertices)
+        {
             // TODO  normal != uvs , uvs of texture !!!
             vertices[0] = 0;
             vertices[1] = 0;
@@ -64,8 +67,11 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
             vertices[5] = 1;
             vertices[6] = 0;
             vertices[7] = 1;
-        } else {
-            for (let i = 0; i < 8; i++) {
+        }
+        else
+        {
+            for (let i = 0; i < 8; i++)
+            {
                 vertices[i] = vertexData[i];
             }
         }
@@ -100,7 +106,8 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
     updateShaderParameters(shader, sprite)
     {
         // implemented by subclass
-        if (!shader || !sprite) {
+        if (!shader || !sprite)
+        {
             return;
         }
     }

@@ -71,10 +71,12 @@ Container.prototype.renderWebGLChildren = function (renderer)
     let i = 0;
     let len = this.children.length;
 
-    while (i < len) {
+    while (i < len)
+    {
         const child = this.children[i];
 
-        if (child._toRemove) {
+        if (child._toRemove)
+        {
             len--;
             this._removeChildAt(i, child);
             continue;
@@ -89,10 +91,12 @@ Container.prototype.renderCanvasChildren = function (renderer)
     let i = 0;
     let len = this.children.length;
 
-    while (i < len) {
+    while (i < len)
+    {
         const child = this.children[i];
 
-        if (child._toRemove) {
+        if (child._toRemove)
+        {
             len--;
             this._removeChildAt(i, child);
             continue;

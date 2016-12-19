@@ -32,7 +32,8 @@ export {
 import * as extensions from './extensions';
 const ext = extensions;
 
-for (const key in ext.filters) {
+for (const key in ext.filters)
+{
     filters[key] = ext.filters[key];
 }
 const renderers = ext.renderers;

@@ -73,7 +73,8 @@ export default class SimpleContainer extends core.Container
     {
         const index = this.children.indexOf(child);
 
-        if (index === -1) {
+        if (index === -1)
+        {
             return null;
         }
         child.parent = null;
@@ -87,7 +88,8 @@ export default class SimpleContainer extends core.Container
     {
         const child = this.children[index];
 
-        if (child) {
+        if (child)
+        {
             child.parent = null;
             this.children.splice(index, 1);
             // this.onChildrenChange(index);
@@ -113,17 +115,21 @@ export default class SimpleContainer extends core.Container
         let removed;
         let i;
 
-        if (range > 0 && range <= end) {
+        if (range > 0 && range <= end)
+        {
             removed = this.children.splice(begin, range);
 
-            for (i = 0; i < removed.length; ++i) {
+            for (i = 0; i < removed.length; ++i)
+            {
                 removed[i].parent = null;
             }
 
             // this.onChildrenChange(beginIndex);
 
             return removed;
-        } else if (range === 0 && this.children.length === 0) {
+        }
+        else if (range === 0 && this.children.length === 0)
+        {
             return [];
         }
 
