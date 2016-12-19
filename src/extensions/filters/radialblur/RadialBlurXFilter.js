@@ -59,6 +59,7 @@ export default class RadialBlurXFilter extends core.Filter
         const inHeight = input.size.height;
 
         const aspect = inWidth / inHeight;
+
         this.uniforms.aspect = aspect;
 
         this._uCenterCoord[0] = (this._center[0] + this.padding) / inWidth;
@@ -68,6 +69,7 @@ export default class RadialBlurXFilter extends core.Filter
 
         // const uMinRadius = this._minRadius / inWidth * aspect;
         const uMinRadius = this._minRadius / inHeight;
+
         this.uniforms.minRadius = uMinRadius;
 
         this.uniforms.strength = this.horizontal ? (1 / inWidth) : (1 / inHeight);

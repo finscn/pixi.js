@@ -14,6 +14,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     constructor(renderer)
     {
         super(renderer);
+
         this.useNormalVertices = true;
         this.uniforms = {};
         this.defaultMatrix = new Float32Array([
@@ -38,12 +39,14 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     getVertexSrc()
     {
         const vertSrc = readFileSync(join(__dirname, './perspective.vert'), 'utf8');
+
         return vertSrc;
     }
 
     getFragmentSrc()
     {
         const fragSrc = readFileSync(join(__dirname, './perspective.frag'), 'utf8');
+
         return fragSrc;
     }
 
@@ -120,12 +123,14 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             // const y = 0; // frame.y;
             // const w = frame.width;
             // const h = frame.height;
+            //
             // fromQuad = [
             //     x, y,
             //     x + w, y,
             //     x + w, y + h,
             //     x, y,
             // ];
+
             toQuad = fromQuad;
             Matrix3.squareToQuadrilateral(
                 toQuad[0], toQuad[1],
@@ -144,6 +149,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     static __renderWebGLSprite(renderer)
     {
         const sprite = this;
+
         // sprite.calculateVerticesWithoutTransform(true);
         sprite.calculateVertices();
         renderer.setObjectRenderer(renderer.plugins.perspective);
@@ -153,17 +159,18 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     static __calculateBoundsSprite()
     {
         const sprite = this;
-
         const trim = sprite._texture.trim;
         const orig = sprite._texture.orig;
 
         if (sprite.perspectiveMatrix)
         {
             const changed = sprite.calculatePerspectiveVertices();
+
             if (changed !== false)
             {
                 sprite._bounds.addQuad(sprite.vertexPerspective);
             }
+
             return;
         }
         // First lets check to see if the current texture has a trim..
@@ -192,6 +199,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             return false;
         }
         sprite._lastPerspectiveMatrixId = sprite._perspectiveMatrixId;
+
         const pM = sprite.perspectiveMatrix;
         const vertexData = sprite.vertexPerspective = sprite.vertexPerspective || new Float32Array(8);
 
@@ -246,6 +254,7 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
         const a = x * mat[0] + y * mat[3] + mat[6];
         const b = x * mat[1] + y * mat[4] + mat[7];
         const c = x * mat[2] + y * mat[5] + mat[8];
+
         return [width * a / c + ox, height * b / c + oy];
     }
 }

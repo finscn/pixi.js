@@ -31,6 +31,7 @@ export {
 // load extensions
 import * as extensions from './extensions';
 const ext = extensions;
+
 for (const key in ext.filters) {
     filters[key] = ext.filters[key];
 }
@@ -42,6 +43,7 @@ const SimpleParticleContainer = ext.SimpleParticleContainer;
 const SimpleSprite = ext.SimpleSprite;
 const AnimationSprite = ext.AnimationSprite;
 const RenderContext = ext.RenderContext;
+
 export {
     extensions,
     renderers,

@@ -38,12 +38,14 @@ export default class Light
 
         // run the color setter
         const color = options.color;
+
         if (color || color === 0) {
             this.color = color;
         }
 
         // run the brightness setter
         const brightness = options.brightness;
+
         if (brightness || brightness === 0) {
             this.brightness = brightness;
         }
@@ -63,6 +65,7 @@ export default class Light
     {
         if (!this.inited || force) {
             const gl = renderer.gl;
+
             this.viewSize = new Float32Array([renderer.width, renderer.height]);
             this.shader = this.generateShader(gl);
             this.inited = true;
@@ -75,10 +78,12 @@ export default class Light
         const fragmentSrc = this.getFragmentSource();
         const id = vertexSrc + '@' + fragmentSrc;
         let shader = Light.shaderCache[id];
+
         if (!shader) {
             Light.shaderCache[id] = shader;
             shader = new Shader(gl, vertexSrc, fragmentSrc, Light.locationMapping);
         }
+
         return shader;
     }
 
@@ -97,6 +102,7 @@ export default class Light
         const arr = this.colorArray;
         const rgb = this._colorRgb;
         const b = this._brightness;
+
         arr[0] = rgb[0] * b;
         arr[1] = rgb[1] * b;
         arr[2] = rgb[2] * b;

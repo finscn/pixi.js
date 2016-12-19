@@ -19,12 +19,14 @@ export default class PointLight extends LightWithAmbient
     getVertexSource()
     {
         const vertexSrc = glslify('./point.vert');
+
         return vertexSrc;
     }
 
     getFragmentSource()
     {
         const fragmentSrc = glslify('./point.frag');
+
         return fragmentSrc;
     }
 

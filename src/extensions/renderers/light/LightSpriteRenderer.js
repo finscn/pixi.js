@@ -17,7 +17,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     render(sprite)
     {
-        if (!sprite._texture._uvs || !sprite.lights) {
+        if (!sprite._texture._uvs || !sprite.lights)
+        {
             return;
         }
 
@@ -36,9 +37,13 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
         const uSamplerLocation = renderer.bindTexture(diffuseTexture, 1, true);
         let uNormalSamplerLocation;
-        if (diffuseTexture.baseTexture === normalTexture.baseTexture) {
+
+        if (diffuseTexture.baseTexture === normalTexture.baseTexture)
+        {
             uNormalSamplerLocation = uSamplerLocation;
-        } else {
+        }
+        else
+        {
             uNormalSamplerLocation = renderer.bindTexture(normalTexture, 2, true);
         }
 
@@ -47,19 +52,22 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         for (let i = 0; i < lightCount; i++)
         {
             const light = lights[i];
+
             light.init(renderer, this.contextChanged);
 
             const shader = light.shader;
 
-            if (i === 0) {
+            if (i === 0)
+            {
                 const quad = this.quad;
-                renderer.bindVao(null);
-                quad.initVao(shader);
-
                 const vertices = quad.vertices;
                 const uvs = quad.uvs;
 
-                for (let i = 0; i < 8; i++) {
+                renderer.bindVao(null);
+                quad.initVao(shader);
+
+                for (let i = 0; i < 8; i++)
+                {
                     vertices[i] = vertexData[i];
                 }
 
@@ -83,7 +91,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
                 renderer.bindVao(quad.vao);
             }
 
-            if (lastShader !== shader) {
+            if (lastShader !== shader)
+            {
                 lastShader = shader;
                 renderer.bindShader(shader);
             }
@@ -113,7 +122,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     static unapplyTo(sprite)
     {
-        if (sprite._renderWebGLBakLightSpriteRenderer) {
+        if (sprite._renderWebGLBakLightSpriteRenderer)
+        {
             sprite._renderWebGL = sprite._renderWebGLBakLightSpriteRenderer;
             sprite._renderWebGLBakLightSpriteRenderer = null;
         }
@@ -122,6 +132,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     static __renderWebGLSprite(renderer)
     {
         const sprite = this;
+
         // sprite.calculateVerticesWithoutTransform(true);
         sprite.calculateVertices();
         renderer.setObjectRenderer(renderer.plugins.lightsprite);

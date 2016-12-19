@@ -20,6 +20,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const gl = this.renderer.gl;
         const shader = this.shader = this.generateShader(gl);
         const quad = this.quad = new Quad(gl, this.renderer.state.attribState);
+
         quad.initVao(shader);
     }
 
@@ -31,6 +32,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         const vertexSrc = this.getVertexSrc();
         const fragmentSrc = this.getFragmentSrc();
         const shader = new Shader(gl, vertexSrc, fragmentSrc);
+
         return shader;
     }
 

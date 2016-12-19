@@ -8,6 +8,7 @@ export default class DirectionalLight extends LightWithAmbient
     constructor(options)
     {
         options = options || {};
+
         super(options);
 
         this.target = options.target || {
@@ -27,12 +28,14 @@ export default class DirectionalLight extends LightWithAmbient
     getVertexSource()
     {
         const vertexSrc = glslify('./directional.vert');
+
         return vertexSrc;
     }
 
     getFragmentSource()
     {
         const fragmentSrc = glslify('./directional.frag');
+
         return fragmentSrc;
     }
 

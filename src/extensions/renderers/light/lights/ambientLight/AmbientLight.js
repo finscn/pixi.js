@@ -25,12 +25,14 @@ export default class AmbientLight extends Light
     getVertexSource()
     {
         const vertexSrc = glslify('./ambient.vert');
+
         return vertexSrc;
     }
 
     getFragmentSource()
     {
         const fragmentSrc = glslify('./ambient.frag');
+
         return fragmentSrc;
     }
 }

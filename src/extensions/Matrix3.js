@@ -30,6 +30,7 @@ Matrix3.create = function (m00, m01, m02, m10, m11, m12, m20, m21, m22, out)
     out[6] = m20;
     out[7] = m21;
     out[8] = m22;
+
     return out;
 };
 
@@ -65,6 +66,7 @@ Matrix3.multiply = function (a, b, out)
     out[6] = b20 * a00 + b21 * a10 + b22 * a20;
     out[7] = b20 * a01 + b21 * a11 + b22 * a21;
     out[8] = b20 * a02 + b21 * a12 + b22 * a22;
+
     return out;
 };
 
@@ -72,6 +74,7 @@ Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
 {
     const sx = x0 - x1 + x2 - x3;
     const sy = y0 - y1 + y2 - y3;
+
     if (sx === 0.0 && sy === 0.0)
     {
         out = Matrix3.create(
@@ -88,6 +91,7 @@ Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
         const denominator = dx1 * dy2 - dx2 * dy1;
         const a13 = (sx * dy2 - dx2 * sy) / denominator;
         const a23 = (dx1 * sy - sx * dy1) / denominator;
+
         out = Matrix3.create(
           x1 - x0 + a13 * x1,
           y1 - y0 + a13 * y1,
@@ -97,6 +101,7 @@ Matrix3.squareToQuadrilateral = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
           a23,
           x0, y0, 1.0, out);
     }
+
     return out;
 };
 
@@ -145,8 +150,8 @@ Matrix3.quadrilateralToSquare = function (x0, y0, x1, y1, x2, y2, x3, y3, out)
     out[6] = C / det;
     out[7] = F / det;
     out[8] = I / det;
-
     // console.log(out)
+
     return out;
 };
 
@@ -164,8 +169,10 @@ Matrix3.perspective = function (fromQuad, toQuad, out)
         toQuad[4], toQuad[5],
         toQuad[6], toQuad[7]
     );
+
     out = out || new Float32Array(9);
     Matrix3.multiply(qToS, sToQ, out);
+
     return out;
 };
 
@@ -174,6 +181,7 @@ Matrix3.perspectiveTransfromPoint = function (mat, x, y)
     const a = x * mat[0] + y * mat[1] + mat[2];
     const b = x * mat[3] + y * mat[4] + mat[5];
     const c = x * mat[6] + y * mat[7] + mat[8];
+
     return [a / c, b / c];
 };
 
@@ -200,6 +208,7 @@ Matrix3.adjoint = function (a, out)
     out[6] = (a10 * a21 - a11 * a20);
     out[7] = (a01 * a20 - a00 * a21);
     out[8] = (a00 * a11 - a01 * a10);
+
     return out;
 };
 
@@ -240,6 +249,7 @@ Matrix3.invert = function (a, out)
     out[6] = b21 * det;
     out[7] = (-a21 * a00 + a01 * a20) * det;
     out[8] = (a11 * a00 - a01 * a10) * det;
+
     return out;
 };
 

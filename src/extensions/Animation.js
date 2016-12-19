@@ -320,6 +320,7 @@ export default class Animation
             {
                 this.onComplete();
             }
+
             return;
         }
 
@@ -356,6 +357,7 @@ export default class Animation
         if (frame.pivot)
         {
             const pivot = frame.pivot;
+
             this._host.transform.pivot.set(pivot[0], pivot[1]);
         }
 
@@ -419,6 +421,7 @@ export default class Animation
             this.firstTexure = null;
             this._minIndex = -1;
             this._maxIndex = -1;
+
             return;
         }
 
@@ -569,6 +572,7 @@ export default class Animation
 
         Animation.applyTo(sprite);
         sprite.initAnimation(frames, duration);
+
         return sprite;
     }
 
@@ -589,6 +593,7 @@ export default class Animation
 
         Animation.applyTo(rope);
         rope.initAnimation(frames, duration);
+
         return rope;
     }
 
@@ -610,6 +615,7 @@ export default class Animation
 
         Animation.applyTo(plane);
         plane.initAnimation(frames, duration);
+
         return plane;
     }
 

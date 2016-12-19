@@ -26,7 +26,8 @@ export default class ShockwaveFilter extends core.Filter
 
     apply(filterManager, input, output, clear)
     {
-        if (!this.viewSize) {
+        if (!this.viewSize)
+        {
             this.viewSize = new Float32Array([
                 filterManager.renderer.width,
                 filterManager.renderer.height,
@@ -70,11 +71,15 @@ export default class ShockwaveFilter extends core.Filter
         if (width === null)
         {
             this.viewSize = null;
+
             return;
         }
-        if (!this.viewSize) {
+        if (!this.viewSize)
+        {
             this.viewSize = new Float32Array(2);
-        } else {
+        }
+        else
+        {
             this.viewSize[0] = width;
             this.viewSize[1] = height;
         }

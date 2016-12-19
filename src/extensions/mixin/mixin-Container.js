@@ -62,6 +62,7 @@ Container.prototype._removeChildAt = function (index, child)
     child.parent = null;
     this.onChildrenChange(index);
     child.emit('removed', this);
+
     return child;
 };
 
@@ -69,8 +70,10 @@ Container.prototype.renderWebGLChildren = function (renderer)
 {
     let i = 0;
     let len = this.children.length;
+
     while (i < len) {
         const child = this.children[i];
+
         if (child._toRemove) {
             len--;
             this._removeChildAt(i, child);
@@ -85,8 +88,10 @@ Container.prototype.renderCanvasChildren = function (renderer)
 {
     let i = 0;
     let len = this.children.length;
+
     while (i < len) {
         const child = this.children[i];
+
         if (child._toRemove) {
             len--;
             this._removeChildAt(i, child);

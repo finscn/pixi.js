@@ -30,6 +30,7 @@ export default class LightWithAmbient extends Light
         const arr = this.ambientColorArray;
         const rgb = this._ambientColorRgb;
         const b = this._ambientBrightness;
+
         arr[0] = rgb[0] * b;
         arr[1] = rgb[1] * b;
         arr[2] = rgb[2] * b;

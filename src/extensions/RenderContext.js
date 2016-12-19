@@ -325,6 +325,7 @@ export default class RenderContext
             this.globalContainer.addChild(displayObject);
             displayObject._linkedContext = true;
         }
+
         return this;
     }
 
@@ -339,6 +340,7 @@ export default class RenderContext
                 displayObject.destroy(toDestroy);
             }
         }
+
         return this;
     }
 
@@ -357,6 +359,7 @@ export default class RenderContext
                 child.destroy(toDestroy);
             }
         }
+
         return this;
     }
 
@@ -383,6 +386,7 @@ export default class RenderContext
         if (!renderer.gl || renderer.gl.isContextLost())
         {
             this.renderCore = this.noop;
+
             return;
         }
         this.renderCore = this._renderCore;
@@ -764,6 +768,7 @@ export default class RenderContext
         } else {
             baseTexture = new BaseTexture(image);
         }
+
         return baseTexture;
     }
 
@@ -789,6 +794,7 @@ export default class RenderContext
         if (id) {
             this.texturePool[id] = texture;
         }
+
         return texture;
     }
 
@@ -815,6 +821,7 @@ export default class RenderContext
             }
             container.addChild(sprite);
         }
+
         return sprite;
     }
 
@@ -847,6 +854,7 @@ export default class RenderContext
             }
             container.addChild(sprite);
         }
+
         return sprite;
     }
 
@@ -873,6 +881,7 @@ export default class RenderContext
             }
             container.addChild(sprite);
         }
+
         return sprite;
     }
 

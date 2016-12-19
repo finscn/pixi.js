@@ -62,9 +62,11 @@ export default class BloomBrightnessFilter extends core.Filter
     apply(filterManager, input, output, clear, currentState)
     {
         const brightTarget = filterManager.getRenderTarget(true);
+
         this.extractBrightnessFilter.apply(filterManager, input, brightTarget, true, currentState);
 
         const blurTarget = filterManager.getRenderTarget(true);
+
         this.blurXFilter.apply(filterManager, brightTarget, blurTarget, true, currentState);
         this.blurYFilter.apply(filterManager, blurTarget, brightTarget, true, currentState);
 

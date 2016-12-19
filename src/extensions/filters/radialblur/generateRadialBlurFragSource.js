@@ -41,6 +41,7 @@ export default function generateRadialBlurFragSource(kernelSize, horizontal)
 
     let blurLoop = '';
     let template;
+
     if (horizontal)
     {
         template = 'gl_FragColor += texture2D(uSampler, vTextureCoord + vec2( %sampleIndex% * disStrength, 0.0)) * %value%;';
