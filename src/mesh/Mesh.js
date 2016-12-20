@@ -23,6 +23,14 @@ export default class Mesh extends core.Container
         super();
 
         /**
+         * The texture of the Mesh
+         *
+         * @member {PIXI.Texture}
+         * @private
+         */
+        this._texture = null;
+
+        /**
          * The anchor sets the origin point of the texture.
          * The default is 0,0 this means the texture's origin is the top left
          * Setting the anchor to 0.5,0.5 means the texture's origin is centered
@@ -32,14 +40,6 @@ export default class Mesh extends core.Container
          * @private
          */
         this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
-
-        /**
-         * The texture of the Mesh
-         *
-         * @member {PIXI.Texture}
-         * @private
-         */
-        this._texture = null;
 
         /**
          * The Uvs of the Mesh
