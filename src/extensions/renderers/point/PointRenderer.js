@@ -4,12 +4,12 @@ import settings from '../../../core/settings';
 import glCore from 'pixi-gl-core';
 import bitTwiddle from 'bit-twiddle';
 
-const ObjectRenderer = core.ObjectRenderer;
 const WebGLRenderer = core.WebGLRenderer;
+const SpriteRenderer = core.SpriteRenderer;
 const Shader = core.Shader;
 const BLEND_MODES = core.BLEND_MODES;
 
-export default class PointRenderer extends ObjectRenderer
+export default class PointRenderer extends SpriteRenderer
 {
     constructor(renderer)
     {
@@ -31,7 +31,7 @@ export default class PointRenderer extends ObjectRenderer
         this.vertByteSize = this.vertSize * 4;
 
         /**
-         * The number of images in the SpriteBatch before it flushes.
+         * The number of images in the SpriteRenderer before it flushes.
          *
          * @member {number}
          */
@@ -214,74 +214,14 @@ export default class PointRenderer extends ObjectRenderer
     }
 
     /**
-     * Starts a new sprite batch.
-     */
-    start()
-    {
-        this.renderer.bindShader(this.shader);
-
-        if (settings.CAN_UPLOAD_SAME_BUFFER)
-        {
-            // bind buffer #0, we don't need others
-            this.renderer.bindVao(this.vaos[this.vertexCount]);
-
-            this.vertexBuffers[this.vertexCount].bind();
-        }
-    }
-
-    /**
-     * Stops and flushes the current batch.
-     *
-     */
-    stop()
-    {
-        this.flush();
-    }
-
-    /**
-     * Destroys the SpriteBatch.
+     * Destroys the PointRenderer.
      *
      */
     destroy()
     {
-        for (let i = 0; i < this.vaoMax; i++)
-        {
-            if (this.vertexBuffers[i])
-            {
-                this.vertexBuffers[i].destroy();
-            }
-            if (this.vaos[i])
-            {
-                this.vaos[i].destroy();
-            }
-        }
-
-        if (this.indexBuffer)
-        {
-            this.indexBuffer.destroy();
-        }
-
-        this.renderer.off('prerender', this.onPrerender, this);
-
         super.destroy();
 
-        if (this.shader)
-        {
-            this.shader.destroy();
-            this.shader = null;
-        }
-
-        this.vertexBuffers = null;
-        this.vaos = null;
-        this.indexBuffer = null;
-        this.indices = null;
-
         this.points = null;
-
-        for (let i = 0; i < this.buffers.length; ++i)
-        {
-            this.buffers[i].destroy();
-        }
     }
 
     getVertexSrc()
