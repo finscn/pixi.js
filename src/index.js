@@ -38,6 +38,7 @@ for (const key in ext.filters)
 }
 const renderers = ext.renderers;
 const DisplayPoint = renderers.DisplayPoint;
+const DisplayPointGroup = renderers.DisplayPointGroup;
 const lights = ext.lights;
 const Matrix3 = ext.Matrix3;
 const SimpleContainer = ext.SimpleContainer;
@@ -51,6 +52,7 @@ export {
     renderers,
     lights,
     DisplayPoint,
+    DisplayPointGroup,
     Matrix3,
     SimpleContainer,
     SimpleParticleContainer,

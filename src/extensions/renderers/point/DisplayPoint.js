@@ -9,16 +9,18 @@ export default class DisplayPoint extends DisplayObject
      * @param {number} x - the position.x of the point
      * @param {number} y - the position.y of the point
      * @param {number} size - the size of the point
-     * @param {array}  color - the rgba color of the point
+     * @param {array}  color - the rgb color of the point
+     * @param {number} alpha - the alpha of the point
      */
-    constructor(x, y, size, color)
+    constructor(x, y, size, color, alpha)
     {
         super();
 
         this.x = x;
         this.y = y;
         this.size = size || 16;
-        this.color = color || [1.0, 1.0, 1.0, 1.0];
+        this.color = color || [1.0, 1.0, 1.0];
+        this.alpha = alpha || 1;
 
         this.pluginName = 'point';
     }

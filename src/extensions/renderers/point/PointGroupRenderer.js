@@ -1,59 +1,13 @@
 import * as core from '../../../core';
-import Buffer from '../../../core/sprites/webgl/BatchBuffer';
 import settings from '../../../core/settings';
 import glCore from 'pixi-gl-core';
 import bitTwiddle from 'bit-twiddle';
+import PointRenderer from './PointRenderer';
 
-const ObjectRenderer = core.ObjectRenderer;
 const WebGLRenderer = core.WebGLRenderer;
-const Shader = core.Shader;
-const BLEND_MODES = core.BLEND_MODES;
 
-export default class PointRenderer extends ObjectRenderer
+export default class PointGroupRenderer extends PointRenderer
 {
-    constructor(renderer)
-    {
-        super(renderer);
-
-        this.initSize();
-
-        /**
-         * The number of images in the PointRenderer before it flushes.
-         *
-         * @member {number}
-         */
-        this.size = settings.SPRITE_BATCH_SIZE; // 2000 is a nice balance between mobile / desktop
-
-        // the total number of bytes in our batch
-        // let numVerts = this.size * 4 * this.vertByteSize;
-
-        this.buffers = [];
-        for (let i = 1; i <= bitTwiddle.nextPow2(this.size); i *= 2)
-        {
-            this.buffers.push(new Buffer(i * 4 * this.vertByteSize));
-        }
-
-        const totalIndices = this.size;
-        const indices = this.indices = new Uint16Array(totalIndices);
-
-        for (let i = 0, j = 0; i < totalIndices; i += 1, j += 4)
-        {
-            indices[i + 0] = j + 0;
-        }
-
-        this.shader = null;
-
-        this.points = [];
-        this.vertexBuffers = [];
-        this.vaos = [];
-
-        this.currentIndex = 0;
-        this.vaoMax = 2;
-        this.vertexCount = 0;
-
-        this.blendMode = BLEND_MODES.NORMAL;
-        this.renderer.on('prerender', this.onPrerender, this);
-    }
 
     initSize()
     {
@@ -63,7 +17,7 @@ export default class PointRenderer extends ObjectRenderer
          *
          * @member {number}
          */
-        this.vertSize = 7;
+        this.vertSize = 4;
 
         /**
          * The size of the vertex information in bytes.
@@ -94,8 +48,7 @@ export default class PointRenderer extends ObjectRenderer
                 .addIndex(this.indexBuffer)
                 .addAttribute(this.vertexBuffers[i], shader.attributes.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
                 .addAttribute(this.vertexBuffers[i], shader.attributes.aSize, gl.FLOAT, true, this.vertByteSize, 2 * 4)
-                .addAttribute(this.vertexBuffers[i], shader.attributes.aColor, gl.FLOAT, true, this.vertByteSize, 3 * 4)
-                .addAttribute(this.vertexBuffers[i], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 6 * 4);
+                .addAttribute(this.vertexBuffers[i], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 3 * 4);
 
             /* eslint-disable max-len */
         }
@@ -105,36 +58,32 @@ export default class PointRenderer extends ObjectRenderer
     }
 
     /**
-     * Called before the renderer starts rendering.
-     *
-     */
-    onPrerender()
-    {
-        this.vertexCount = 0;
-    }
-
-    generateShader(gl)
-    {
-        const vertexSrc = this.getVertexSrc();
-        const fragmentSrc = this.getFragmentSrc();
-        const shader = new Shader(gl, vertexSrc, fragmentSrc);
-
-        return shader;
-    }
-
-    /**
      * Renders the point object.
      *
-     * @param {DisplayPoint} point - the point to render when using this pointbatch
+     * @param {DisplayPointGroup} pointGroup - the point group to render when using this pointbatch
      */
-    render(point)
+    render(pointGroup)
     {
-        if (this.currentIndex >= this.size)
+        this.shader.uniforms.uColor = pointGroup.color;
+        this.shader.uniforms.uRounded = pointGroup._roundedInt;
+
+        this.renderer.bindShader(this.shader);
+        this.renderer.state.setBlendMode(this.blendMode);
+
+        const points = pointGroup.points;
+        const count = points.length;
+        let i;
+
+        for (i = 0; i < count; i++)
         {
-            this.flush();
+            this.points[this.currentIndex++] = points[i];
+            if (this.currentIndex >= this.size)
+            {
+                this.flush();
+            }
         }
 
-        this.points[this.currentIndex++] = point;
+        this.flush();
     }
 
     /**
@@ -157,8 +106,6 @@ export default class PointRenderer extends ObjectRenderer
         const buffer = this.buffers[log2];
         const float32View = buffer.float32View;
 
-        renderer.bindShader(this.shader);
-
         const points = this.points;
         const vertSize = this.vertSize;
         let index = 0;
@@ -171,10 +118,7 @@ export default class PointRenderer extends ObjectRenderer
             float32View[index] = point.x;
             float32View[index + 1] = point.y;
             float32View[index + 2] = point.size;
-            float32View[index + 3] = point.color[0];
-            float32View[index + 4] = point.color[1];
-            float32View[index + 5] = point.color[2];
-            float32View[index + 6] = point.alpha;
+            float32View[index + 3] = point.alpha;
 
             index += vertSize;
         }
@@ -195,8 +139,7 @@ export default class PointRenderer extends ObjectRenderer
                     .addIndex(this.indexBuffer)
                     .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
                     .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aSize, gl.FLOAT, true, this.vertByteSize, 2 * 4)
-                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aColor, gl.FLOAT, true, this.vertByteSize, 3 * 4)
-                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 6 * 4);
+                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 3 * 4);
 
                 /* eslint-disable max-len */
             }
@@ -213,83 +156,15 @@ export default class PointRenderer extends ObjectRenderer
             this.vertexBuffers[this.vertexCount].upload(buffer.vertices, 0, true);
         }
 
-        renderer.state.setBlendMode(this.blendMode);
-
         gl.drawArrays(gl.POINTS, 0, this.currentIndex);
 
         // reset elements for the next flush
         this.currentIndex = 0;
     }
 
-    /**
-     * Starts a new point batch.
-     */
-    start()
-    {
-        this.renderer.bindShader(this.shader);
-
-        if (settings.CAN_UPLOAD_SAME_BUFFER)
-        {
-            // bind buffer #0, we don't need others
-            this.renderer.bindVao(this.vaos[this.vertexCount]);
-
-            this.vertexBuffers[this.vertexCount].bind();
-        }
-    }
-
-    /**
-     * Stops and flushes the current batch.
-     *
-     */
     stop()
     {
-        this.flush();
-    }
-
-    /**
-     * Destroys the PointRenderer.
-     *
-     */
-    destroy()
-    {
-        for (let i = 0; i < this.vaoMax; i++)
-        {
-            if (this.vertexBuffers[i])
-            {
-                this.vertexBuffers[i].destroy();
-            }
-            if (this.vaos[i])
-            {
-                this.vaos[i].destroy();
-            }
-        }
-
-        if (this.indexBuffer)
-        {
-            this.indexBuffer.destroy();
-        }
-
-        this.renderer.off('prerender', this.onPrerender, this);
-
-        super.destroy();
-
-        if (this.shader)
-        {
-            this.shader.destroy();
-            this.shader = null;
-        }
-
-        this.vertexBuffers = null;
-        this.vaos = null;
-        this.indexBuffer = null;
-        this.indices = null;
-
-        this.points = null;
-
-        for (let i = 0; i < this.buffers.length; ++i)
-        {
-            this.buffers[i].destroy();
-        }
+        // empty
     }
 
     getVertexSrc()
@@ -298,13 +173,13 @@ export default class PointRenderer extends ObjectRenderer
             'uniform mat3 projectionMatrix;',
             'attribute vec2 aVertexPosition;',
             'attribute float aSize;',
-            'attribute vec3 aColor;',
             'attribute float aAlpha;',
+            'uniform vec3 uColor;',
             'varying vec4 vColor;',
             'void main() {',
             '  gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
             '  gl_PointSize = aSize;',
-            '  vColor = vec4(aColor.r * aAlpha, aColor.g * aAlpha, aColor.b * aAlpha , aAlpha);',
+            '  vColor = vec4(uColor * aAlpha , aAlpha);',
             '}',
         ].join('\n');
     }
@@ -314,12 +189,16 @@ export default class PointRenderer extends ObjectRenderer
         return [
             'precision mediump float;',
             'varying vec4 vColor;',
+            'uniform float uRounded;',
             'void main() {',
-            '    gl_FragColor = vColor;',
+            '  if(uRounded == 1.0 && distance(gl_PointCoord, vec2(0.5, 0.5)) > 0.5) {',
+            '    discard;',
+            '  }',
+            '  gl_FragColor = vColor;',
             '}',
         ].join('\n');
     }
 }
 
-WebGLRenderer.registerPlugin('point', PointRenderer);
+WebGLRenderer.registerPlugin('pointGroup', PointGroupRenderer);
 
