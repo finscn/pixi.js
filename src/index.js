@@ -37,6 +37,7 @@ for (const key in ext.filters)
     filters[key] = ext.filters[key];
 }
 const renderers = ext.renderers;
+const DisplayPoint = renderers.DisplayPoint;
 const lights = ext.lights;
 const Matrix3 = ext.Matrix3;
 const SimpleContainer = ext.SimpleContainer;
@@ -49,6 +50,7 @@ export {
     extensions,
     renderers,
     lights,
+    DisplayPoint,
     Matrix3,
     SimpleContainer,
     SimpleParticleContainer,
