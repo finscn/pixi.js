@@ -850,6 +850,22 @@ export default class RenderContext
         return texture;
     }
 
+    createSpriteByTexture(texture, container)
+    {
+        const sprite = Sprite.from(texture);
+
+        if (container)
+        {
+            if (container === true)
+            {
+                container = this.globalContainer;
+            }
+            container.addChild(sprite);
+        }
+
+        return sprite;
+    }
+
     createSprite(image, sx, sy, sw, sh, container)
     {
         const count = arguments.length;
@@ -868,16 +884,7 @@ export default class RenderContext
             texture = this.createTexture(image, id);
         }
 
-        const sprite = Sprite.from(texture);
-
-        if (container)
-        {
-            if (container === true)
-            {
-                container = this.globalContainer;
-            }
-            container.addChild(sprite);
-        }
+        const sprite = this.createSpriteByTexture(texture, container);
 
         return sprite;
     }
