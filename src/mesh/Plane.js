@@ -84,7 +84,7 @@ export default class Plane extends Mesh
         const orig = texture.orig;
         const anchor = this._anchor;
 
-        // calculate the space around pivot point.
+
         this._pivotX = orig.width * anchor.x;
         this._pivotY = orig.height * anchor.y;
 
