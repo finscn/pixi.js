@@ -8,6 +8,7 @@ const Container = core.Container;
 const Sprite = core.Sprite;
 const Graphics = core.Graphics;
 const Rectangle = core.Rectangle;
+const Text = core.Text;
 
 export default class RenderContext
 {
@@ -293,6 +294,8 @@ export default class RenderContext
         this.unlinkAllDisplayObjects(destroyChildren);
         this.shape = new Graphics();
         this.linkDisplayObject(this.shape);
+        this.textSprite = new Text(' ');
+        this.linkDisplayObject(this.textSprite);
 
         this.transformStack = [];
         this.globalTransform = {};
@@ -605,6 +608,44 @@ export default class RenderContext
 
         shape.mask = this.mask;
         shape.arc(dx, dy, radius, startAngle, endAngle, anticlockwise);
+    }
+
+    strokeText(text, x, y, color, lineWidth, style)
+    {
+        style = style || {};
+        style.stroke = color || style.stroke;
+        style.strokeThickness = lineWidth || style.strokeThickness;
+
+        this.drawText(text, x, y, style);
+    }
+
+    fillText(text, x, y, color, style)
+    {
+        style = style || {};
+        style.fill = color || style.fill;
+
+        this.drawText(text, x, y, style);
+    }
+
+    drawText(text, x, y, style, renderTexture)
+    {
+        this.updateGlobalContainer();
+
+        const t = this.globalTransform;
+        const dx = x - t.originX;
+        const dy = y - t.originY;
+
+        const textSprite = this.textSprite;
+
+        textSprite.transform.position.set(dx, dy);
+
+        textSprite.text = text;
+        textSprite.style = style;
+        textSprite.mask = this.mask;
+
+        this.renderCore(textSprite, renderTexture, false);
+
+        this.renderer.flush();
     }
 
     renderBasic(displayObject, renderTexture)
