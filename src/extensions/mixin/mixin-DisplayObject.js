@@ -21,3 +21,15 @@ DisplayObject.prototype.updateTransformWithParent = function ()
 
     this._bounds.updateID++;
 };
+
+/**
+ * Remove self from parent
+ */
+DisplayObject.prototype.remove = function ()
+{
+    this._toRemove = true;
+    if (this.parent)
+    {
+        this.parent.removeChild(this);
+    }
+};
