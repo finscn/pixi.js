@@ -32,5 +32,6 @@ dist/
 # jetBrains IDE ignores
 .idea
 
-# bak files
+# local files
 _bak/
+*build.sh
