@@ -1,6 +1,7 @@
 import * as core from '../../../core';
 
 const DisplayObject = core.DisplayObject;
+const Point = core.Point;
 
 export default class DisplayPointGroup extends DisplayObject
 {
@@ -13,6 +14,10 @@ export default class DisplayPointGroup extends DisplayObject
     constructor(color, rounded, points)
     {
         super();
+
+        this.position = new Point(0, 0);
+        this._ax = this.position.x;
+        this._ay = this.position.y;
 
         this.color = color || [1.0, 1.0, 1.0];
         this._roundedInt = 0;
@@ -31,6 +36,26 @@ export default class DisplayPointGroup extends DisplayObject
     clear()
     {
         this.points.length = 0;
+    }
+
+    updateTransformWithParent()
+    {
+        if (this.parent)
+        {
+            this._ax = this.position.x + this.parent.transform.tx;
+            this._ay = this.position.y + this.parent.transform.ty;
+        }
+        else
+        {
+            this._ax = this.position.x;
+            this._ay = this.position.y;
+        }
+    }
+
+    updateTransform()
+    {
+        this._ax = this.position.x;
+        this._ay = this.position.y;
     }
 
     /**

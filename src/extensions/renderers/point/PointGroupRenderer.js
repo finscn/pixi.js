@@ -64,6 +64,10 @@ export default class PointGroupRenderer extends PointRenderer
      */
     render(pointGroup)
     {
+        this.currentGroup = pointGroup;
+        this._ax = pointGroup._ax;
+        this._ay = pointGroup._ay;
+
         this.shader.uniforms.uColor = pointGroup.color;
         this.shader.uniforms.uRounded = pointGroup._roundedInt;
 
@@ -72,18 +76,27 @@ export default class PointGroupRenderer extends PointRenderer
 
         const points = pointGroup.points;
         const count = points.length;
-        let i;
+        let i = 0;
 
-        for (i = 0; i < count; i++)
+        while (i < count)
         {
-            this.points[this.currentIndex++] = points[i];
+            const point = points[i];
+
+            if (point.disabled)
+            {
+                // count--;
+                // points.splice(i, 1);
+                i++;
+                continue;
+            }
+
+            this.points[this.currentIndex++] = point;
             if (this.currentIndex >= this.size)
             {
                 this.flush();
             }
+            i++;
         }
-
-        this.flush();
     }
 
     /**
@@ -115,8 +128,8 @@ export default class PointGroupRenderer extends PointRenderer
         {
             const point = points[i];
 
-            float32View[index] = point.x;
-            float32View[index + 1] = point.y;
+            float32View[index] = point.x + this._ax;
+            float32View[index + 1] = point.y + this._ay;
             float32View[index + 2] = point.size;
             float32View[index + 3] = point.alpha;
 

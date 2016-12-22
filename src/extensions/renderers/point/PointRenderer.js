@@ -129,6 +129,11 @@ export default class PointRenderer extends ObjectRenderer
      */
     render(point)
     {
+        if (point.disabled)
+        {
+            return;
+        }
+
         if (this.currentIndex >= this.size)
         {
             this.flush();

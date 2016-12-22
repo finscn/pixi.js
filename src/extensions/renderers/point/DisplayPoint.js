@@ -16,6 +16,8 @@ export default class DisplayPoint extends DisplayObject
     {
         super();
 
+        this.disabled = false;
+
         this.x = x;
         this.y = y;
         this.size = size || 16;
@@ -23,6 +25,16 @@ export default class DisplayPoint extends DisplayObject
         this.alpha = alpha || 1;
 
         this.pluginName = 'point';
+    }
+
+    updateTransformWithParent()
+    {
+        // empty
+    }
+
+    updateTransform()
+    {
+        // empty
     }
 
     /**
