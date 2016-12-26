@@ -64,8 +64,7 @@ Text.prototype.updateTextFast = function ()
  */
 Text.prototype.setTextFast = function (text)
 {
-    text = text || ' ';
-    text = text.toString();
+    text = String(text || ' ');
 
     if (this._text === text)
     {
