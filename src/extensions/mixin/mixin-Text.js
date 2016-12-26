@@ -53,6 +53,24 @@ Text.prototype.updateTextFast = function ()
 };
 
 /**
+ * Sets the text & do updateTextFast.
+ *
+ * @param {string} text - The value to set to.
+ */
+Text.prototype.setTextFast = function (text)
+{
+    text = text || ' ';
+    text = text.toString();
+
+    if (this._text === text)
+    {
+        return;
+    }
+    this._text = text;
+    this.dirtyFast = true;
+};
+
+/**
  * Renders the object using the WebGL renderer
  *
  * @param {PIXI.WebGLRenderer} renderer - The renderer
