@@ -4,12 +4,17 @@ const Sprite = core.Sprite;
 const Text = core.Text;
 
 /**
- * Renders simple text and updates it without many computations.
+ * Renders simple text and updates it without some computations.
  *
  * @private
  **/
 Text.prototype.updateTextFast = function ()
 {
+    /**
+     * TODO: Work in progress.
+     *       There are still some computations could be remove.
+     */
+
     this.dirtyFast = false;
     const style = this._style;
     const text = this._text;
