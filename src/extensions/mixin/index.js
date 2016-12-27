@@ -7,3 +7,4 @@ import './mixin-Container';
 import './mixin-Sprite';
 import './mixin-AnimatedSprite';
 import './mixin-Text';
+import './mixin-utils';
