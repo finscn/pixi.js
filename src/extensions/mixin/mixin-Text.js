@@ -21,18 +21,18 @@ Text.prototype.updateTextFast = function (recompute)
 
     if (!this._linePositionX || recompute)
     {
-        const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
+        // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
+        const maxLineWidth = this.canvas.width;
+        let lineWidth = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
 
-        linePositionX = style.strokeThickness / 2 + style.padding + xShadowOffset;
-        let width = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
+        lineWidth += style.padding * 2 + style.strokeThickness;
 
-        width += style.strokeThickness;
         if (style.dropShadow)
         {
-            width += style.dropShadowDistance;
+            lineWidth += style.dropShadowDistance;
         }
-        const lineWidth = Math.ceil((width + (style.strokeThickness || 1)) * this.resolution);
-        const maxLineWidth = lineWidth - style.padding * 2;
+
+        linePositionX = style.strokeThickness / 2 + style.padding;
 
         if (style.align === 'right')
         {
@@ -43,8 +43,6 @@ Text.prototype.updateTextFast = function (recompute)
             linePositionX += (maxLineWidth - lineWidth) / 2;
         }
         this._linePositionX = linePositionX;
-
-        // this.canvas.width = Math.ceil((width + this.context.lineWidth) * this.resolution);
     }
     else
     {
@@ -53,13 +51,11 @@ Text.prototype.updateTextFast = function (recompute)
 
     if (!this._linePositionY || recompute)
     {
+        // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         const fontProperties = Text.calculateFontProperties(this._font);
-        const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
 
-        linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding + yShadowOffset;
+        linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding;
         this._linePositionY = linePositionY;
-
-        // this.canvas.height = Math.ceil((height + (style.padding * 2)) * this.resolution);
     }
     else
     {
@@ -85,9 +81,10 @@ Text.prototype.updateTextFast = function (recompute)
 /**
  * Sets the text & do updateTextFast.
  *
- * @param {string} text - The value to set to.
+ * @param {string} text - The value to set to
+ * @param {boolean} recompute - Whether recompute line position
  */
-Text.prototype.setTextFast = function (text)
+Text.prototype.setTextFast = function (text, recompute)
 {
     text = String(text || ' ');
 
@@ -97,6 +94,7 @@ Text.prototype.setTextFast = function (text)
     }
     this._text = text;
     this.dirtyFast = true;
+    this.dirtyFastRecompute = recompute;
 };
 
 /**
@@ -118,7 +116,8 @@ Text.prototype.renderWebGL = function (renderer)
     }
     else if (this.dirtyFast)
     {
-        this.updateTextFast();
+        this.updateTextFast(this.dirtyFastRecompute);
+        this.dirtyFastRecompute = false;
     }
 
     // super.renderWebGL(renderer);
