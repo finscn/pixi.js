@@ -4,57 +4,82 @@ const Sprite = core.Sprite;
 const Text = core.Text;
 
 /**
- * Renders simple text and updates it without some computations.
+ * Renders simple text and updates it without some computations
  *
+ * @param {boolean} recompute - Whether recompute line position
  * @private
  **/
-Text.prototype.updateTextFast = function ()
+Text.prototype.updateTextFast = function (recompute)
 {
-    /**
-     * TODO: Work in progress.
-     *       There are still some computations could be remove.
-     */
-
-    this.dirtyFast = false;
     const style = this._style;
     const text = this._text;
-    const maxLineWidth = this.canvas.width - style.padding * 2;
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    if (!this._textWidth)
-    {
-        this._textWidth = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
-    }
-    const lineWidth = this._textWidth;
+    let linePositionX;
+    let linePositionY;
 
-    if (!this._fontProperties)
+    if (!this._linePositionX || recompute)
     {
-        this._fontProperties = Text.calculateFontProperties(this._font);
-    }
-    const fontProperties = this._fontProperties;
+        const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
 
-    let linePositionX = style.strokeThickness / 2;
-    const linePositionY = (style.strokeThickness / 2) + fontProperties.ascent;
+        linePositionX = style.strokeThickness / 2 + style.padding + xShadowOffset;
+        let width = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
 
-    if (style.align === 'right')
-    {
-        linePositionX += maxLineWidth - lineWidth;
+        width += style.strokeThickness;
+        if (style.dropShadow)
+        {
+            width += style.dropShadowDistance;
+        }
+        const lineWidth = Math.ceil((width + (style.strokeThickness || 1)) * this.resolution);
+        const maxLineWidth = lineWidth - style.padding * 2;
+
+        if (style.align === 'right')
+        {
+            linePositionX += maxLineWidth - lineWidth;
+        }
+        else if (style.align === 'center')
+        {
+            linePositionX += (maxLineWidth - lineWidth) / 2;
+        }
+        this._linePositionX = linePositionX;
+
+        // this.canvas.width = Math.ceil((width + this.context.lineWidth) * this.resolution);
     }
-    else if (style.align === 'center')
+    else
     {
-        linePositionX += (maxLineWidth - lineWidth) / 2;
+        linePositionX = this._linePositionX;
+    }
+
+    if (!this._linePositionY || recompute)
+    {
+        const fontProperties = Text.calculateFontProperties(this._font);
+        const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
+
+        linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding + yShadowOffset;
+        this._linePositionY = linePositionY;
+
+        // this.canvas.height = Math.ceil((height + (style.padding * 2)) * this.resolution);
+    }
+    else
+    {
+        linePositionY = this._linePositionY;
     }
 
     if (style.stroke && style.strokeThickness)
     {
-        this.drawLetterSpacing(text, linePositionX + style.padding, linePositionY + style.padding, true);
+        this.drawLetterSpacing(text, linePositionX, linePositionY, true);
     }
 
     if (style.fill)
     {
-        this.drawLetterSpacing(text, linePositionX + style.padding, linePositionY + style.padding);
+        this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
+
+    this._onTextureUpdate();
+    this._texture.baseTexture.emit('update', this._texture.baseTexture);
+
+    this.dirtyFast = false;
 };
 
 /**

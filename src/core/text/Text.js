@@ -163,7 +163,7 @@ export default class Text extends Sprite
         this.canvas.width = Math.ceil((width + this.context.lineWidth) * this.resolution);
 
         // calculate text height
-        const lineHeight = this.style.lineHeight || fontProperties.fontSize + style.strokeThickness;
+        const lineHeight = style.lineHeight || fontProperties.fontSize + style.strokeThickness;
 
         let height = Math.max(lineHeight, fontProperties.fontSize + style.strokeThickness)
             + ((lines.length - 1) * lineHeight);
@@ -173,7 +173,7 @@ export default class Text extends Sprite
             height += style.dropShadowDistance;
         }
 
-        this.canvas.height = Math.ceil((height + (this._style.padding * 2)) * this.resolution);
+        this.canvas.height = Math.ceil((height + (style.padding * 2)) * this.resolution);
 
         this.context.scale(this.resolution, this.resolution);
 
@@ -405,8 +405,9 @@ export default class Text extends Sprite
         // Greedy wrapping algorithm that will wrap words as the line grows longer
         // than its horizontal bounds.
         let result = '';
+        const style = this._style;
         const lines = text.split('\n');
-        const wordWrapWidth = this._style.wordWrapWidth;
+        const wordWrapWidth = style.wordWrapWidth;
 
         for (let i = 0; i < lines.length; i++)
         {
@@ -417,7 +418,7 @@ export default class Text extends Sprite
             {
                 const wordWidth = this.context.measureText(words[j]).width;
 
-                if (this._style.breakWords && wordWidth > wordWrapWidth)
+                if (style.breakWords && wordWidth > wordWrapWidth)
                 {
                     // Word should be split in the middle
                     const characters = words[j].split('');
@@ -705,8 +706,7 @@ export default class Text extends Sprite
      */
     set text(text)
     {
-        text = text || ' ';
-        text = text.toString();
+        text = String(text || ' ');
 
         if (this._text === text)
         {
