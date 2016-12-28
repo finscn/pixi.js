@@ -33,6 +33,9 @@ export default class RenderContext
             originX: 0,
             originY: 0,
             blend: this.blendModes.normal,
+            lineWidth: 1,
+            strokeColor: 0x000000,
+            fillColor: 0x000000,
         };
 
         this.reset();
@@ -151,6 +154,9 @@ export default class RenderContext
             originX: t.originX,
             originY: t.originY,
             blend: t.blend,
+            lineWidth: t.lineWidth,
+            strokeColor: t.strokeColor,
+            fillColor: t.fillColor,
         });
     }
 
@@ -174,6 +180,9 @@ export default class RenderContext
         t.originX = lt.originX;
         t.originY = lt.originY;
         t.blend = lt.blend;
+        t.lineWidth = lt.lineWidth;
+        t.strokeColor = lt.strokeColor;
+        t.fillColor = lt.fillColor;
         this._transformSN++;
     }
 
@@ -238,6 +247,36 @@ export default class RenderContext
     {
         this.globalTransform.alpha = this._lastAlpha;
         this._transformSN++;
+    }
+
+    get lineWidth()
+    {
+        return this.globalTransform.lineWidth;
+    }
+
+    set lineWidth(value)
+    {
+        this.globalTransform.lineWidth = value;
+    }
+
+    get strokeStyle()
+    {
+        return this.globalTransform.strokeColor;
+    }
+
+    set strokeStyle(value)
+    {
+        this.globalTransform.strokeColor = value;
+    }
+
+    get fillStyle()
+    {
+        return this.globalTransform.fillColor;
+    }
+
+    set fillStyle(value)
+    {
+        this.globalTransform.fillColor = value;
     }
 
     setBlendByName(name)
@@ -514,6 +553,9 @@ export default class RenderContext
     {
         const shape = this.shape;
 
+        color = color || color === 0 ? color : this.strokeStyle;
+        lineWidth = lineWidth || this.lineWidth;
+
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeRect(shape, x, y, width, height);
@@ -523,6 +565,8 @@ export default class RenderContext
     fillRect(x, y, width, height, color)
     {
         const shape = this.shape;
+
+        color = color || color === 0 ? color : this.fillStyle;
 
         shape.clear();
         shape.beginFill(color);
