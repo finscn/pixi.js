@@ -1,4 +1,3 @@
-#define GLSLIFY 1
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
 uniform vec2 uCenter;
