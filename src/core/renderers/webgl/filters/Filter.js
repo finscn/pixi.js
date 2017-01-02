@@ -108,7 +108,15 @@ class Filter
 
         if (currentState)
         {
-            // TODO
+            /**
+             * There are some useful properties in currentState :
+             *     filters
+             *     target
+             *     renderTarget
+             *     resolution
+             *     sourceFrame
+             *     destinationFrame
+             */
         }
 
         filterManager.applyFilter(this, input, output, clear);
