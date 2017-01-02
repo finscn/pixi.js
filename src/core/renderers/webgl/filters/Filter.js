@@ -104,20 +104,18 @@ class Filter
         // --- //
         //  this.uniforms.filterMatrix = filterManager.calculateSpriteMatrix(tempMatrix, window.panda );
 
-        // do as you please!
+        /**
+         * There are some useful properties in currentState :
+         *     filters
+         *     target
+         *     renderTarget
+         *     resolution
+         *     sourceFrame
+         *     destinationFrame
+         */
+        const currentDisplayObject = currentState.target; // eslint-disable-line no-unused-vars
 
-        if (currentState)
-        {
-            /**
-             * There are some useful properties in currentState :
-             *     filters
-             *     target
-             *     renderTarget
-             *     resolution
-             *     sourceFrame
-             *     destinationFrame
-             */
-        }
+        // do as you please!
 
         filterManager.applyFilter(this, input, output, clear);
 
