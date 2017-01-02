@@ -55,7 +55,7 @@ export default class AnimatedSprite extends core.Sprite
          * @type {boolean}
          * @default true
          */
-        this.autoUpdate = autoUpdate !== false;
+        this._autoUpdate = autoUpdate !== false;
 
         /**
          * The speed that the AnimatedSprite will play at. Higher is faster, lower is slower
@@ -118,7 +118,7 @@ export default class AnimatedSprite extends core.Sprite
         }
 
         this.playing = false;
-        if (this.autoUpdate)
+        if (this._autoUpdate)
         {
             core.ticker.shared.remove(this.update, this);
         }
@@ -136,7 +136,7 @@ export default class AnimatedSprite extends core.Sprite
         }
 
         this.playing = true;
-        if (this.autoUpdate)
+        if (this._autoUpdate)
         {
             core.ticker.shared.add(this.update, this);
         }
