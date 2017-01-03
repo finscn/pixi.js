@@ -5,7 +5,7 @@ const Container = core.Container;
 /**
  * Removes all children.
  *
- * @param {boolean} [destroyChildren=false] - If set to true, all the children will have their destroy
+ * @param {boolean} [destroyChildren=false] - If set to true, all children will have their destroy
  *  method called as well.
  */
 Container.prototype.removeAllChildren = function (destroyChildren)
