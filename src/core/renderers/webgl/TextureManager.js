@@ -89,7 +89,7 @@ export default class TextureManager
 
             // TODO maybe we can use texture bound ids later on...
             // check if texture is already bound..
-            for (let i = 0; i < boundTextures.length; i++)
+            for (let i = 0; i < boundTextures.length; ++i)
             {
                 if (boundTextures[i] === texture)
                 {
