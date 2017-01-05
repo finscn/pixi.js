@@ -140,6 +140,225 @@ export default class RenderContext
      *
      **/
 
+    begin(clear)
+    {
+        if (clear)
+        {
+            this.clear();
+        }
+
+        const renderer = this.renderer;
+
+        renderer.emit('prerender');
+
+        // no point rendering if our context has been blown up!
+        if (!renderer.gl || renderer.gl.isContextLost())
+        {
+            this.renderCore = this.noop;
+
+            return;
+        }
+        this.renderCore = this._renderCore;
+        this._lastRenderTexture = -1;
+
+        renderer._nextTextureLocation = 0;
+
+        // if (renderer.currentRenderer.size > 1)
+        // {
+        renderer.currentRenderer.start();
+        // }
+    }
+
+    clear(clearColor)
+    {
+        this.renderer.clear(clearColor);
+    }
+
+    renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
+    {
+        const renderer = this.renderer;
+
+        // can be handy to know!
+        renderer.renderingToScreen = !renderTexture;
+
+        // renderer._nextTextureLocation = 0;
+
+        if (!renderTexture)
+        {
+            renderer._lastObjectRendered = displayObject;
+        }
+        if (renderTexture !== this._lastRenderTexture)
+        {
+            this._lastRenderTexture = renderTexture;
+            renderer.bindRenderTexture(renderTexture, null);
+        }
+
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformWithParent(true);
+        }
+
+        // const batched = renderer.currentRenderer.size > 1;
+
+        // if (!batched)
+        // {
+        //     renderer.currentRenderer.start();
+        // }
+
+        displayObject.renderWebGL(renderer);
+
+        // apply transform..
+        // if (!batched)
+        // {
+        //     renderer.currentRenderer.flush();
+        // }
+    }
+
+    renderCanvasCore(displayObject, renderTexture, skipUpdateTransform)
+    {
+        const renderer = this.renderer;
+
+        if (!renderer.view)
+        {
+            return;
+        }
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformWithParent();
+        }
+        renderer.render(displayObject, renderTexture, false, null, true);
+    }
+
+    flush()
+    {
+        this.renderer.currentRenderer.flush();
+    }
+
+    end()
+    {
+        const renderer = this.renderer;
+
+        if (this.renderCore !== this.noop)
+        {
+            // if (renderer.currentRenderer.size > 1)
+            // {
+            renderer.currentRenderer.flush();
+            // }
+            if (renderer.textureGC)
+            {
+                renderer.textureGC.update();
+            }
+        }
+        renderer.emit('postrender');
+    }
+
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     **/
+
+    resetGlobalContainer(destroyChildren)
+    {
+        this.unlinkAllDisplayObjects(destroyChildren);
+        this.shape = new Graphics();
+        this.linkDisplayObject(this.shape);
+        this.textSprite = new Text(' ');
+        this.linkDisplayObject(this.textSprite);
+
+        this.transformStack = [];
+        this.globalTransform = {};
+        for (const p in this.defaultTransform)
+        {
+            this.globalTransform[p] = this.defaultTransform[p];
+        }
+        this._lastBlend = this.globalTransform.blend;
+        this._lastAlpha = this.globalTransform.alpha;
+        this.updateGlobalContainer(true);
+    }
+
+    updateGlobalContainer(force)
+    {
+        if (force !== true && this._lastTransformSN === this._transformSN)
+        {
+            return;
+        }
+        this._lastTransformSN = this._transformSN;
+
+        const t = this.globalTransform;
+        const ct = this.globalContainer.transform;
+
+        ct.position.set(t.x + t.originX, t.y + t.originY);
+        ct.scale.set(t.scaleX, t.scaleY);
+        ct.rotation = t.rotation;
+        this.globalContainer.alpha = t.alpha;
+        this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
+        this.globalContainer.updateTransformWithParent();
+    }
+
+    updateRootContainer()
+    {
+        this.root.updateTransformWithParent();
+        this._transformSN++;
+    }
+
+    linkDisplayObject(displayObject)
+    {
+        if (displayObject._linkedContext !== true)
+        {
+            this.globalContainer.addChild(displayObject);
+            displayObject._linkedContext = true;
+        }
+
+        return this;
+    }
+
+    unlinkDisplayObject(displayObject, toDestroy)
+    {
+        if (displayObject._linkedContext !== false)
+        {
+            this.globalContainer.removeChild(displayObject);
+            displayObject._linkedContext = false;
+            if (toDestroy)
+            {
+                displayObject.destroy(toDestroy);
+            }
+        }
+
+        return this;
+    }
+
+    unlinkAllDisplayObjects(toDestroy)
+    {
+        const container = this.globalContainer;
+        const oldChildren = container.removeChildren(0, container.children.length);
+
+        if (toDestroy)
+        {
+            for (let i = 0; i < oldChildren.length; ++i)
+            {
+                const child = oldChildren[i];
+
+                child._linkedContext = false;
+                child.destroy(toDestroy);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     *
+     *
+     *
+     *
+     *
+     *
+     **/
+
     save()
     {
         const t = this.globalTransform;
@@ -328,95 +547,6 @@ export default class RenderContext
         this.mask = null;
     }
 
-    resetGlobalContainer(destroyChildren)
-    {
-        this.unlinkAllDisplayObjects(destroyChildren);
-        this.shape = new Graphics();
-        this.linkDisplayObject(this.shape);
-        this.textSprite = new Text(' ');
-        this.linkDisplayObject(this.textSprite);
-
-        this.transformStack = [];
-        this.globalTransform = {};
-        for (const p in this.defaultTransform)
-        {
-            this.globalTransform[p] = this.defaultTransform[p];
-        }
-        this._lastBlend = this.globalTransform.blend;
-        this._lastAlpha = this.globalTransform.alpha;
-        this.updateGlobalContainer(true);
-    }
-
-    updateGlobalContainer(force)
-    {
-        if (force !== true && this._lastTransformSN === this._transformSN)
-        {
-            return;
-        }
-        this._lastTransformSN = this._transformSN;
-
-        const t = this.globalTransform;
-        const ct = this.globalContainer.transform;
-
-        ct.position.set(t.x + t.originX, t.y + t.originY);
-        ct.scale.set(t.scaleX, t.scaleY);
-        ct.rotation = t.rotation;
-        this.globalContainer.alpha = t.alpha;
-        this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
-        this.globalContainer.updateTransformWithParent();
-    }
-
-    updateRootContainer()
-    {
-        this.root.updateTransformWithParent();
-        this._transformSN++;
-    }
-
-    linkDisplayObject(displayObject)
-    {
-        if (displayObject._linkedContext !== true)
-        {
-            this.globalContainer.addChild(displayObject);
-            displayObject._linkedContext = true;
-        }
-
-        return this;
-    }
-
-    unlinkDisplayObject(displayObject, toDestroy)
-    {
-        if (displayObject._linkedContext !== false)
-        {
-            this.globalContainer.removeChild(displayObject);
-            displayObject._linkedContext = false;
-            if (toDestroy)
-            {
-                displayObject.destroy(toDestroy);
-            }
-        }
-
-        return this;
-    }
-
-    unlinkAllDisplayObjects(toDestroy)
-    {
-        const container = this.globalContainer;
-        const oldChildren = container.removeChildren(0, container.children.length);
-
-        if (toDestroy)
-        {
-            for (let i = 0; i < oldChildren.length; ++i)
-            {
-                const child = oldChildren[i];
-
-                child._linkedContext = false;
-                child.destroy(toDestroy);
-            }
-        }
-
-        return this;
-    }
-
     /**
      *
      *
@@ -425,118 +555,6 @@ export default class RenderContext
      *
      *
      **/
-
-    begin(clear)
-    {
-        if (clear)
-        {
-            this.clear();
-        }
-
-        const renderer = this.renderer;
-
-        renderer.emit('prerender');
-
-        // no point rendering if our context has been blown up!
-        if (!renderer.gl || renderer.gl.isContextLost())
-        {
-            this.renderCore = this.noop;
-
-            return;
-        }
-        this.renderCore = this._renderCore;
-        this._lastRenderTexture = -1;
-
-        renderer._nextTextureLocation = 0;
-
-        // if (renderer.currentRenderer.size > 1)
-        // {
-        renderer.currentRenderer.start();
-        // }
-    }
-
-    clear(clearColor)
-    {
-        this.renderer.clear(clearColor);
-    }
-
-    renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
-    {
-        const renderer = this.renderer;
-
-        // can be handy to know!
-        renderer.renderingToScreen = !renderTexture;
-
-        // renderer._nextTextureLocation = 0;
-
-        if (!renderTexture)
-        {
-            renderer._lastObjectRendered = displayObject;
-        }
-        if (renderTexture !== this._lastRenderTexture)
-        {
-            this._lastRenderTexture = renderTexture;
-            renderer.bindRenderTexture(renderTexture, null);
-        }
-
-        if (!skipUpdateTransform)
-        {
-            displayObject.updateTransformWithParent(true);
-        }
-
-        // const batched = renderer.currentRenderer.size > 1;
-
-        // if (!batched)
-        // {
-        //     renderer.currentRenderer.start();
-        // }
-
-        displayObject.renderWebGL(renderer);
-
-        // apply transform..
-        // if (!batched)
-        // {
-        //     renderer.currentRenderer.flush();
-        // }
-    }
-
-    renderCanvasCore(displayObject, renderTexture, skipUpdateTransform)
-    {
-        const renderer = this.renderer;
-
-        if (!renderer.view)
-        {
-            return;
-        }
-        if (!skipUpdateTransform)
-        {
-            displayObject.updateTransformWithParent();
-        }
-        renderer.render(displayObject, renderTexture, false, null, true);
-    }
-
-    flush()
-    {
-        this.renderer.currentRenderer.flush();
-    }
-
-    end()
-    {
-        const renderer = this.renderer;
-
-        if (this.renderCore !== this.noop)
-        {
-            // if (renderer.currentRenderer.size > 1)
-            // {
-            renderer.currentRenderer.flush();
-            // }
-            if (renderer.textureGC)
-            {
-                renderer.textureGC.update();
-            }
-        }
-        renderer.emit('postrender');
-    }
 
     clearRect(x, y, width, height, color, alpha)
     {
