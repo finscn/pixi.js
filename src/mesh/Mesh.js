@@ -124,7 +124,6 @@ export default class Mesh extends core.Container
          * tint effect.
          *
          * @member {number}
-         * @memberof PIXI.mesh.Mesh#
          */
         this.tintRgb = new Float32Array([1, 1, 1]);
 
@@ -254,19 +253,13 @@ export default class Mesh extends core.Container
      * The texture that the mesh uses.
      *
      * @member {PIXI.Texture}
-     * @memberof PIXI.mesh.Mesh#
      */
     get texture()
     {
         return this._texture;
     }
 
-    /**
-     * Sets the texture the mesh uses.
-     *
-     * @param {Texture} value - The value to set.
-     */
-    set texture(value)
+    set texture(value) // eslint-disable-line require-jsdoc
     {
         if (this._texture === value)
         {
@@ -293,7 +286,6 @@ export default class Mesh extends core.Container
      * The tint applied to the mesh. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
      *
      * @member {number}
-     * @memberof PIXI.mesh.Mesh#
      * @default 0xFFFFFF
      */
     get tint()
@@ -301,12 +293,7 @@ export default class Mesh extends core.Container
         return core.utils.rgb2hex(this.tintRgb);
     }
 
-    /**
-     * Sets the tint the mesh uses.
-     *
-     * @param {number} value - The value to set.
-     */
-    set tint(value)
+    set tint(value) // eslint-disable-line require-jsdoc
     {
         this.tintRgb = core.utils.hex2rgb(value, this.tintRgb);
     }
