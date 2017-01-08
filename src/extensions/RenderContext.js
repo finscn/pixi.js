@@ -1,5 +1,6 @@
 import * as core from '../core';
 import * as mesh from '../mesh';
+import * as particles from '../particles';
 import { RENDERER_TYPE, BLEND_MODES } from '../core/const';
 
 const BaseTexture = core.BaseTexture;
@@ -9,7 +10,7 @@ const Sprite = core.Sprite;
 const Graphics = core.Graphics;
 const Rectangle = core.Rectangle;
 const Text = core.Text;
-const ParticleContainer = core.particles.ParticleContainer;
+const ParticleContainer = particles.ParticleContainer;
 
 export default class RenderContext
 {
