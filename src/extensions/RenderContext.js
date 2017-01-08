@@ -9,6 +9,7 @@ const Sprite = core.Sprite;
 const Graphics = core.Graphics;
 const Rectangle = core.Rectangle;
 const Text = core.Text;
+const ParticleContainer = core.particles.ParticleContainer;
 
 export default class RenderContext
 {
@@ -1058,6 +1059,41 @@ export default class RenderContext
         }
 
         return sprite;
+    }
+
+    createContainer(parentContainer)
+    {
+        const container = new Container();
+
+        if (parentContainer)
+        {
+            if (parentContainer === true)
+            {
+                parentContainer = this.globalContainer;
+            }
+            parentContainer.addChild(container);
+        }
+
+        return container;
+    }
+
+    createParticleContainer(options, parentContainer)
+    {
+        options = options || {};
+        const particleMaxSize = options.particleMaxSize;
+        const particleBatchSize = options.particleBatchSize;
+        const container = new ParticleContainer(particleMaxSize, options, particleBatchSize);
+
+        if (parentContainer)
+        {
+            if (parentContainer === true)
+            {
+                parentContainer = this.globalContainer;
+            }
+            parentContainer.addChild(container);
+        }
+
+        return container;
     }
 
     destroy()
