@@ -3,17 +3,9 @@ import * as core from '../core';
 const Texture = core.Texture;
 const Rectangle = core.Rectangle;
 const TextureCache = core.utils.TextureCache;
-// const tempPoint = new core.Point();
-// const utils = core.utils;
 
-export default class SimpleSprite extends core.Sprite
+export default class LeafSprite extends core.Sprite
 {
-
-    // constructor(texture)
-    // {
-    //     super(texture);
-    // }
-
     updateTransform()
     {
         this._boundsID++;
@@ -120,12 +112,22 @@ export default class SimpleSprite extends core.Sprite
     {
         this._bounds.clear();
 
-        if (!this.visible)
-        {
-            return;
-        }
+        const trim = this._texture.trim;
+        const orig = this._texture.orig;
 
-        this._calculateBounds();
+        // First lets check to see if the current texture has a trim..
+        if (!trim || (trim.width === orig.width && trim.height === orig.height))
+        {
+            // no trim! lets use the usual calculations..
+            this.calculateVertices();
+            this._bounds.addQuad(this.vertexData);
+        }
+        else
+        {
+            // lets calculate a special trimmed bounds...
+            this.calculateTrimmedVertices();
+            this._bounds.addQuad(this.vertexTrimmedData);
+        }
 
         this._boundsID = this._lastBoundsID;
     }
@@ -154,7 +156,7 @@ export default class SimpleSprite extends core.Sprite
 
     static from(source)
     {
-        return new SimpleSprite(Texture.from(source));
+        return new LeafSprite(Texture.from(source));
     }
 
     static fromFrame(frameId)
@@ -166,12 +168,12 @@ export default class SimpleSprite extends core.Sprite
             throw new Error(`The frameId "${frameId}" does not exist in the texture cache`);
         }
 
-        return new SimpleSprite(texture);
+        return new LeafSprite(texture);
     }
 
     static fromImage(imageId, crossorigin, scaleMode)
     {
-        return new SimpleSprite(Texture.fromImage(imageId, crossorigin, scaleMode));
+        return new LeafSprite(Texture.fromImage(imageId, crossorigin, scaleMode));
     }
 
 }

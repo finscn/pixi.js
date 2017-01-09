@@ -14,7 +14,6 @@ export default class SimpleContainer extends core.Container
         // ensure a transform will be recalculated..
         this.transform._parentID = -1;
         this.children.push(child);
-        // this.onChildrenChange(this.children.length - 1);
 
         return child;
     }
@@ -23,7 +22,6 @@ export default class SimpleContainer extends core.Container
     {
         child.parent = this;
         this.children.splice(index, 0, child);
-        // this.onChildrenChange(index);
 
         return child;
     }
@@ -35,8 +33,6 @@ export default class SimpleContainer extends core.Container
 
         this.children[index1] = child2;
         this.children[index2] = child1;
-
-        // this.onChildrenChange(index1 < index2 ? index1 : index2);
     }
 
     swapChildrenAt(index1, index2)
@@ -46,8 +42,6 @@ export default class SimpleContainer extends core.Container
 
         this.children[index1] = child2;
         this.children[index2] = child1;
-
-        // this.onChildrenChange(index1 < index2 ? index1 : index2);
     }
 
     getChildIndex(child)
@@ -61,7 +55,6 @@ export default class SimpleContainer extends core.Container
 
         this.children.splice(currentIndex, 1);
         this.children.splice(index, 0, child);
-        // this.onChildrenChange(index);
     }
 
     getChildAt(index)
@@ -79,7 +72,6 @@ export default class SimpleContainer extends core.Container
         }
         child.parent = null;
         this.children.splice(index, 1);
-        // this.onChildrenChange(index);
 
         return child;
     }
@@ -92,7 +84,6 @@ export default class SimpleContainer extends core.Container
         {
             child.parent = null;
             this.children.splice(index, 1);
-            // this.onChildrenChange(index);
         }
 
         return child;
@@ -102,7 +93,6 @@ export default class SimpleContainer extends core.Container
     {
         child.parent = null;
         this.children.splice(index, 1);
-        // this.onChildrenChange(index);
 
         return child;
     }
@@ -123,8 +113,6 @@ export default class SimpleContainer extends core.Container
             {
                 removed[i].parent = null;
             }
-
-            // this.onChildrenChange(beginIndex);
 
             return removed;
         }
