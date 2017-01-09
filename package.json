@@ -1,6 +1,6 @@
 {
   "name": "pixi.js",
-  "version": "4.3.0",
+  "version": "4.3.2",
   "description": "Pixi.js is a fast lightweight 2D library that works across all devices.",
   "author": "Mat Groves",
   "contributors": [
@@ -82,7 +82,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "parallelshell": "^2.0.0",
-    "pixify": "git@github.com:finscn/pixify.git",
+    "pixify": "^1.7.0",
     "rimraf": "^2.5.3",
     "watch": "^0.19.1"
   },
