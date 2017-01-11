@@ -129,12 +129,13 @@ export default class Mesh extends core.Container
         this._tint = 0xFFFFFF;
 
         /**
-         * The tint applied to the mesh. This is a [r, g, b] value.
+         * The tint applied to the mesh. This is a [r, g, b] value. A value of [1,1,1] will remove any tint effect.
          *
+         * @private
          * @member {number}
          * @default [1,1,1]
          */
-        this.tintRgb = new Float32Array([1, 1, 1]);
+        this._tintRgb = new Float32Array([1, 1, 1]);
 
         /**
          * A map of renderer IDs to webgl render data
@@ -292,8 +293,8 @@ export default class Mesh extends core.Container
     }
 
     /**
-     * The tint applied to the mesh. This is a hex value. A value of
-     * 0xFFFFFF will remove any tint effect.
+     * The tint applied to the mesh. This is a hex value.
+     * A value of 0xFFFFFF will remove any tint effect.
      *
      * @member {number}
      * @default 0xFFFFFF
@@ -311,8 +312,8 @@ export default class Mesh extends core.Container
 
     /**
      * The immutable rgb value of tint applied to the mesh.
-     * This is a float array of a size of three. A value of
-     * [1,1,1] will remove any tint effect.
+     * This is a float array of a size of three.
+     * A value of [1,1,1] will remove any tint effect.
      *
      * @member {Float32Array}
      * @memberof PIXI.Sprite#
