@@ -10,15 +10,16 @@ const Container = core.Container;
  */
 Container.prototype.removeAllChildren = function (destroyChildren)
 {
-    const oldChildren = this.removeChildren(0, this.children.length);
-
     if (destroyChildren)
     {
+        const oldChildren = this.children;
         for (let i = 0; i < oldChildren.length; ++i)
         {
             oldChildren[i].destroy(destroyChildren);
         }
     }
+
+    this.children.length = 0;
 };
 
 /**
