@@ -13,6 +13,7 @@ Container.prototype.removeAllChildren = function (destroyChildren)
     if (destroyChildren)
     {
         const oldChildren = this.children;
+
         for (let i = 0; i < oldChildren.length; ++i)
         {
             oldChildren[i].destroy(destroyChildren);
