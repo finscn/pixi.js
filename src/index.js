@@ -44,7 +44,8 @@ const Matrix3 = ext.Matrix3;
 const SimpleContainer = ext.SimpleContainer;
 const SimpleParticleContainer = ext.SimpleParticleContainer;
 const LeafSprite = ext.LeafSprite;
-const AnimationSprite = ext.AnimationSprite;
+const Animation = ext.Animation;
+const SpriteTrail = ext.SpriteTrail;
 const RenderContext = ext.RenderContext;
 
 export {
@@ -57,7 +58,8 @@ export {
     SimpleContainer,
     SimpleParticleContainer,
     LeafSprite,
-    AnimationSprite,
+    Animation,
+    SpriteTrail,
     RenderContext,
 };
 
