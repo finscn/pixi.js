@@ -23,6 +23,21 @@ export default class LightQuad
         this.gl = gl;
 
         /**
+         * Number of values sent in the vertex buffer.
+         * aVertexPosition(2), aTextureCoord(2), aNormalTextureCoord(2) = 6
+         *
+         * @member {number}
+         */
+        this.vertSize = 6;
+
+        /**
+         * The size of the vertex information in bytes.
+         *
+         * @member {number}
+         */
+        this.vertByteSize = this.vertSize * 4;
+
+        /**
          * An array of vertices
          *
          * @member {Float32Array}
@@ -90,11 +105,15 @@ export default class LightQuad
      */
     initVao(shader)
     {
+        /* eslint-disable max-len */
+
         this.vao.clear()
         .addIndex(this.indexBuffer)
-        .addAttribute(this.vertexBuffer, shader.attributes.aVertexPosition, this.gl.FLOAT, false, 4 * 6, 0)
-        .addAttribute(this.vertexBuffer, shader.attributes.aTextureCoord, this.gl.FLOAT, false, 4 * 6, 2 * 4)
-        .addAttribute(this.vertexBuffer, shader.attributes.aNormalTextureCoord, this.gl.FLOAT, false, 4 * 6, 4 * 4);
+        .addAttribute(this.vertexBuffer, shader.attributes.aVertexPosition, this.gl.FLOAT, false, this.vertByteSize, 0)
+        .addAttribute(this.vertexBuffer, shader.attributes.aTextureCoord, this.gl.FLOAT, false, this.vertByteSize, 2 * 4)
+        .addAttribute(this.vertexBuffer, shader.attributes.aNormalTextureCoord, this.gl.FLOAT, false, this.vertByteSize, 4 * 4);
+
+        /* eslint-enable max-len */
     }
 
     /**
