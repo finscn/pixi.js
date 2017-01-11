@@ -316,7 +316,7 @@ export default class Mesh extends core.Container
      * A value of [1,1,1] will remove any tint effect.
      *
      * @member {Float32Array}
-     * @memberof PIXI.Sprite#
+     * @memberof PIXI.mesh.Mesh#
      * @default [1.0,1.0,1.0]
      */
     get tintRgb()
@@ -352,7 +352,7 @@ export default class Mesh extends core.Container
      * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
      *
      * @member {PIXI.ObservablePoint}
-     * @memberof PIXI.Sprite#
+     * @memberof PIXI.mesh.Mesh#
      */
     get anchor()
     {
