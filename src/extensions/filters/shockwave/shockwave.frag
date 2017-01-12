@@ -6,15 +6,16 @@ uniform float uRadius;
 uniform float uTime;
 uniform float uDuration;
 
-// Amplitude Effect, Refraction, Width;
-uniform vec3 uParams;
+// Amplitude Effect, Refraction, Width, Lighter;
+uniform vec4 uParams;
 
 float time = mod(uTime, uDuration);
 float timeRate = time / uDuration;
 
 float amplitude = uParams.x;
 float refraction = uParams.y;
-float waveWidth = uParams.z / uViewSize.y;
+float waveWidth = uParams.z * 0.5 / uViewSize.y;
+float lighter = uParams.w;
 
 float speed = (uRadius + uParams.z) / uDuration;
 float currentRadius = time * speed / uViewSize.y;
@@ -34,24 +35,32 @@ void main()
 
     float dist = length(dir);
 
-    if (dist < radius && dist >= (currentRadius - waveWidth) && dist <= (currentRadius + waveWidth))
+    if (dist > radius || dist < (currentRadius - waveWidth) || dist > (currentRadius + waveWidth))
     {
-
-        // float disFade = pow(1.0 - dist / radius, 0.8);
-        float disFade = 1.0 - dist / radius;
-
-        // from -1.0 to 1.0
-        float wave = (dist - currentRadius);
-
-        float wavePow = 1.0 - pow(abs(wave * amplitude), refraction);
-
-        float waveFinal = wave * wavePow;
-
-        vec2 waveDir = normalize(dir);
-        uv = uv + (waveDir * waveFinal) * disFade ;// * timeFade;
+        gl_FragColor = texture2D(uSampler, uv);
+        return;
     }
 
-    gl_FragColor = texture2D(uSampler, uv);
+    // float disFade = pow(1.0 - dist / radius, 0.8);
+    float disFade = 1.0 - dist / radius;
+
+    // from -1.0 to 1.0
+    float wave = (dist - currentRadius);
+    // wave = sin( PI * 0.5 * (dist - currentRadius));
+    // wave = sin(PI * dist * 0.5 - time * 1.0);
+
+    float wavePow = 1.0 - pow(abs(wave * amplitude), refraction);
+
+    float waveFinal = wave * wavePow;
+
+    vec2 waveDir = normalize(dir);
+    uv = uv + (waveDir * waveFinal) * disFade ;// * timeFade;
+    vec4 color = texture2D(uSampler, uv);
+
+    float light = ( lighter - 1.0) *  disFade + 1.0;
+
+    gl_FragColor =  vec4(color.rgb * light, color.a);
+
 }
 
 

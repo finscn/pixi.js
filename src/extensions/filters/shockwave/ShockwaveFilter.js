@@ -20,7 +20,7 @@ export default class ShockwaveFilter extends core.Filter
         this.viewSize = null;
         this.radius = 100;
         this.center = new Float32Array([0, 0]);
-        this.params = new Float32Array([10, 0.8, 0.1]);
+        this.params = new Float32Array([10, 0.8, 20.0, 1.0]);
         this.duration = 1.0;
         this.time = 0;
     }
@@ -66,11 +66,12 @@ export default class ShockwaveFilter extends core.Filter
         this.center[1] = y;
     }
 
-    setParams(a, b, c)
+    setParams(amplitude, refraction, width, lighter)
     {
-        this.params[0] = a;
-        this.params[1] = b;
-        this.params[2] = c;
+        this.params[0] = amplitude;
+        this.params[1] = refraction;
+        this.params[2] = width;
+        this.params[3] = lighter || 1.0;
     }
 
     setViewSize(width, height)
