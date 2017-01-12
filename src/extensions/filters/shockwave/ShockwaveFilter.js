@@ -17,11 +17,12 @@ export default class ShockwaveFilter extends core.Filter
             fragSrc
         );
 
-        this.center = new Float32Array([0, 0]);
-        this.falloff = new Float32Array([10, 0.8, 0.1]);
-        this.time = 0;
-        this.radius = 100;
         this.viewSize = null;
+        this.radius = 100;
+        this.center = new Float32Array([0, 0]);
+        this.params = new Float32Array([10, 0.8, 0.1]);
+        this.duration = 1.0;
+        this.time = 0;
     }
 
     apply(filterManager, input, output, clear)
@@ -34,11 +35,12 @@ export default class ShockwaveFilter extends core.Filter
             ]);
         }
 
-        this.uniforms.uCenter = this.center;
-        this.uniforms.uFalloff = this.falloff;
-        this.uniforms.uTime = this.time;
-        this.uniforms.uRadius = this.radius;
         this.uniforms.uViewSize = this.viewSize;
+        this.uniforms.uRadius = this.radius;
+        this.uniforms.uCenter = this.center;
+        this.uniforms.uParams = this.params;
+        this.uniforms.uDuration = this.duration;
+        this.uniforms.uTime = this.time;
 
         filterManager.applyFilter(this, input, output, clear);
     }
@@ -46,6 +48,11 @@ export default class ShockwaveFilter extends core.Filter
     setRadius(radius)
     {
         this.radius = radius;
+    }
+
+    setDuration(duration)
+    {
+        this.duration = duration;
     }
 
     setTime(time)
@@ -59,11 +66,11 @@ export default class ShockwaveFilter extends core.Filter
         this.center[1] = y;
     }
 
-    setFalloff(a, b, c)
+    setParams(a, b, c)
     {
-        this.falloff[0] = a;
-        this.falloff[1] = b;
-        this.falloff[2] = c;
+        this.params[0] = a;
+        this.params[1] = b;
+        this.params[2] = c;
     }
 
     setViewSize(width, height)
