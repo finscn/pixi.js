@@ -34,10 +34,10 @@ export default class RenderContext
             alpha: 1,
             originX: 0,
             originY: 0,
-            blend: this.blendModes.normal,
             lineWidth: 1,
             strokeColor: 0x000000,
             fillColor: 0x000000,
+            // blend: this.blendModes.normal,
         };
 
         this.reset();
@@ -87,6 +87,9 @@ export default class RenderContext
 
         this._lastTransformSN = -1;
         this._transformSN = 1;
+
+        this.blend = null;
+        this._lastBlend = null;
 
         this.baseTexturePool = this.baseTexturePool || {};
         this.texturePool = this.texturePool || {};
@@ -178,6 +181,12 @@ export default class RenderContext
 
     renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
     {
+        if (this.blend !== null)
+        {
+            // TODO
+            // displayObject.blendMode = this.blend;
+        }
+
         const renderer = this.renderer;
 
         // can be handy to know!
@@ -218,6 +227,12 @@ export default class RenderContext
 
     renderCanvasCore(displayObject, renderTexture, skipUpdateTransform)
     {
+        if (this.blend !== null)
+        {
+            // TODO
+            // displayObject.blendMode = this.blend;
+        }
+
         const renderer = this.renderer;
 
         if (!renderer.view)
@@ -277,8 +292,8 @@ export default class RenderContext
         {
             this.globalTransform[p] = this.defaultTransform[p];
         }
-        this._lastBlend = this.globalTransform.blend;
         this._lastAlpha = this.globalTransform.alpha;
+        // this._lastBlend = this.globalTransform.blend;
         this.updateGlobalContainer(true);
     }
 
@@ -297,7 +312,7 @@ export default class RenderContext
         ct.scale.set(t.scaleX, t.scaleY);
         ct.rotation = t.rotation;
         this.globalContainer.alpha = t.alpha;
-        this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
+        // this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
         this.globalContainer.updateTransformWithParent();
     }
 
@@ -374,10 +389,10 @@ export default class RenderContext
             alpha: t.alpha,
             originX: t.originX,
             originY: t.originY,
-            blend: t.blend,
             lineWidth: t.lineWidth,
             strokeColor: t.strokeColor,
             fillColor: t.fillColor,
+            // blend: t.blend,
         });
     }
 
@@ -507,20 +522,25 @@ export default class RenderContext
 
     getBlend()
     {
-        return this.globalTransform.blend;
+        // return this.globalTransform.blend;
+        return this.blend;
     }
 
     setBlend(blend)
     {
-        this._lastBlend = this.globalTransform.blend;
-        this.globalTransform.blend = blend;
-        this._transformSN++;
+        this._lastBlend = this.blend;
+        this.blend = blend;
+
+        // this.globalTransform.blend = blend;
+        // this._transformSN++;
     }
 
     restoreBlend()
     {
-        this.globalTransform.blend = this._lastBlend;
-        this._transformSN++;
+        this.blend = this._lastBlend;
+
+        // this.globalTransform.blend = this._lastBlend;
+        // this._transformSN++;
     }
 
     updateClipRect(x, y, width, height)
