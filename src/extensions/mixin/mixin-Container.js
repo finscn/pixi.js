@@ -24,6 +24,8 @@ Container.prototype.removeAllChildren = function (options)
     }
 
     this.children.length = 0;
+
+    this.onChildrenChange(0);
 };
 
 /**
