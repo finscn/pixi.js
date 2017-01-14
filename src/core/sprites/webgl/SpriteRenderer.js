@@ -125,6 +125,7 @@ export default class SpriteRenderer extends ObjectRenderer
         {
             /* eslint-disable max-len */
             const vertexBuffer = this.vertexBuffers[i] = glCore.GLBuffer.createVertexBuffer(gl, null, gl.STREAM_DRAW);
+            /* eslint-enable max-len */
 
             // build the vao object that will render..
             this.vaos[i] = this.renderer.createVao()
@@ -134,8 +135,6 @@ export default class SpriteRenderer extends ObjectRenderer
                 .addAttribute(vertexBuffer, attrs.aColor, gl.FLOAT, false, this.vertByteSize, 3 * 4)
                 .addAttribute(vertexBuffer, attrs.aAlpha, gl.FLOAT, false, this.vertByteSize, 6 * 4)
                 .addAttribute(vertexBuffer, attrs.aTextureId, gl.FLOAT, false, this.vertByteSize, 7 * 4);
-
-            /* eslint-enable max-len */
         }
 
         this.vao = this.vaos[0];
@@ -376,10 +375,11 @@ export default class SpriteRenderer extends ObjectRenderer
             {
                 this.vaoMax++;
 
-                /* eslint-disable max-len */
-
-                const vertexBuffer = this.vertexBuffers[this.vertexCount] = glCore.GLBuffer.createVertexBuffer(gl, null, gl.STREAM_DRAW);
                 const attrs = this.shader.attributes;
+
+                /* eslint-disable max-len */
+                const vertexBuffer = this.vertexBuffers[this.vertexCount] = glCore.GLBuffer.createVertexBuffer(gl, null, gl.STREAM_DRAW);
+                /* eslint-enable max-len */
 
                 // build the vao object that will render..
                 this.vaos[this.vertexCount] = this.renderer.createVao()
@@ -389,8 +389,6 @@ export default class SpriteRenderer extends ObjectRenderer
                     .addAttribute(vertexBuffer, attrs.aColor, gl.FLOAT, false, this.vertByteSize, 3 * 4)
                     .addAttribute(vertexBuffer, attrs.aAlpha, gl.FLOAT, false, this.vertByteSize, 6 * 4)
                     .addAttribute(vertexBuffer, attrs.aTextureId, gl.FLOAT, false, this.vertByteSize, 7 * 4);
-
-                /* eslint-enable max-len */
             }
 
             this.renderer.bindVao(this.vaos[this.vertexCount]);
