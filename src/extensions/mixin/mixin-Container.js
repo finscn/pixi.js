@@ -3,20 +3,23 @@ import * as core from '../../core';
 const Container = core.Container;
 
 /**
- * Removes all children.
+ * A fast way to removes all children directly.
  *
- * @param {boolean} [destroyChildren=false] - If set to true, all children will have their destroy
- *  method called as well.
+ * @param {object|boolean} [options] - Options parameter.
+ *     If the child is a sprite, see `options` of Sprite's destroy method.
+ *        @see PIXI.Sprite#destroy
+ *     If the child is a container, see `options` of Container's destroy method.
+ *        @see PIXI.Container#destroy
  */
-Container.prototype.removeAllChildren = function (destroyChildren)
+Container.prototype.removeAllChildren = function (options)
 {
-    if (destroyChildren)
+    if (options)
     {
         const oldChildren = this.children;
 
         for (let i = 0; i < oldChildren.length; ++i)
         {
-            oldChildren[i].destroy(destroyChildren);
+            oldChildren[i].destroy(options);
         }
     }
 
