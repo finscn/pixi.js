@@ -749,12 +749,17 @@ export default class RenderContext
         {
             displayObject.width = dw;
             displayObject.height = dh;
-            this.core.renderAt(displayObject, dx, dy);
+            this.renderAt(displayObject, dx, dy);
         }
         else
         {
-            this.core.renderAt(displayObject, dx, dy);
+            this.renderAt(displayObject, dx, dy);
         }
+    }
+
+    drawDisplayObjectAt(displayObject, dx, dy)
+    {
+        this.renderAt(displayObject, dx, dy);
     }
 
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
