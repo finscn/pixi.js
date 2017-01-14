@@ -91,6 +91,9 @@ export default class RenderContext
         this.blend = null;
         this._lastBlend = null;
 
+        this.mask = null;
+        this.renderTexture = null;
+
         this.baseTexturePool = this.baseTexturePool || {};
         this.texturePool = this.texturePool || {};
 
@@ -152,6 +155,9 @@ export default class RenderContext
             this.clear();
         }
 
+        this.mask = null;
+        this.renderTexture = null;
+
         const renderer = this.renderer;
 
         renderer.emit('prerender');
@@ -186,6 +192,11 @@ export default class RenderContext
             // TODO
             // displayObject.blendMode = this.blend;
         }
+
+        // if (renderTexture === undefined)
+        // {
+        //     renderTexture = this.renderTexture;
+        // }
 
         const renderer = this.renderer;
 
@@ -586,7 +597,7 @@ export default class RenderContext
         shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -599,7 +610,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeRect(shape, x, y, width, height);
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     fillRect(x, y, width, height, color)
@@ -612,7 +623,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
         // shape._spriteRect = null;
     }
 
@@ -635,7 +646,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeCircle(shape, x, y, radius);
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     fillCircle(x, y, radius, color)
@@ -646,7 +657,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeCircle(shape, x, y, radius);
         shape.endFill();
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     drawShapeCircle(shape, x, y, radius)
@@ -668,7 +679,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color)
@@ -679,7 +690,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
         shape.endFill();
-        this.renderCore(shape, null, false);
+        this.renderCore(shape, undefined, false);
     }
 
     drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise)
