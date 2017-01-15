@@ -22,22 +22,22 @@ void main(void) {
     // mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;
 
     mat4 proM4;
-    proM4[0]=vec4( proM3[0][0],  proM3[0][1],  0,  proM3[0][2] );
-    proM4[1]=vec4( proM3[1][0],  proM3[1][1],  0,  proM3[1][2] );
-    proM4[2]=vec4( 0,            0,            1,  0           );
-    proM4[3]=vec4( proM3[2][0],  proM3[2][1],  0,  proM3[2][2] );
+    proM4[0] = vec4( proM3[0][0],  proM3[0][1],  0,  proM3[0][2] );
+    proM4[1] = vec4( proM3[1][0],  proM3[1][1],  0,  proM3[1][2] );
+    proM4[2] = vec4( 0,            0,            1,  0           );
+    proM4[3] = vec4( proM3[2][0],  proM3[2][1],  0,  proM3[2][2] );
 
     mat4 worldM4;
-    worldM4[0]=vec4( worldM3[0][0],  worldM3[0][1],  0,  worldM3[0][2] );
-    worldM4[1]=vec4( worldM3[1][0],  worldM3[1][1],  0,  worldM3[1][2] );
-    worldM4[2]=vec4( 0,              0,              1,  0             );
-    worldM4[3]=vec4( worldM3[2][0],  worldM3[2][1],  0,  worldM3[2][2] );
+    worldM4[0] = vec4( worldM3[0][0],  worldM3[0][1],  0,  worldM3[0][2] );
+    worldM4[1] = vec4( worldM3[1][0],  worldM3[1][1],  0,  worldM3[1][2] );
+    worldM4[2] = vec4( 0,              0,              1,  0             );
+    worldM4[3] = vec4( worldM3[2][0],  worldM3[2][1],  0,  worldM3[2][2] );
 
     mat4 perM4;
-    perM4[0]=vec4( perM3[0][0],  perM3[0][1],  0,  perM3[0][2] );
-    perM4[1]=vec4( perM3[1][0],  perM3[1][1],  0,  perM3[1][2] );
-    perM4[2]=vec4( 0,            0,            1,  0           );
-    perM4[3]=vec4( perM3[2][0],  perM3[2][1],  0,  perM3[2][2] );
+    perM4[0] = vec4( perM3[0][0],  perM3[0][1],  0,  perM3[0][2] );
+    perM4[1] = vec4( perM3[1][0],  perM3[1][1],  0,  perM3[1][2] );
+    perM4[2] = vec4( 0,            0,            1,  0           );
+    perM4[3] = vec4( perM3[2][0],  perM3[2][1],  0,  perM3[2][2] );
 
     gl_Position = proM4 * worldM4 * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);
     vTextureCoord = aTextureCoord;
