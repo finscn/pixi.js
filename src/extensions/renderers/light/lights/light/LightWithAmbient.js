@@ -11,14 +11,16 @@ export default class LightWithAmbient extends Light
         this.blendMode = BLEND_MODES.ADD;
 
         this.ambientColorArray = new Float32Array([0, 0, 0]);
+
+        this._ambientColorRgb = new Float32Array([0, 0, 0]);
         this._ambientColor = null;
         this._ambientBrightness = 1;
-        this._ambientColorRgb = new Float32Array([0, 0, 0]);
 
         if ('ambientColor' in options)
         {
             this.ambientColor = options.ambientColor;
         }
+
         if ('ambientBrightness' in options)
         {
             this.ambientBrightness = options.ambientBrightness;
