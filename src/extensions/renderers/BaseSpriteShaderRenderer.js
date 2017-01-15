@@ -59,16 +59,14 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         if (this.useNormalVertices)
         {
             // TODO  normal != uvs , uvs of texture !!!
-            // const anchor = sprite._anchor;
-
-            vertices[0] = 0; // - anchor.x;
-            vertices[1] = 0; // - anchor.y;
-            vertices[2] = 1; // - anchor.x;
-            vertices[3] = 0; // - anchor.y;
-            vertices[4] = 1; // - anchor.x;
-            vertices[5] = 1; // - anchor.y;
-            vertices[6] = 0; // - anchor.x;
-            vertices[7] = 1; // - anchor.y;
+            vertices[0] = 0;
+            vertices[1] = 0;
+            vertices[2] = 1;
+            vertices[3] = 0;
+            vertices[4] = 1;
+            vertices[5] = 1;
+            vertices[6] = 0;
+            vertices[7] = 1;
         }
         else
         {

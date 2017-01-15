@@ -27,11 +27,9 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     updateShaderParameters(shader, sprite)
     {
         shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
-        // shader.uniforms.origWidth = sprite.textureWidth;
-        // shader.uniforms.origHeight = sprite.textureHeight;
+        shader.uniforms.perspectiveMatrix = sprite.perspectiveMatrix || this.defaultMatrix;
         // shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
         // shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
-        shader.uniforms.perspectiveMatrix = sprite.perspectiveMatrix || this.defaultMatrix;
     }
 
     getVertexSrc()
