@@ -21,21 +21,21 @@ mat3 perM3 = perspectiveMatrix;
 mat4 proM4 = mat4(
     proM3[0][0],  proM3[0][1],  0,  proM3[0][2],
     proM3[1][0],  proM3[1][1],  0,  proM3[1][2],
-    0,            0,            1,  0          ,
+    0,            0,            1,  0,
     proM3[2][0],  proM3[2][1],  0,  proM3[2][2]
 );
 
 mat4 worldM4 = mat4(
     worldM3[0][0],  worldM3[0][1],  0,  worldM3[0][2],
     worldM3[1][0],  worldM3[1][1],  0,  worldM3[1][2],
-    0,            0,            1,  0          ,
+    0,              0,              1,  0,
     worldM3[2][0],  worldM3[2][1],  0,  worldM3[2][2]
 );
 
 mat4 perM4 = mat4(
     perM3[0][0],  perM3[0][1],  0,  perM3[0][2],
     perM3[1][0],  perM3[1][1],  0,  perM3[1][2],
-    0,            0,            1,  0          ,
+    0,            0,            1,  0,
     perM3[2][0],  perM3[2][1],  0,  perM3[2][2]
 );
 
