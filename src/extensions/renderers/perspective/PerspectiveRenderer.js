@@ -128,11 +128,17 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
             // ];
 
             toQuad = fromQuad;
+
+            const anchor = sprite._anchor;
+            const orig = sprite._texture.orig;
+            const offsetX = orig.width * anchor.x;
+            const offsetY = orig.height * anchor.y;
+
             Matrix3.squareToQuadrilateral(
-                toQuad[0], toQuad[1],
-                toQuad[2], toQuad[3],
-                toQuad[4], toQuad[5],
-                toQuad[6], toQuad[7],
+                toQuad[0] - offsetX, toQuad[1] - offsetY,
+                toQuad[2] - offsetX, toQuad[3] - offsetY,
+                toQuad[4] - offsetX, toQuad[5] - offsetY,
+                toQuad[6] - offsetX, toQuad[7] - offsetY,
                 sprite.perspectiveMatrix
             );
         }
