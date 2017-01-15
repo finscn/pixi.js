@@ -10,14 +10,15 @@ uniform float uLightRadius;
 void main()
 {
 
-#pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
+
+#pragma glslify: import("../_shared/computeFragCoord.glsl");
 
     vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.y);
     float lightRadius = uLightRadius / uViewSize.y;
 
     // the directional vector of the light
-    vec3 lightVector = vec3(lightPosition.xy - texCoord, lightPosition.z);
+    vec3 lightVector = vec3(lightPosition.xy - fragCoord, lightPosition.z);
 
     // correct for aspect ratio
     lightVector.x *= uViewSize.x / uViewSize.y;

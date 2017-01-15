@@ -9,7 +9,6 @@ uniform vec3 uLightDirection;
 void main()
 {
 
-#pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
 
     // the directional vector of the light

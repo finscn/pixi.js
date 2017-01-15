@@ -5,8 +5,9 @@ precision lowp float;
 void main(void)
 {
 
-#pragma glslify: import("../_shared/computeVertexPosition.glsl");
 #pragma glslify: import("../_shared/loadNormals.glsl");
+
+    uViewSize;
 
     // simplified lambert shading that makes assumptions for ambient color
 
