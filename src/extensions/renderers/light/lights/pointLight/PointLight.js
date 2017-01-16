@@ -34,8 +34,8 @@ export default class PointLight extends LightWithAmbient
     {
         super.syncShader(sprite);
 
-        this.positionArray[0] = this.position.x;
-        this.positionArray[1] = this.position.y;
+        this.positionArray[0] = this.position.x + (sprite.lightOffsetX || 0);
+        this.positionArray[1] = this.position.y + (sprite.lightOffsetY || 0);
         this.positionArray[2] = this.position.z + (sprite.lightOffsetZ || 0);
         this.shader.uniforms.uLightPosition = this.positionArray;
 
