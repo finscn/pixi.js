@@ -185,7 +185,7 @@ export default class RenderContext
         this.renderer.clear(clearColor);
     }
 
-    renderWebGLCore(displayObject, renderTexture, skipUpdateTransform)
+    renderWebGLCore(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
         {
@@ -215,6 +215,11 @@ export default class RenderContext
             renderer.bindRenderTexture(renderTexture, null);
         }
 
+        if (renderTexture && clear)
+        {
+            renderer._activeRenderTarget.clear();
+        }
+
         if (!skipUpdateTransform)
         {
             displayObject.updateTransformWithParent(true);
@@ -236,7 +241,7 @@ export default class RenderContext
         // }
     }
 
-    renderCanvasCore(displayObject, renderTexture, skipUpdateTransform)
+    renderCanvasCore(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
         {
@@ -254,7 +259,7 @@ export default class RenderContext
         {
             displayObject.updateTransformWithParent();
         }
-        renderer.render(displayObject, renderTexture, false, null, true);
+        renderer.render(displayObject, renderTexture, clear, null, skipUpdateTransform);
     }
 
     flush()
@@ -597,7 +602,7 @@ export default class RenderContext
         shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     strokeRect(x, y, width, height, color, lineWidth)
@@ -610,7 +615,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeRect(shape, x, y, width, height);
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     fillRect(x, y, width, height, color)
@@ -623,7 +628,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
         // shape._spriteRect = null;
     }
 
@@ -646,7 +651,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeCircle(shape, x, y, radius);
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     fillCircle(x, y, radius, color)
@@ -657,7 +662,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeCircle(shape, x, y, radius);
         shape.endFill();
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     drawShapeCircle(shape, x, y, radius)
@@ -679,7 +684,7 @@ export default class RenderContext
         shape.clear();
         shape.lineStyle(lineWidth, color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color)
@@ -690,7 +695,7 @@ export default class RenderContext
         shape.beginFill(color);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
         shape.endFill();
-        this.renderCore(shape, undefined, false);
+        this.renderCore(shape, undefined, false, false);
     }
 
     drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise)
@@ -711,7 +716,7 @@ export default class RenderContext
         style.stroke = color || style.stroke;
         style.strokeThickness = lineWidth || style.strokeThickness;
 
-        this.drawText(text, x, y, style);
+        this.drawText(text, x, y, style, undefined, false);
     }
 
     fillText(text, x, y, color, style)
@@ -719,10 +724,10 @@ export default class RenderContext
         style = style || {};
         style.fill = color || style.fill;
 
-        this.drawText(text, x, y, style);
+        this.drawText(text, x, y, style, undefined, false);
     }
 
-    drawText(text, x, y, style, renderTexture)
+    drawText(text, x, y, style, renderTexture, clear)
     {
         this.updateGlobalContainer();
 
@@ -738,7 +743,7 @@ export default class RenderContext
         textSprite.style = style;
         textSprite.mask = this.mask;
 
-        this.renderCore(textSprite, renderTexture, false);
+        this.renderCore(textSprite, renderTexture, clear, false);
 
         this.renderer.flush();
     }
@@ -808,7 +813,7 @@ export default class RenderContext
      *
      **/
 
-    render(displayObject, renderTexture, skipUpdateTransform)
+    render(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         this.updateGlobalContainer();
 
@@ -817,10 +822,10 @@ export default class RenderContext
             displayObject.mask = this.mask;
         }
 
-        this.renderCore(displayObject, renderTexture, skipUpdateTransform);
+        this.renderCore(displayObject, renderTexture, clear, skipUpdateTransform);
     }
 
-    renderAt(displayObject, dx, dy, renderTexture)
+    renderAt(displayObject, dx, dy, renderTexture, clear, skipUpdateTransform)
     {
         this.updateGlobalContainer();
 
@@ -835,10 +840,10 @@ export default class RenderContext
             displayObject.mask = this.mask;
         }
 
-        this.renderCore(displayObject, renderTexture, false);
+        this.renderCore(displayObject, renderTexture, clear, skipUpdateTransform);
     }
 
-    renderPart(displayObject, sx, sy, sw, sh, renderTexture, skipUpdateTransform)
+    renderPart(displayObject, sx, sy, sw, sh, renderTexture, clear, skipUpdateTransform)
     {
         const frame = displayObject._texture._frame;
 
@@ -855,10 +860,10 @@ export default class RenderContext
             displayObject.mask = this.mask;
         }
 
-        this.renderCore(displayObject, renderTexture, skipUpdateTransform);
+        this.renderCore(displayObject, renderTexture, clear, skipUpdateTransform);
     }
 
-    renderPartAt(displayObject, sx, sy, sw, sh, dx, dy, renderTexture, skipUpdateTransform)
+    renderPartAt(displayObject, sx, sy, sw, sh, dx, dy, renderTexture, clear, skipUpdateTransform)
     {
         const frame = displayObject._texture._frame;
 
@@ -881,7 +886,7 @@ export default class RenderContext
             displayObject.mask = this.mask;
         }
 
-        this.renderCore(displayObject, renderTexture, skipUpdateTransform);
+        this.renderCore(displayObject, renderTexture, clear, skipUpdateTransform);
     }
 
     /**
