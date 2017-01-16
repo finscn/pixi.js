@@ -39,19 +39,27 @@ export default class Light
         this._colorRgb = new Float32Array([0.33, 0.33, 0.33]);
 
         // run the color setter
-        const color = options.color;
-
-        if (color || color === 0)
+        if ('color' in options)
         {
-            this.color = color;
+            this.color = options.color;
         }
 
         // run the brightness setter
-        const brightness = options.brightness;
-
-        if (brightness || brightness === 0)
+        if ('brightness' in options)
         {
-            this.brightness = brightness;
+            this.brightness = options.brightness;
+        }
+
+        this.invertGreen = false;
+        if ('invertGreen' in options)
+        {
+            this.invertGreen = options.invertGreen;
+        }
+
+        this.invertRed = false;
+        if ('invertRed' in options)
+        {
+            this.invertRed = options.invertRed;
         }
 
         this.blendMode = BLEND_MODES.ADD;
@@ -80,7 +88,22 @@ export default class Light
     generateShader(gl)
     {
         const vertexSrc = this.getVertexSource();
-        const fragmentSrc = this.getFragmentSource();
+        let fragmentSrc = this.getFragmentSource();
+
+        if (this.invertGreen)
+        {
+            const invertG = 'normalColor.g = 1.0 - normalColor.g;';
+
+            fragmentSrc = fragmentSrc.replace(invertG, '// ' + invertG);
+        }
+
+        if (this.invertRed)
+        {
+            const invertR = 'normalColor.r = 1.0 - normalColor.r;';
+
+            fragmentSrc = fragmentSrc.replace('// ' + invertR, invertR);
+        }
+
         const id = vertexSrc + '@' + fragmentSrc;
         let shader = Light.shaderCache[id];
 
