@@ -6,4 +6,3 @@ uniform mat3 projectionMatrix;
 
 varying vec2 vTextureCoord;
 varying vec2 vNormalTextureCoord;
-

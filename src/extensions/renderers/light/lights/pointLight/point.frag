@@ -3,9 +3,12 @@ precision lowp float;
 // imports the common uniforms like samplers, and ambient color
 #pragma glslify: import("../_shared/commonHead.frag.glsl");
 
+varying float flippedY;
+
 uniform vec3 uAmbientColor;
 uniform vec3 uLightPosition;
 uniform float uLightRadius;
+
 
 void main()
 {
