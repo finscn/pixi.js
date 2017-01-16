@@ -3,6 +3,7 @@ import LightQuad from './LightQuad';
 import Light from './lights/light/Light';
 
 const WebGLRenderer = core.WebGLRenderer;
+const Texture = core.Texture;
 // const RenderTexture = core.RenderTexture;
 
 export default class LightSpriteRenderer extends core.ObjectRenderer
@@ -30,7 +31,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
         const vertexData = sprite.computedGeometry ? sprite.computedGeometry.vertices : sprite.vertexData;
         const diffuseTexture = sprite.diffuseTexture ? sprite.diffuseTexture : sprite._texture;
-        const normalTexture = sprite.normalTexture ? sprite.normalTexture : sprite._texture;
+        const normalTexture = sprite.normalTexture ? sprite.normalTexture : LightSpriteRenderer.defaultNormalTexture;
 
         const uvsData = diffuseTexture._uvs;
         const uvsDataNormal = normalTexture._uvs;
@@ -139,6 +140,14 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         renderer.plugins.lightsprite.render(sprite);
     }
 }
+
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+
+canvas.width = canvas.height = 10;
+context.fillStyle = '#8080FF';
+context.fillRect(0, 0, canvas.width, canvas.height);
+LightSpriteRenderer.defaultNormalTexture = Texture.from(canvas);
 
 WebGLRenderer.registerPlugin('lightSprite', LightSpriteRenderer);
 
