@@ -15,21 +15,41 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
     {
         super(renderer);
 
+        this.autoProject = false;
+
         this.useNormalVertices = true;
         this.uniforms = {};
-        this.defaultMatrix = new Float32Array([
+
+        this._defaultMat3 = new Float32Array([
             1, 0, 0,
             0, 1, 0,
             0, 0, 1,
         ]);
+
+        this.projectionMat4 = new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ]);
+
+        this.worldMat4 = new Float32Array([
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+        ]);
     }
 
-    updateShaderParameters(shader, sprite)
+    updateShaderParameters(renderer, shader, sprite)
     {
-        shader.uniforms.worldMatrix = sprite.worldTransform.toArray(9);
-        shader.uniforms.perspectiveMatrix = sprite.perspectiveMatrix || this.defaultMatrix;
-        // shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this.defaultMatrix;
-        // shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this.defaultMatrix;
+        const projectionMatrix = renderer._activeRenderTarget.projectionMatrix;
+
+        shader.uniforms.projectionMatrix = projectionMatrix.toArray16(true, this.projectionMat4);
+        shader.uniforms.worldMatrix = sprite.worldTransform.toArray16(true, this.worldMat4);
+        shader.uniforms.perspectiveMatrix = sprite.perspectiveMatrix || this._defaultMat3;
+        // shader.uniforms.quadToSquareMatrix = sprite.quadToSquareMatrix || this._defaultMat3;
+        // shader.uniforms.squareToQuadMatrix = sprite.squareToQuadMatrix || this._defaultMat3;
     }
 
     getVertexSrc()

@@ -13,6 +13,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         this.gl = renderer.gl;
         this.textureLocation = 0;
         this.useNormalVertices = false;
+        this.autoProject = true;
     }
 
     onContextChange()
@@ -86,7 +87,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         uvs[7] = uvsData.y3;
         quad.upload();
 
-        renderer.bindShader(this.shader);
+        renderer.bindShader(this.shader, this.autoProject);
         renderer.bindVao(quad.vao);
 
         // const tint = sprite._tintRGB + (sprite.worldAlpha * 255 << 24);
@@ -96,7 +97,7 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         // shader.uniforms.uColor = color;
         shader.uniforms.uAlpha = sprite.worldAlpha;
 
-        this.updateShaderParameters(shader, sprite);
+        this.updateShaderParameters(renderer, shader, sprite);
 
         renderer.bindTexture(texture, this.textureLocation);
         renderer.state.setBlendMode(sprite.blendMode);
@@ -104,10 +105,10 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         this.quad.vao.draw(renderer.gl.TRIANGLES, 6, 0);
     }
 
-    updateShaderParameters(shader, sprite)
+    updateShaderParameters(renderer, shader, sprite)
     {
         // implemented by subclass
-        if (!shader || !sprite)
+        if (!renderer || !shader || !sprite)
         {
             return;
         }
