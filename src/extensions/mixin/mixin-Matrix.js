@@ -1,6 +1,6 @@
 import * as core from '../../core';
 
-const Matrix = core.math.Matrix;
+const Matrix = core.Matrix;
 
 Matrix.prototype.toArray16 = function (transpose, array)
 {
