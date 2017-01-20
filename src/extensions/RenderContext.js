@@ -338,9 +338,9 @@ export default class RenderContext
         this._transformSN++;
     }
 
-    linkDisplayObject(displayObject)
+    linkDisplayObject(displayObject, force)
     {
-        if (displayObject._linkedContext !== true)
+        if (force || displayObject._linkedContext !== true)
         {
             this.globalContainer.addChild(displayObject);
             displayObject._linkedContext = true;
