@@ -9,7 +9,11 @@ uniform float uDuration;
 // Amplitude Effect, Refraction, Width, Lighter;
 uniform vec4 uParams;
 
-float time = mod(uTime, uDuration);
+// non-loop
+float time = uTime;
+// loop
+// float time = mod(uTime, uDuration);
+
 float timeRate = time / uDuration;
 
 float amplitude = uParams.x;
