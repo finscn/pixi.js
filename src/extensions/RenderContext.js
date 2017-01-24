@@ -21,7 +21,7 @@ export default class RenderContext
 
         this.canvas = renderer.view;
         this.webgl = renderer.type === RENDERER_TYPE.WEBGL;
-        this.renderCore = this.webgl ? this.renderWebGLCore : this.renderCanvasCore;
+        this.renderCore = this.webgl ? this.renderCoreWebGL : this.renderCanvasCore;
 
         this.initBlendModes();
 
@@ -83,7 +83,7 @@ export default class RenderContext
     reset()
     {
         this._renderCore = this.renderCore;
-        this._lastRenderTexture = -1;
+        this._lastRenderTexture = null;
 
         this._lastTransformSN = -1;
         this._transformSN = 1;
@@ -170,7 +170,6 @@ export default class RenderContext
             return;
         }
         this.renderCore = this._renderCore;
-        this._lastRenderTexture = -1;
 
         renderer._nextTextureLocation = 0;
 
@@ -185,7 +184,12 @@ export default class RenderContext
         this.renderer.clear(clearColor);
     }
 
-    renderWebGLCore(displayObject, renderTexture, clear, skipUpdateTransform)
+    clearRenderTexture(renderTexture, clearColor)
+    {
+        this.renderer.clearRenderTexture(renderTexture, clearColor);
+    }
+
+    renderCoreWebGL(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
         {
@@ -200,6 +204,13 @@ export default class RenderContext
 
         const renderer = this.renderer;
 
+        const renderTextureChanged = renderTexture !== this._lastRenderTexture;
+
+        if (renderTextureChanged && !renderTexture)
+        {
+            renderer.currentRenderer.flush();
+        }
+
         // can be handy to know!
         renderer.renderingToScreen = !renderTexture;
 
@@ -209,10 +220,11 @@ export default class RenderContext
         {
             renderer._lastObjectRendered = displayObject;
         }
-        if (renderTexture !== this._lastRenderTexture)
+
+        if (renderTextureChanged)
         {
-            this._lastRenderTexture = renderTexture;
             renderer.bindRenderTexture(renderTexture, null);
+            renderer.currentRenderer.start();
         }
 
         if (renderTexture && clear)
@@ -234,6 +246,8 @@ export default class RenderContext
 
         displayObject.renderWebGL(renderer);
 
+        this._lastRenderTexture = renderTexture;
+
         // apply transform..
         // if (!batched)
         // {
@@ -241,7 +255,7 @@ export default class RenderContext
         // }
     }
 
-    renderCanvasCore(displayObject, renderTexture, clear, skipUpdateTransform)
+    renderCoreCanvas(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
         {
@@ -1094,7 +1108,7 @@ export default class RenderContext
 
     destroy()
     {
-        this._lastRenderTexture = -1;
+        this._lastRenderTexture = null;
         this.baseTexturePool = null;
         this.texturePool = null;
         this.renderer = null;
