@@ -11,6 +11,8 @@ export default class Light
 {
     constructor(options)
     {
+        options = options || {};
+
         // this.height = options.height || 0.45;
         this.position = options.position || {
             x: 0,
@@ -62,6 +64,12 @@ export default class Light
             this.invertRed = options.invertRed;
         }
 
+        this.precision = 'lowp';
+        if ('precision' in options)
+        {
+            this.precision = options.precision;
+        }
+
         this.blendMode = BLEND_MODES.ADD;
 
         // TODO : disable Light
@@ -110,7 +118,7 @@ export default class Light
         if (!shader)
         {
             Light.shaderCache[id] = shader;
-            shader = new Shader(gl, vertexSrc, fragmentSrc, Light.locationMapping);
+            shader = new Shader(gl, vertexSrc, fragmentSrc, this.precision, Light.locationMapping);
         }
 
         return shader;

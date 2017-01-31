@@ -9,6 +9,7 @@ export default class PointLight extends LightWithAmbient
     constructor(options)
     {
         options = options || {};
+
         super(options);
 
         this.radius = options.radius || Infinity;

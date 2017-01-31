@@ -9,7 +9,9 @@ export default class AmbientLight extends Light
     constructor(options)
     {
         options = options || {};
+
         super(options);
+
         this.position.x = 0;
         this.position.y = 0;
         this.position.z = 0;

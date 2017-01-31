@@ -6,6 +6,8 @@ export default class LightWithAmbient extends Light
 {
     constructor(options)
     {
+        options = options || {};
+
         super(options);
 
         this.blendMode = BLEND_MODES.ADD;

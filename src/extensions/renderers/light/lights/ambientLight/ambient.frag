@@ -1,4 +1,3 @@
-precision lowp float;
 
 #pragma glslify: import("../_shared/commonHead.frag.glsl");
 
