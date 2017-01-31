@@ -19,8 +19,8 @@ void main() {
     texCoord.y = 1.0 - texCoord.y;
 
     vec2 center = uCenter.xy / uViewSize.xy;
-    vec2 toCenter = (center - texCoord) * uStrength;
-    toCenter.x *= uViewSize.x / uViewSize.y;
+    vec2 dir = (center - texCoord) * uStrength;
+    dir.x *= uViewSize.x / uViewSize.y;
 
     const float count = 40.0;
 
@@ -33,7 +33,7 @@ void main() {
     for (float t = 0.0; t <= count; t++) {
         float percent = (t + offset) / count;
         float weight = 4.0 * (percent - percent * percent);
-        vec4 sample = texture2D(uSampler, vTextureCoord + toCenter * percent);
+        vec4 sample = texture2D(uSampler, vTextureCoord + dir * percent);
 
         /* switch to pre-multiplied alpha to correctly blur transparent images */
         sample.rgb *= sample.a;
