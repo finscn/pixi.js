@@ -117,11 +117,13 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     static applyTo(sprite)
     {
-        sprite.pluginName = LightSpriteRenderer.pluginName;
-        sprite.diffuseTexture = sprite.diffuseTexture || sprite._texture;
         /* eslint-disable camelcase */
         sprite._bak_pluginName_LightSprite = sprite.pluginName;
-        sprite._bak_renderWebGL_LightSprite = sprite._renderWebGL;
+        sprite._bak_diffuseTexture_LightSprite = sprite.diffuseTexture;
+        sprite._bak__renderWebGL_LightSprite = sprite._renderWebGL;
+
+        sprite.pluginName = LightSpriteRenderer.pluginName;
+        sprite.diffuseTexture = sprite.diffuseTexture || sprite._texture;
         sprite._renderWebGL = LightSpriteRenderer.__renderWebGL_Sprite;
         /* eslint-enable camelcase */
     }
@@ -129,12 +131,15 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     static unapplyTo(sprite)
     {
         /* eslint-disable camelcase */
-        sprite.pluginName = sprite._bak_pluginName_LightSprite;
-        sprite.diffuseTexture = null;
-        if (sprite._bak_renderWebGL_LightSprite)
+        if (sprite._bak__renderWebGL_LightSprite)
         {
-            sprite._renderWebGL = sprite._bak_renderWebGL_LightSprite;
-            sprite._bak_renderWebGL_LightSprite = null;
+            sprite.pluginName = sprite._bak_pluginName_LightSprite;
+            sprite.diffuseTexture = sprite._bak_diffuseTexture_LightSprite;
+            sprite._renderWebGL = sprite._bak__renderWebGL_LightSprite;
+
+            sprite._bak_pluginName_LightSprite = null;
+            sprite._bak_diffuseTexture_LightSprite = null;
+            sprite._bak__renderWebGL_LightSprite = null;
         }
         /* eslint-enable camelcase */
     }
