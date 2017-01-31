@@ -130,6 +130,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     {
         /* eslint-disable camelcase */
         sprite.pluginName = sprite._bak_pluginName_LightSprite;
+        sprite.diffuseTexture = null;
         if (sprite._bak_renderWebGL_LightSprite)
         {
             sprite._renderWebGL = sprite._bak_renderWebGL_LightSprite;
