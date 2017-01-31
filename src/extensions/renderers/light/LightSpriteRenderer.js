@@ -117,9 +117,10 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     static applyTo(sprite)
     {
+        sprite.pluginName = LightSpriteRenderer.pluginName;
+        sprite.diffuseTexture = sprite.diffuseTexture || sprite._texture;
         /* eslint-disable camelcase */
         sprite._bak_pluginName_LightSprite = sprite.pluginName;
-        sprite.pluginName = LightSpriteRenderer.pluginName;
         sprite._bak_renderWebGL_LightSprite = sprite._renderWebGL;
         sprite._renderWebGL = LightSpriteRenderer.__renderWebGL_Sprite;
         /* eslint-enable camelcase */
