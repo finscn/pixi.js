@@ -49,6 +49,9 @@ void main()
         intensity += diffuse * attenuation;
     }
 
+    // TODO : roughness
+    // TODO : finalColor = ambient + diffuse + specular
+
     vec3 finalColor = diffuseColor.rgb * intensity;
     gl_FragColor = vec4(finalColor, diffuseColor.a);
 }

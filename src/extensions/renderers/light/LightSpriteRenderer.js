@@ -117,27 +117,60 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
 
     static applyTo(sprite)
     {
-        sprite._renderWebGLBakLightSpriteRenderer = sprite._renderWebGL;
-        sprite._renderWebGL = LightSpriteRenderer.__renderWebGLSprite;
+        /* eslint-disable camelcase */
+        sprite._bak_pluginName_LightSprite = sprite.pluginName;
+        sprite.pluginName = LightSpriteRenderer.pluginName;
+        sprite._bak_renderWebGL_LightSprite = sprite._renderWebGL;
+        sprite._renderWebGL = LightSpriteRenderer.__renderWebGL_Sprite;
+        /* eslint-enable camelcase */
     }
 
     static unapplyTo(sprite)
     {
-        if (sprite._renderWebGLBakLightSpriteRenderer)
+        /* eslint-disable camelcase */
+        sprite.pluginName = sprite._bak_pluginName_LightSprite;
+        if (sprite._bak_renderWebGL_LightSprite)
         {
-            sprite._renderWebGL = sprite._renderWebGLBakLightSpriteRenderer;
-            sprite._renderWebGLBakLightSpriteRenderer = null;
+            sprite._renderWebGL = sprite._bak_renderWebGL_LightSprite;
+            sprite._bak_renderWebGL_LightSprite = null;
         }
+        /* eslint-enable camelcase */
     }
 
-    static __renderWebGLSprite(renderer)
+    static __renderWebGL_Sprite(renderer) // eslint-disable-line camelcase
     {
         const sprite = this;
 
-        // sprite.calculateVerticesWithoutTransform(true);
         sprite.calculateVertices();
-        renderer.setObjectRenderer(renderer.plugins.lightsprite);
-        renderer.plugins.lightsprite.render(sprite);
+
+        if (renderer.renderingDiffuses)
+        {
+            // const originalTexture = sprite._texture;
+            const diffuseTexture = sprite.diffuseTexture || sprite._texture;
+
+            sprite._texture = diffuseTexture;
+
+            renderer.setObjectRenderer(renderer.plugins.sprite);
+            renderer.plugins.sprite.render(sprite);
+
+            return;
+        }
+
+        if (renderer.renderingNormals)
+        {
+            // const originalTexture = sprite._texture;
+            const normalTexture = sprite.normalTexture || LightSpriteRenderer.defaultNormalTexture;
+
+            sprite._texture = normalTexture;
+
+            renderer.setObjectRenderer(renderer.plugins.sprite);
+            renderer.plugins.sprite.render(sprite);
+
+            return;
+        }
+
+        renderer.setObjectRenderer(renderer.plugins.lightSprite);
+        renderer.plugins.lightSprite.render(sprite);
     }
 }
 
@@ -148,6 +181,6 @@ canvas.width = canvas.height = 10;
 context.fillStyle = '#8080FF';
 context.fillRect(0, 0, canvas.width, canvas.height);
 LightSpriteRenderer.defaultNormalTexture = Texture.from(canvas);
-
-WebGLRenderer.registerPlugin('lightSprite', LightSpriteRenderer);
+LightSpriteRenderer.pluginName = 'lightSprite';
+WebGLRenderer.registerPlugin(LightSpriteRenderer.pluginName, LightSpriteRenderer);
 
