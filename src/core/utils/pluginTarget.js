@@ -23,7 +23,6 @@ function pluginTarget(obj)
     obj.registerPlugin = function registerPlugin(pluginName, ctor)
     {
         obj.__plugins[pluginName] = ctor;
-        ctor.prototype.pluginName = pluginName;
     };
 
     /**

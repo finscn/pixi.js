@@ -46,7 +46,7 @@ export default class Application
         this.renderer = autoDetectRenderer(width, height, options, noWebGL);
 
         /**
-         * The root display container that's renderered.
+         * The root display container that's rendered.
          * @member {PIXI.Container}
          */
         this.stage = new Container();
@@ -95,6 +95,16 @@ export default class Application
     get view()
     {
         return this.renderer.view;
+    }
+
+    /**
+     * Reference to the renderer's screen rectangle. Its safe to use as filterArea or hitArea for whole screen
+     * @member {PIXI.Rectangle}
+     * @readonly
+     */
+    get screen()
+    {
+        return this.renderer.screen;
     }
 
     /**
