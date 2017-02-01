@@ -119,6 +119,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
     {
         /* eslint-disable camelcase */
         sprite._bak_pluginName_LightSprite = sprite.pluginName;
+        sprite._bak__texture_LightSprite = sprite._texture;
         sprite._bak_diffuseTexture_LightSprite = sprite.diffuseTexture;
         sprite._bak__renderWebGL_LightSprite = sprite._renderWebGL;
 
@@ -134,10 +135,12 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         if (sprite._bak__renderWebGL_LightSprite)
         {
             sprite.pluginName = sprite._bak_pluginName_LightSprite;
+            sprite._texture = sprite._bak__texture_LightSprite;
             sprite.diffuseTexture = sprite._bak_diffuseTexture_LightSprite;
             sprite._renderWebGL = sprite._bak__renderWebGL_LightSprite;
 
             sprite._bak_pluginName_LightSprite = null;
+            sprite._bak__texture_LightSprite = null;
             sprite._bak_diffuseTexture_LightSprite = null;
             sprite._bak__renderWebGL_LightSprite = null;
         }
