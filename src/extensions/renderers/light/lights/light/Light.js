@@ -3,10 +3,6 @@ import { BLEND_MODES } from '../../../../../core/const';
 
 const Shader = core.Shader;
 
-/**
- * Excuse the mess, haven't cleaned this up yet!
- */
-
 export default class Light
 {
     constructor(options)
