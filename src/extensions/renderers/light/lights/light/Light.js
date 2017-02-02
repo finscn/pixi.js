@@ -14,6 +14,7 @@ export default class Light
             x: 0,
             y: 0,
         };
+
         if (!('z' in this.position))
         {
             this.position.z = 10;
@@ -48,18 +49,18 @@ export default class Light
             this.brightness = options.brightness;
         }
 
+        // Default false for the SpriteIlluminator.
+        // If use Photoshop , set to true.
+        this.invertRed = false;
+        if ('invertRed' in options)
+        {
+            this.invertRed = options.invertRed;
+        }
+
         this.invertGreen = false;
         if ('invertGreen' in options)
         {
             this.invertGreen = options.invertGreen;
-        }
-
-        // Default true for the SpriteIlluminator.
-        // If use Photoshop , set to false.
-        this.invertRed = true;
-        if ('invertRed' in options)
-        {
-            this.invertRed = options.invertRed;
         }
 
         this.precision = 'lowp';
@@ -96,6 +97,7 @@ export default class Light
         const vertexSrc = this.getVertexSource();
         let fragmentSrc = this.getFragmentSource();
 
+        // Default Red hasn't flipped. invertRed means DO flipped.
         if (this.invertRed)
         {
             const invertR = 'normalColor.r = 1.0 - normalColor.r;';
@@ -103,11 +105,12 @@ export default class Light
             fragmentSrc = fragmentSrc.replace('// ' + invertR, invertR);
         }
 
+        // Default Green has flipped. invertGreen means DON'T flipped.
         if (this.invertGreen)
         {
             const invertG = 'normalColor.g = 1.0 - normalColor.g;';
 
-            fragmentSrc = fragmentSrc.replace('// ' + invertG, invertG);
+            fragmentSrc = fragmentSrc.replace(invertG, '// ' + invertG);
         }
 
         const id = vertexSrc + '@' + fragmentSrc;
