@@ -58,7 +58,9 @@ export default class Light
             this.invertGreen = options.invertGreen;
         }
 
-        this.invertRed = false;
+        // Default true for the SpriteIlluminator.
+        // If use Photoshop , set to false.
+        this.invertRed = true;
         if ('invertRed' in options)
         {
             this.invertRed = options.invertRed;
@@ -98,18 +100,18 @@ export default class Light
         const vertexSrc = this.getVertexSource();
         let fragmentSrc = this.getFragmentSource();
 
-        if (this.invertGreen)
-        {
-            const invertG = 'normalColor.g = 1.0 - normalColor.g;';
-
-            fragmentSrc = fragmentSrc.replace(invertG, '// ' + invertG);
-        }
-
         if (this.invertRed)
         {
             const invertR = 'normalColor.r = 1.0 - normalColor.r;';
 
             fragmentSrc = fragmentSrc.replace('// ' + invertR, invertR);
+        }
+
+        if (this.invertGreen)
+        {
+            const invertG = 'normalColor.g = 1.0 - normalColor.g;';
+
+            fragmentSrc = fragmentSrc.replace('// ' + invertG, invertG);
         }
 
         const id = vertexSrc + '@' + fragmentSrc;
