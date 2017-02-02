@@ -25,6 +25,9 @@ Container.prototype.removeAllChildren = function (options)
 
     this.children.length = 0;
 
+    this.transform._parentID = -1;
+    this._boundsID++;
+
     this.onChildrenChange(0);
 };
 

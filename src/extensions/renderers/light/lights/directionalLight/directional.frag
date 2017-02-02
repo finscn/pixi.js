@@ -8,7 +8,8 @@ uniform vec3 uLightDirection;
 void main()
 {
 
-#pragma glslify: import("../_shared/loadNormals.glsl");
+#pragma glslify: import("../_shared/loadDiffuse.glsl");
+#pragma glslify: import("../_shared/loadNormal.glsl");
 
     // the directional vector of the light
     vec3 lightVector = uLightDirection;
@@ -19,14 +20,20 @@ void main()
     // compute Distance
     // float D = length(lightVector);
 
-#pragma glslify: import("../_shared/computeDiffuse.glsl");
+    // normalize vectors
+    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
+    vec3 L = normalize(lightVector);
+
+    // pre-multiply light color with intensity
+    // then perform "N dot L" to determine our diffuse
+    vec3 diffuse = uLightColor * max(dot(N, L), 0.0);
 
     // calculate attenuation
     float attenuation = 1.0;
 
     // calculate final intesity and color, then combine
     vec3 intensity = uAmbientColor + diffuse * attenuation;
-    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
+
     vec3 finalColor = diffuseColor.rgb * intensity;
 
     gl_FragColor = vec4(finalColor, diffuseColor.a);

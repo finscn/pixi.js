@@ -4,7 +4,8 @@
 void main(void)
 {
 
-#pragma glslify: import("../_shared/loadNormals.glsl");
+#pragma glslify: import("../_shared/loadDiffuse.glsl");
+#pragma glslify: import("../_shared/loadNormal.glsl");
 
     uViewSize;
 
@@ -21,7 +22,6 @@ void main(void)
     // then perform "N dot L" to determine our diffuse
     vec3 diffuse = uLightColor * max(dot(N, L), 0.0);
 
-    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 finalColor = diffuseColor.rgb * diffuse;
 
     gl_FragColor = vec4(finalColor, diffuseColor.a);

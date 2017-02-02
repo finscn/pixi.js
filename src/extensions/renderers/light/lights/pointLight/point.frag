@@ -12,9 +12,16 @@ uniform float uLightRadius;
 void main()
 {
 
-#pragma glslify: import("../_shared/loadNormals.glsl");
+#pragma glslify: import("../_shared/loadDiffuse.glsl");
+#pragma glslify: import("../_shared/loadNormal.glsl");
 
-#pragma glslify: import("../_shared/computeFragCoord.glsl");
+    vec2 fragCoord = gl_FragCoord.xy / uViewSize;
+
+    if (flippedY > 0.0)
+    {
+        // FBOs positions are flipped.
+        fragCoord.y = 1.0 - fragCoord.y;
+    }
 
     vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.y);
     float lightRadius = uLightRadius / uViewSize.y;
@@ -28,7 +35,6 @@ void main()
     // compute Distance
     float D = length(lightVector);
 
-    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
     vec3 intensity = uAmbientColor;
     // bail out early when pixel outside of light sphere
     if (D <= lightRadius) {
