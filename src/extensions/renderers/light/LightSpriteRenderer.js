@@ -103,6 +103,7 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
             shader.uniforms.uSampler = uSamplerLocation;
             shader.uniforms.uNormalSampler = uNormalSamplerLocation;
             shader.uniforms.uWorldMatrix = uWorldMatrix;
+            shader.uniforms.uFixedNormal = !!sprite.fixedNormal;
 
             light.syncShader(sprite);
 

@@ -39,10 +39,8 @@ void main()
     // bail out early when pixel outside of light sphere
     if (D <= lightRadius) {
 
-        // normalize vectors
-        // vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
-        vec3 normal3 = vec3(normalColor.xyz * 2.0 - 1.0);
-        vec3 N = normalize(vec3((uWorldMatrix * vec3(normal3.xy, 0.0)).xy , normal3.z));
+#pragma glslify: import("../_shared/computeNormal.glsl");
+
         vec3 L = normalize(lightVector);
 
         // pre-multiply light color with intensity

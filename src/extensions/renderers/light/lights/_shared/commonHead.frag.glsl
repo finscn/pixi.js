@@ -13,3 +13,4 @@ varying vec2 vNormalTextureCoord;
 uniform vec2 uViewSize;
 
 uniform mat3 uWorldMatrix;
+uniform bool uFixedNormal;
