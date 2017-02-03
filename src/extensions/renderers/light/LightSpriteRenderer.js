@@ -33,6 +33,8 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
         const diffuseTexture = sprite.diffuseTexture ? sprite.diffuseTexture : sprite._texture;
         const normalTexture = sprite.normalTexture ? sprite.normalTexture : LightSpriteRenderer.defaultNormalTexture;
 
+        const uWorldMatrix = sprite.worldTransform.toArray(true);
+
         const uvsData = diffuseTexture._uvs;
         const uvsDataNormal = normalTexture._uvs;
 
@@ -97,8 +99,11 @@ export default class LightSpriteRenderer extends core.ObjectRenderer
                 lastShader = shader;
                 renderer.bindShader(shader);
             }
+
             shader.uniforms.uSampler = uSamplerLocation;
             shader.uniforms.uNormalSampler = uNormalSamplerLocation;
+            shader.uniforms.uWorldMatrix = uWorldMatrix;
+
             light.syncShader(sprite);
 
             renderer.state.setBlendMode(light.blendMode);

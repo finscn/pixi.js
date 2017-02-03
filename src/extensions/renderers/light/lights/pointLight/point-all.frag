@@ -1,6 +1,18 @@
+uniform sampler2D uSampler;
+uniform sampler2D uNormalSampler;
 
-// imports the common uniforms like samplers, and ambient color
-#pragma glslify: import("../_shared/commonHead.frag.glsl");
+// light color, has multiplied bright for intensity.
+uniform vec3 uLightColor;
+
+// light attenuation coefficients (constant, linear, quadratic)
+uniform vec3 uLightFalloff;
+
+varying vec2 vTextureCoord;
+varying vec2 vNormalTextureCoord;
+
+uniform vec2 uViewSize;
+
+uniform mat3 uWorldMatrix;
 
 varying float flippedY;
 
@@ -12,8 +24,21 @@ uniform float uLightRadius;
 void main()
 {
 
-#pragma glslify: import("../_shared/loadDiffuse.glsl");
-#pragma glslify: import("../_shared/loadNormal.glsl");
+    vec4 diffuseColor = texture2D(uSampler, vTextureCoord);
+
+    // bail out early when diffuse has no data
+    if (diffuseColor.a == 0.0) {
+       discard;
+    }
+
+    vec4 normalColor = texture2D(uNormalSampler, vNormalTextureCoord);
+
+    // Red layer is X coords.
+    // normalColor.r = 1.0 - normalColor.r;
+
+    // Green layer is flipped Y coords.
+    normalColor.g = 1.0 - normalColor.g;
+
 
     vec2 fragCoord = gl_FragCoord.xy / uViewSize;
 
@@ -40,9 +65,7 @@ void main()
     if (D <= lightRadius) {
 
         // normalize vectors
-        // vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
-        vec3 normal3 = vec3(normalColor.xyz * 2.0 - 1.0);
-        vec3 N = normalize(vec3((uWorldMatrix * vec3(normal3.xy, 0.0)).xy , normal3.z));
+        vec3 N = normalize((normalColor.xyz * 2.0 - 1.0) * uWorldMatrix);
         vec3 L = normalize(lightVector);
 
         // pre-multiply light color with intensity

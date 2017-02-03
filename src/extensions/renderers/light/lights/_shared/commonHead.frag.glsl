@@ -11,3 +11,5 @@ varying vec2 vTextureCoord;
 varying vec2 vNormalTextureCoord;
 
 uniform vec2 uViewSize;
+
+uniform mat3 uWorldMatrix;

@@ -15,7 +15,9 @@ void main(void)
     float D = 1.0;
 
     // normalize vectors
-    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
+    // vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
+    vec3 normal3 = vec3(normalColor.xyz * 2.0 - 1.0);
+    vec3 N = normalize(vec3((uWorldMatrix * vec3(normal3.xy, 0.0)).xy , normal3.z));
     vec3 L = vec3(1.0, 1.0, 1.0);
 
     // pre-multiply light color with intensity
