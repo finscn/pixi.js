@@ -14,8 +14,6 @@ float random(vec3 scale, float seed) {
 }
 
 void main() {
-    uRadius;
-    uMinRadius;
 
     vec2 texCoord = gl_FragCoord.xy / uViewSize.xy;
     texCoord.y = 1.0 - texCoord.y;
@@ -24,31 +22,43 @@ void main() {
     vec2 dir = vec2(center - texCoord);
     dir.x *= uViewSize.x / uViewSize.y;
 
+    float dist = length(dir);
+
     float strength = uStrength;
 
     /* randomize the lookup values to hide the fixed number of samples */
     float offset = random(vec3(12.9898, 78.233, 151.7182), 0.0);
 
     const float count = 32.0;
-    const float gap = 16.0;
     float countLimit = count;
 
-    float dist = length(dir);
-    float radius = (uRadius - gap) / uViewSize.y;
-    float minRadius = (uMinRadius + gap) / uViewSize.y;
+    float gradient = uRadius * 0.3;
+    float minGradient = uMinRadius * 0.3;
 
+    float radius = (uRadius - gradient * 0.5) / uViewSize.y;
+    float minRadius = (uMinRadius + minGradient * 0.5) / uViewSize.y;
+
+    float delta = 0.0;
+
+    float gap;
     if (dist <  minRadius) {
-        float normalCount = count / uViewSize.y;
-        float delta = minRadius - dist;
-        delta = (normalCount - delta) / normalCount;
-        countLimit *= delta;
-        // strength *= delta;
+        delta = minRadius - dist;
+        gap = minGradient;
     } else if (dist > radius) {
-        float normalCount = count / uViewSize.y;
-        float delta = dist - radius;
+        delta = dist - radius;
+        gap = gradient;
+    }
+
+    if (delta > 0.0) {
+        float normalCount = gap / uViewSize.y;
         delta = (normalCount - delta) / normalCount;
         countLimit *= delta;
-        // strength *= delta;
+        strength *= delta;
+        if (countLimit < 1.0)
+        {
+            gl_FragColor = texture2D(uSampler, vTextureCoord);
+            return;
+        }
     }
 
     dir *= strength;
@@ -67,6 +77,7 @@ void main() {
 
         color += sample * weight;
         total += weight;
+
         if (t > countLimit){
             break;
         }
