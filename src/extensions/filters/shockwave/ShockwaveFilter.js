@@ -17,6 +17,7 @@ export default class ShockwaveFilter extends core.Filter
             fragSrc
         );
 
+        this._rendererSize = new Float32Array([0, 0]);
         this.viewSize = null;
         this.radius = 100;
         this.center = new Float32Array([0, 0]);
@@ -27,15 +28,17 @@ export default class ShockwaveFilter extends core.Filter
 
     apply(filterManager, input, output, clear)
     {
-        if (!this.viewSize)
+        if (this.viewSize)
         {
-            this.viewSize = new Float32Array([
-                filterManager.renderer.width,
-                filterManager.renderer.height,
-            ]);
+            this.uniforms.uViewSize = this.viewSize;
+        }
+        else
+        {
+            this._rendererSize[0] = filterManager.renderer.width;
+            this._rendererSize[1] = filterManager.renderer.height;
+            this.uniforms.uViewSize = this._rendererSize;
         }
 
-        this.uniforms.uViewSize = this.viewSize;
         this.uniforms.uRadius = this.radius;
         this.uniforms.uCenter = this.center;
         this.uniforms.uParams = this.params;

@@ -68,7 +68,7 @@ void main()
 }
 
 
-        // float disFade = pow(1.0 - dist / radius, 0.8);
+    // float disFade = pow(1.0 - dist / radius, 0.8);
 
     // vec2 center = uCenter.xy / uViewSize.xy;
     // float radius = uRadius / uViewSize.y;

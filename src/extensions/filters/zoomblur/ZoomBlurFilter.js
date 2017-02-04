@@ -17,23 +17,28 @@ export default class ZoomBlurFilter extends core.Filter
             fragSrc
         );
 
+        this._rendererSize = new Float32Array([0, 0]);
         this.viewSize = null;
-        this.radius = 100;
+        this.minRadius = 0;
+        this.radius = 1E9;
         this.center = new Float32Array([centerX || 0, centerY || 0]);
         this.strength = strength === 0 || strength ? strength : 0.1;
     }
 
     apply(filterManager, input, output, clear)
     {
-        if (!this.viewSize)
+        if (this.viewSize)
         {
-            this.viewSize = new Float32Array([
-                filterManager.renderer.width,
-                filterManager.renderer.height,
-            ]);
+            this.uniforms.uViewSize = this.viewSize;
+        }
+        else
+        {
+            this._rendererSize[0] = filterManager.renderer.width;
+            this._rendererSize[1] = filterManager.renderer.height;
+            this.uniforms.uViewSize = this._rendererSize;
         }
 
-        this.uniforms.uViewSize = this.viewSize;
+        this.uniforms.uMinRadius = this.minRadius;
         this.uniforms.uRadius = this.radius;
         this.uniforms.uCenter = this.center;
         this.uniforms.uStrength = this.strength;
@@ -44,6 +49,11 @@ export default class ZoomBlurFilter extends core.Filter
     setRadius(radius)
     {
         this.radius = radius;
+    }
+
+    setMinRadius(minRadius)
+    {
+        this.minRadius = minRadius;
     }
 
     setStrength(strength)
