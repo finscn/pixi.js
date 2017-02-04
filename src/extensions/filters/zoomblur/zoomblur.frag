@@ -40,15 +40,15 @@ void main() {
     if (dist <  minRadius) {
         float normalCount = count / uViewSize.y;
         float delta = minRadius - dist;
-        delta = max(0.0, (normalCount - delta)/normalCount);
+        delta = (normalCount - delta) / normalCount;
         countLimit *= delta;
-        strength *= delta;
+        // strength *= delta;
     } else if (dist > radius) {
         float normalCount = count / uViewSize.y;
         float delta = dist - radius;
-        delta = max(0.0, (normalCount - delta)/normalCount);
+        delta = (normalCount - delta) / normalCount;
         countLimit *= delta;
-        strength *= delta;
+        // strength *= delta;
     }
 
     dir *= strength;
@@ -68,7 +68,7 @@ void main() {
         color += sample * weight;
         total += weight;
         if (t > countLimit){
-          break;
+            break;
         }
     }
 
