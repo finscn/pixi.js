@@ -79,10 +79,7 @@ export default class ZoomBlurFilter extends core.Filter
         {
             this.viewSize = new Float32Array(2);
         }
-        else
-        {
-            this.viewSize[0] = width;
-            this.viewSize[1] = height;
-        }
+        this.viewSize[0] = width;
+        this.viewSize[1] = height;
     }
 }
