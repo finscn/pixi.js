@@ -40,7 +40,7 @@ export default class SpriteTrail
         this.point = 0;
     }
 
-    takeSnapshot(sprite, alpha, tintRgb)
+    takeSnapshot(sprite, alpha, tint, tintScale)
     {
         if (this.disabled)
         {
@@ -76,9 +76,14 @@ export default class SpriteTrail
             snapshot.alpha = alpha * sprite.alpha;
         }
 
-        if (tintRgb)
+        if (tint)
         {
-            snapshot.tintRgb = tintRgb;
+            snapshot.tint = tint;
+        }
+
+        if (tintScale || tintScale === 0)
+        {
+            snapshot.tintScale = tintScale;
         }
 
         this.point++;
