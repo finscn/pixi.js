@@ -366,7 +366,7 @@ export default class SpriteRenderer extends ObjectRenderer
             uint32View[index + 20] = uvs[3];
 
             /* eslint-disable max-len */
-            uint32View[index + 3] = uint32View[index + 9] = uint32View[index + 15] = uint32View[index + 21] = sprite._tintRgbInt + (Math.min(sprite.worldAlpha, 1) * 255 << 24);
+            uint32View[index + 3] = uint32View[index + 9] = uint32View[index + 15] = uint32View[index + 21] = sprite._tintRGB + (Math.min(sprite.worldAlpha, 1) * 255 << 24);
             float32View[index + 4] = float32View[index + 10] = float32View[index + 16] = float32View[index + 22] = sprite.tintScale;
 
             float32View[index + 5] = float32View[index + 11] = float32View[index + 17] = float32View[index + 23] = nextTexture._virtalBoundId;

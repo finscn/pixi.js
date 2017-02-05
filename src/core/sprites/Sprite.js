@@ -85,7 +85,7 @@ export default class Sprite extends Container
          * @default 0xFFFFFF
          */
         this._tint = null;
-        this._tintRgbInt = null;
+        this._tintRGB = null;
         this.tint = 0xFFFFFF;
 
         /**
@@ -577,7 +577,7 @@ export default class Sprite extends Container
     set tint(value) // eslint-disable-line require-jsdoc
     {
         this._tint = value;
-        this._tintRgbInt = (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
+        this._tintRGB = (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
     }
 
     /**
