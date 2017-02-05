@@ -88,6 +88,12 @@ export default class Sprite extends Container
         this._tintRgbInt = null;
         this.tint = 0xFFFFFF;
 
+        /**
+         * The tintScale will scale the value of tint in shader. `new tint color = tint * tintScale` .
+         *
+         * @member {number}
+         * @default 1.0
+         */
         this.tintScale = 1.0;
 
         /**
