@@ -912,32 +912,10 @@ export default class RenderContext
      *
      **/
 
-    createBaseTexture(image)
-    {
-        const id = image.id || image.src;
-        let baseTexture;
-
-        if (id)
-        {
-            baseTexture = this.baseTexturePool[id];
-            if (!baseTexture)
-            {
-                baseTexture = new BaseTexture(image);
-                this.baseTexturePool[id] = baseTexture;
-            }
-        }
-        else
-        {
-            baseTexture = new BaseTexture(image);
-        }
-
-        return baseTexture;
-    }
-
     createTexture(image, sx, sy, sw, sh, id)
     {
         const count = arguments.length;
-        const baseTexture = this.createBaseTexture(image);
+        const baseTexture = BaseTexture.from(image);
         let texture;
 
         if (count === 2)

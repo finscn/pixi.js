@@ -365,7 +365,8 @@ export default class Texture extends EventEmitter
      * The source can be - frame id, image url, video url, canvas element, video element, base texture
      *
      * @static
-     * @param {number|string|PIXI.BaseTexture|HTMLCanvasElement|HTMLVideoElement} source - Source to create texture from
+     * @param {number|string|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|PIXI.BaseTexture}
+                source - Source to create texture from
      * @return {PIXI.Texture} The newly created texture
      */
     static from(source)
@@ -393,7 +394,7 @@ export default class Texture extends EventEmitter
         }
         else if (source instanceof HTMLImageElement)
         {
-            return new Texture(new BaseTexture(source));
+            return new Texture(BaseTexture.from(source));
         }
         else if (source instanceof HTMLCanvasElement)
         {

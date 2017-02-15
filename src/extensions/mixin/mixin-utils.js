@@ -18,7 +18,7 @@ utils.createBaseTexture = function (image)
         return BaseTexture.fromImage(image);
     }
 
-    return new BaseTexture(image);
+    return BaseTexture.from(image);
 };
 
 utils.createTexture = function (image, sx, sy, sw, sh)
