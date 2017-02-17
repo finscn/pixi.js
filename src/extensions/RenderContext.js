@@ -946,9 +946,9 @@ export default class RenderContext
     {
         const sprite = Sprite.from(texture);
 
-        if (container)
+        if (container !== false)
         {
-            if (container === true)
+            if (!container || container === true)
             {
                 container = this.globalContainer;
             }
@@ -956,6 +956,22 @@ export default class RenderContext
         }
 
         return sprite;
+    }
+
+    createGraphics(container)
+    {
+        const graphics = new Graphics();
+
+        if (container !== false)
+        {
+            if (!container || container === true)
+            {
+                container = this.globalContainer;
+            }
+            container.addChild(graphics);
+        }
+
+        return graphics;
     }
 
     createSprite(image, sx, sy, sw, sh, container)
@@ -1008,9 +1024,9 @@ export default class RenderContext
 
         const sprite = new mesh.NineSlicePlane(texture, L, T, R, B);
 
-        if (container)
+        if (container !== false)
         {
-            if (container === true)
+            if (!container || container === true)
             {
                 container = this.globalContainer;
             }
@@ -1037,9 +1053,9 @@ export default class RenderContext
         sprite.updateSize = this._updateTextSize;
         sprite.updateContent = this._updateTextContent;
 
-        if (container)
+        if (container !== false)
         {
-            if (container === true)
+            if (!container || container === true)
             {
                 container = this.globalContainer;
             }
@@ -1053,9 +1069,9 @@ export default class RenderContext
     {
         const container = new Container();
 
-        if (parentContainer)
+        if (parentContainer !== false)
         {
-            if (parentContainer === true)
+            if (!parentContainer || parentContainer === true)
             {
                 parentContainer = this.globalContainer;
             }
@@ -1072,9 +1088,9 @@ export default class RenderContext
         const particleBatchSize = options.particleBatchSize;
         const container = new ParticleContainer(particleMaxSize, options, particleBatchSize);
 
-        if (parentContainer)
+        if (parentContainer !== false)
         {
-            if (parentContainer === true)
+            if (!parentContainer || parentContainer === true)
             {
                 parentContainer = this.globalContainer;
             }
