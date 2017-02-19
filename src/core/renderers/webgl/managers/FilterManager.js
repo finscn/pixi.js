@@ -301,6 +301,8 @@ export default class FilterManager extends WebGLManager
             filterArea[1] = currentState.renderTarget.size.height;
             filterArea[2] = currentState.sourceFrame.x;
             filterArea[3] = currentState.sourceFrame.y;
+
+            shader.uniforms.filterArea = filterArea;
         }
 
         // use this to clamp displaced texture coords so they belong to filterArea
@@ -315,6 +317,8 @@ export default class FilterManager extends WebGLManager
             filterClamp[1] = 0;
             filterClamp[2] = (currentState.sourceFrame.width - 1) / currentState.renderTarget.size.width;
             filterClamp[3] = (currentState.sourceFrame.height - 1) / currentState.renderTarget.size.height;
+
+            shader.uniforms.filterClamp = filterClamp;
         }
 
         // TODO Cacheing layer..
