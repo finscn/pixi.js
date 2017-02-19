@@ -77,7 +77,7 @@ export default {
      *
      * @static
      * @memberof PIXI.settings
-     * @type {RegExp|string}
+     * @type {RegExp}
      * @example `@2x`
      * @default /@([0-9\.]+)x/
      */

@@ -291,34 +291,30 @@ export default class FilterManager extends WebGLManager
         let textureCount = 1;
         let currentState;
 
-        if (uniforms.filterArea)
+        if (shader.uniforms.filterArea)
         {
             currentState = this.filterData.stack[this.filterData.index];
 
-            const filterArea = uniforms.filterArea;
+            const filterArea = shader.uniforms.filterArea;
 
             filterArea[0] = currentState.renderTarget.size.width;
             filterArea[1] = currentState.renderTarget.size.height;
             filterArea[2] = currentState.sourceFrame.x;
             filterArea[3] = currentState.sourceFrame.y;
-
-            shader.uniforms.filterArea = filterArea;
         }
 
         // use this to clamp displaced texture coords so they belong to filterArea
         // see displacementFilter fragment shader for an example
-        if (uniforms.filterClamp)
+        if (shader.uniforms.filterClamp)
         {
-            currentState = this.filterData.stack[this.filterData.index];
+            currentState = currentState || this.filterData.stack[this.filterData.index];
 
-            const filterClamp = uniforms.filterClamp;
+            const filterClamp = shader.uniforms.filterClamp;
 
             filterClamp[0] = 0;
             filterClamp[1] = 0;
             filterClamp[2] = (currentState.sourceFrame.width - 1) / currentState.renderTarget.size.width;
             filterClamp[3] = (currentState.sourceFrame.height - 1) / currentState.renderTarget.size.height;
-
-            shader.uniforms.filterClamp = filterClamp;
         }
 
         // TODO Cacheing layer..
