@@ -304,7 +304,7 @@ export default class Animation
                 break;
             }
             index++;
-        } while (skipFrame);
+        } while (skipFrame); // eslint-disable-line no-unmodified-loop-condition
 
         this.currentTime = time;
 
