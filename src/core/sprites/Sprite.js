@@ -492,7 +492,7 @@ export default class Sprite extends Container
     }
 
     /**
-     * The width of the texture's real width
+     * The width of the texture's real size
      *
      * @member {number}
      */
@@ -509,7 +509,7 @@ export default class Sprite extends Container
     }
 
     /**
-     * The width of the texture's real height
+     * The height of the texture's real size
      *
      * @member {number}
      */
