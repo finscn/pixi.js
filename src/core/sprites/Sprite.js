@@ -64,20 +64,6 @@ export default class Sprite extends Container
         this._height = 0;
 
         /**
-         * The width of the texture's original width
-         *
-         * @member {number}
-         */
-        this.textureWidth = 0;
-
-        /**
-         * The height of the texture's original height
-         *
-         * @member {number}
-         */
-        this.textureHeight = 0;
-
-        /**
          * The tint applied to the sprite. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
          *
          * @private
@@ -166,18 +152,15 @@ export default class Sprite extends Container
         this._textureID = -1;
         this._textureTrimmedID = -1;
 
-        this.textureWidth = this._texture.orig.width;
-        this.textureHeight = this._texture.orig.height;
-
         // so if _width is 0 then width was not set..
         if (this._width)
         {
-            this.scale.x = sign(this.scale.x) * this._width / this.textureWidth;
+            this.scale.x = sign(this.scale.x) * this._width / this._texture.orig.width;
         }
 
         if (this._height)
         {
-            this.scale.y = sign(this.scale.y) * this._height / this.textureHeight;
+            this.scale.y = sign(this.scale.y) * this._height / this._texture.orig.height;
         }
     }
 
@@ -506,6 +489,40 @@ export default class Sprite extends Container
     static fromImage(imageId, crossorigin, scaleMode)
     {
         return new Sprite(Texture.fromImage(imageId, crossorigin, scaleMode));
+    }
+
+    /**
+     * The width of the texture's real width
+     *
+     * @member {number}
+     */
+    get textureWidth()
+    {
+        const texture = this._texture;
+
+        if (texture.trim)
+        {
+            return texture.trim.width;
+        }
+
+        return texture.orig.width;
+    }
+
+    /**
+     * The width of the texture's real height
+     *
+     * @member {number}
+     */
+    get textureHeight()
+    {
+        const texture = this._texture;
+
+        if (texture.trim)
+        {
+            return texture.trim.height;
+        }
+
+        return texture.orig.height;
     }
 
     /**
