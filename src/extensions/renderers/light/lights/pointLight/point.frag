@@ -41,7 +41,8 @@ void main()
 
 #pragma glslify: import("../_shared/computeNormal.glsl");
 
-        vec3 L = normalize(lightVector);
+        // vec3 L = normalize(lightVector);
+        vec3 L = lightVector / D;
 
         // pre-multiply light color with intensity
         // then perform N dot L to determine our diffuse

@@ -456,6 +456,9 @@ export default class Animation
             frame.duration = frame.duration || preDuration;
             frame.pivot = frame.pivot || null;
 
+            // TODO
+            frame.offset = frame.offset || null;
+
             frame._startTime = startTime;
             frame._endTime = (endTime += frame.duration);
 
