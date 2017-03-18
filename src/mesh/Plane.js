@@ -102,22 +102,23 @@ export default class Plane extends Mesh
             sizeChanged = true;
         }
 
+        const texUvs = texture._uvs;
         let ux;
         let uy;
         let uw;
         let uh;
 
-        if (texture._uvs)
+        if (texUvs)
         {
-            ux = texture._uvs.x0;
-            uy = texture._uvs.y0;
-            uw = texture._uvs.x1 - ux;
-            uh = texture._uvs.y3 - uy;
+            ux = texUvs.x0;
+            uy = texUvs.y0;
+            uw = texUvs.x1 - ux;
+            uh = texUvs.y3 - uy;
         }
 
         for (let i = 0; i < total; i++)
         {
-            if (texture._uvs)
+            if (texUvs)
             {
                 const x = (i % this.verticesX);
                 const y = ((i / this.verticesX) | 0);
