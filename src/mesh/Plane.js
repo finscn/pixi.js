@@ -34,8 +34,6 @@ export default class Plane extends Mesh
 
         this.initPoints();
 
-        this._ready = true;
-
         this.refresh();
     }
 
@@ -68,18 +66,18 @@ export default class Plane extends Mesh
     }
 
     /**
-     * Refreshes
+     * Refreshes plane coordinates
      *
      */
-    refresh()
+    _refresh()
     {
+        const texture = this._texture;
         const total = this.verticesX * this.verticesY;
         const verts = [];
         const colors = [];
         const uvs = [];
         const indices = [];
 
-        const texture = this._texture;
         // const trim = texture.trim;
         const orig = texture.orig;
         const anchor = this._anchor;
@@ -90,8 +88,8 @@ export default class Plane extends Mesh
         const segmentsX = this.verticesX - 1;
         const segmentsY = this.verticesY - 1;
 
-        const sizeX = texture.width / segmentsX;
-        const sizeY = texture.height / segmentsY;
+        const sizeX = orig.width / segmentsX;
+        const sizeY = orig.height / segmentsY;
 
         let sizeChanged = false;
 
@@ -104,33 +102,24 @@ export default class Plane extends Mesh
 
         for (let i = 0; i < total; i++)
         {
-            if (texture._uvs)
+            const x = (i % this.verticesX);
+            const y = ((i / this.verticesX) | 0);
+            const point = this.points[y][x];
+
+            if (sizeChanged)
             {
-                const x = (i % this.verticesX);
-                const y = ((i / this.verticesX) | 0);
-                const point = this.points[y][x];
-
-                if (sizeChanged)
-                {
-                    point.x = x * sizeX;
-                    point.y = y * sizeY;
-                    point.originalX = point.x;
-                    point.originalY = point.y;
-                }
-
-                verts.push(point.x - this._pivotX, point.y - this._pivotY);
-
-                // this works for rectangular textures.
-                uvs.push(
-                    texture._uvs.x0 + ((texture._uvs.x1 - texture._uvs.x0) * (x / segmentsX)),
-                    texture._uvs.y0 + ((texture._uvs.y3 - texture._uvs.y0) * (y / segmentsY))
-                );
+                point.x = x * sizeX;
+                point.y = y * sizeY;
+                point.originalX = point.x;
+                point.originalY = point.y;
             }
-            else
-            {
-                uvs.push(0);
-            }
+
+            verts.push(point.x - this._pivotX, point.y - this._pivotY);
+
+            uvs.push(x / segmentsX, y / segmentsY);
         }
+
+        //  cons
 
         const totalSub = segmentsX * segmentsY;
 
@@ -156,21 +145,8 @@ export default class Plane extends Mesh
 
         this.dirty++;
         this.indexDirty++;
+
+        this.multiplyUvs();
     }
 
-    /**
-     * Clear texture UVs when new texture is set
-     *
-     * @private
-     */
-    _onTextureUpdate()
-    {
-        super._onTextureUpdate();
-
-        // wait for the Plane ctor to finish before calling refresh
-        if (this._ready)
-        {
-            this.refresh();
-        }
-    }
 }

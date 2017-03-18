@@ -1,4 +1,5 @@
 import * as core from '../core';
+import { default as TextureTransform } from '../extras/TextureTransform';
 
 const tempPoint = new core.Point();
 const tempPolygon = new core.Polygon();
@@ -28,18 +29,7 @@ export default class Mesh extends core.Container
          * @member {PIXI.Texture}
          * @private
          */
-        this._texture = null;
-
-        /**
-         * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-         *
-         * @member {PIXI.ObservablePoint}
-         * @private
-         */
-        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+        this._texture = texture;
 
         /**
          * The Uvs of the Mesh
@@ -109,9 +99,6 @@ export default class Mesh extends core.Container
          */
         this.drawMode = drawMode || Mesh.DRAW_MODES.TRIANGLE_MESH;
 
-        // run texture setter;
-        this.texture = texture;
-
         /**
          * The default shader that is used if a mesh doesn't have a more specific one.
          *
@@ -138,12 +125,42 @@ export default class Mesh extends core.Container
         this._tintRgb = new Float32Array([1, 1, 1]);
 
         /**
+         * The anchor sets the origin point of the texture.
+         * The default is 0,0 this means the texture's origin is the top left
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         *
+         * @member {PIXI.ObservablePoint}
+         * @private
+         */
+        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+
+        /**
          * A map of renderer IDs to webgl render data
          *
          * @private
          * @member {object<number, object>}
          */
         this._glDatas = {};
+
+        /**
+         * transform that is applied to UV to get the texture coords
+         * its updated independently from texture uvTransform
+         * updates of uvs are tied to that thing
+         *
+         * @member {PIXI.extras.TextureTransform}
+         * @private
+         */
+        this._uvTransform = new TextureTransform(texture);
+
+        /**
+         * whether or not upload uvTransform to shader
+         * if its false, then uvs should be pre-multiplied
+         * if you change it for generated mesh, please call 'refresh(true)'
+         * @member {boolean}
+         * @default false
+         */
+        this.uploadUvTransform = false;
 
         /**
          * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
@@ -157,7 +174,6 @@ export default class Mesh extends core.Container
         /**
          * Plugin that is responsible for rendering this element.
          * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
-         *
          * @member {string}
          * @default 'mesh'
          */
@@ -172,6 +188,7 @@ export default class Mesh extends core.Container
      */
     _renderWebGL(renderer)
     {
+        this.refresh();
         renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
         renderer.plugins[this.pluginName].render(this);
     }
@@ -184,6 +201,7 @@ export default class Mesh extends core.Container
      */
     _renderCanvas(renderer)
     {
+        this.refresh();
         renderer.plugins[this.pluginName].render(this);
     }
 
@@ -194,14 +212,42 @@ export default class Mesh extends core.Container
      */
     _onTextureUpdate()
     {
-        /* empty */
+        this._uvTransform.texture = this._texture;
+        this.refresh();
     }
 
     /**
-     * When the texture is updated or mesh changed, this event will fire to compute new vertices.
-     *
+     * multiplies uvs only if uploadUvTransform is false
+     * call it after you change uvs manually
+     * make sure that texture is valid
      */
-    refresh()
+    multiplyUvs()
+    {
+        if (!this.uploadUvTransform)
+        {
+            this._uvTransform.multiplyUvs(this.uvs);
+        }
+    }
+
+    /**
+     * Refreshes uvs for generated meshes (rope, plane)
+     * sometimes refreshes vertices too
+     *
+     * @param {boolean} [forceUpdate=false] if true, matrices will be updated any case
+     */
+    refresh(forceUpdate)
+    {
+        if (this._uvTransform.update(forceUpdate))
+        {
+            this._refresh();
+        }
+    }
+
+    /**
+     * re-calculates mesh coords
+     * @protected
+     */
+    _refresh()
     {
         /* empty */
     }
@@ -341,7 +387,7 @@ export default class Mesh extends core.Container
 
         if (this._ready)
         {
-            this.refresh();
+            this.refresh(true);
         }
     }
 

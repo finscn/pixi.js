@@ -35,7 +35,7 @@ export default class Rope extends Mesh
         this._vertical = false;
 
         /**
-         * The array of points that determine the rope
+         * An array of points that determine the rope
          *
          * @member {PIXI.Point[]}
          * @private
@@ -64,7 +64,12 @@ export default class Rope extends Mesh
          */
         this.indices = new Uint16Array(points.length * 2);
 
-        this._ready = true;
+        /**
+         * refreshes vertices on every updateTransform
+         * @member {boolean}
+         * @default true
+         */
+        this.autoUpdate = true;
 
         this.refresh();
     }
@@ -73,7 +78,7 @@ export default class Rope extends Mesh
      * Refreshes
      *
      */
-    refresh()
+    _refresh()
     {
         const points = this._points;
 
@@ -149,8 +154,10 @@ export default class Rope extends Mesh
         }
 
         const textureUvs = texture._uvs;
-        const offset = new core.Point(textureUvs.x0, textureUvs.y0);
-        const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
+        // const offset = new core.Point(textureUvs.x0, textureUvs.y0);
+        // const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
+        const offset = new core.Point(0, 0);
+        const factor = new core.Point(1, 1);
 
         uvs[0] = 0 + offset.x;
         uvs[1] = 0 + offset.y;
@@ -206,14 +213,15 @@ export default class Rope extends Mesh
         // ensure that the changes are uploaded
         this.dirty++;
         this.indexDirty++;
+
+        this.multiplyUvs();
+        this.refreshVertices();
     }
 
     /**
-     * Updates the object transform for rendering
-     *
-     * @private
+     * refreshes vertices of Rope mesh
      */
-    updateTransform()
+    refreshVertices()
     {
         const points = this._points;
 
@@ -275,24 +283,20 @@ export default class Rope extends Mesh
 
             lastPoint = point;
         }
-
-        this.containerUpdateTransform();
     }
 
     /**
-     * Clear texture UVs when new texture is set
+     * Updates the object transform for rendering
      *
      * @private
      */
-    _onTextureUpdate()
+    updateTransform()
     {
-        super._onTextureUpdate();
-
-        // wait for the Rope ctor to finish before calling refresh
-        if (this._ready)
+        if (this.autoUpdate)
         {
-            this.refresh();
+            this.refreshVertices();
         }
+        this.containerUpdateTransform();
     }
 
     /**
