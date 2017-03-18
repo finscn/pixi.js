@@ -127,6 +127,7 @@ export default class Mesh extends core.Container
          * @member {PIXI.Shader}
          */
         this.shader = null;
+
         /**
          * The tint applied to the mesh. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
          *
@@ -156,6 +157,7 @@ export default class Mesh extends core.Container
         /**
          * Plugin that is responsible for rendering this element.
          * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
+	 *
          * @member {string}
          * @default 'mesh'
          */
