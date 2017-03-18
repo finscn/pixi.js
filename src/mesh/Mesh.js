@@ -30,6 +30,9 @@ export default class Mesh extends core.Container
          */
         this._texture = null;
 
+        // run texture setter;
+        this.texture = texture;
+
         /**
          * The anchor sets the origin point of the texture.
          * The default is 0,0 this means the texture's origin is the top left
@@ -40,6 +43,15 @@ export default class Mesh extends core.Container
          * @private
          */
         this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+
+        /**
+         * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
+         * call _onTextureUpdated which could call refresh too early.
+         *
+         * @member {boolean}
+         * @private
+         */
+        this._ready = false;
 
         /**
          * The Uvs of the Mesh
@@ -109,9 +121,6 @@ export default class Mesh extends core.Container
          */
         this.drawMode = drawMode || Mesh.DRAW_MODES.TRIANGLE_MESH;
 
-        // run texture setter;
-        this.texture = texture;
-
         /**
          * The default shader that is used if a mesh doesn't have a more specific one.
          *
@@ -146,18 +155,9 @@ export default class Mesh extends core.Container
         this._glDatas = {};
 
         /**
-         * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
-         * call _onTextureUpdated which could call refresh too early.
-         *
-         * @member {boolean}
-         * @private
-         */
-        this._ready = false;
-
-        /**
          * Plugin that is responsible for rendering this element.
          * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
-         *
+	 *
          * @member {string}
          * @default 'mesh'
          */

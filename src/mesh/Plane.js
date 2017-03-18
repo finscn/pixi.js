@@ -73,13 +73,13 @@ export default class Plane extends Mesh
      */
     refresh()
     {
+        const texture = this._texture;
         const total = this.verticesX * this.verticesY;
         const verts = [];
         const colors = [];
         const uvs = [];
         const indices = [];
 
-        const texture = this._texture;
         // const trim = texture.trim;
         const orig = texture.orig;
         const anchor = this._anchor;
@@ -102,9 +102,23 @@ export default class Plane extends Mesh
             sizeChanged = true;
         }
 
+        const texUvs = texture._uvs;
+        let ux;
+        let uy;
+        let uw;
+        let uh;
+
+        if (texUvs)
+        {
+            ux = texUvs.x0;
+            uy = texUvs.y0;
+            uw = texUvs.x1 - ux;
+            uh = texUvs.y3 - uy;
+        }
+
         for (let i = 0; i < total; i++)
         {
-            if (texture._uvs)
+            if (texUvs)
             {
                 const x = (i % this.verticesX);
                 const y = ((i / this.verticesX) | 0);
@@ -122,13 +136,13 @@ export default class Plane extends Mesh
 
                 // this works for rectangular textures.
                 uvs.push(
-                    texture._uvs.x0 + ((texture._uvs.x1 - texture._uvs.x0) * (x / segmentsX)),
-                    texture._uvs.y0 + ((texture._uvs.y3 - texture._uvs.y0) * (y / segmentsY))
+                    ux + (uw * (x / segmentsX)),
+                    uy + (uh * (y / segmentsY))
                 );
             }
             else
             {
-                uvs.push(0);
+                uvs.push(0, 0);
             }
         }
 
