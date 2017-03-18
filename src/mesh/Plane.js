@@ -179,7 +179,7 @@ export default class Plane extends Mesh
      */
     _onTextureUpdate()
     {
-        Mesh.prototype._onTextureUpdate.call(this);
+        super._onTextureUpdate();
 
         // wait for the Plane ctor to finish before calling refresh
         if (this._ready)
