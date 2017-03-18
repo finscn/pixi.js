@@ -73,13 +73,13 @@ export default class Plane extends Mesh
      */
     refresh()
     {
+        const texture = this._texture;
         const total = this.verticesX * this.verticesY;
         const verts = [];
         const colors = [];
         const uvs = [];
         const indices = [];
 
-        const texture = this._texture;
         // const trim = texture.trim;
         const orig = texture.orig;
         const anchor = this._anchor;
@@ -102,6 +102,19 @@ export default class Plane extends Mesh
             sizeChanged = true;
         }
 
+        let ux;
+        let uy;
+        let uw;
+        let uh;
+
+        if (texture._uvs)
+        {
+            ux = texture._uvs.x0;
+            uy = texture._uvs.y0;
+            uw = texture._uvs.x1 - ux;
+            uh = texture._uvs.y3 - uy;
+        }
+
         for (let i = 0; i < total; i++)
         {
             if (texture._uvs)
@@ -122,13 +135,13 @@ export default class Plane extends Mesh
 
                 // this works for rectangular textures.
                 uvs.push(
-                    texture._uvs.x0 + ((texture._uvs.x1 - texture._uvs.x0) * (x / segmentsX)),
-                    texture._uvs.y0 + ((texture._uvs.y3 - texture._uvs.y0) * (y / segmentsY))
+                    ux + (uw * (x / segmentsX)),
+                    uy + (uh * (y / segmentsY))
                 );
             }
             else
             {
-                uvs.push(0);
+                uvs.push(0, 0);
             }
         }
 
@@ -165,7 +178,7 @@ export default class Plane extends Mesh
      */
     _onTextureUpdate()
     {
-        super._onTextureUpdate();
+        Mesh.prototype._onTextureUpdate.call(this);
 
         // wait for the Plane ctor to finish before calling refresh
         if (this._ready)
