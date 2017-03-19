@@ -74,7 +74,7 @@ export default class Mesh extends core.Container
         this.indexDirty = 0;
 
         /**
-         * The blend mode to be applied to the mesh. Set to `PIXI.BLEND_MODES.NORMAL` to remove
+         * The blend mode to be applied to the sprite. Set to `PIXI.BLEND_MODES.NORMAL` to remove
          * any blend mode.
          *
          * @member {number}
@@ -107,33 +107,12 @@ export default class Mesh extends core.Container
         this.shader = null;
 
         /**
-         * The tint applied to the mesh. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
+         * The tint applied to the mesh. This is a [r,g,b] value. A value of [1,1,1] will remove any
+         * tint effect.
          *
-         * @private
          * @member {number}
-         * @default 0xFFFFFF
          */
-        this._tint = 0xFFFFFF;
-
-        /**
-         * The tint applied to the mesh. This is a [r, g, b] value. A value of [1,1,1] will remove any tint effect.
-         *
-         * @private
-         * @member {number}
-         * @default [1,1,1]
-         */
-        this._tintRgb = new Float32Array([1, 1, 1]);
-
-        /**
-         * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-         *
-         * @member {PIXI.ObservablePoint}
-         * @private
-         */
-        this._anchor = new core.ObservablePoint(this._onAnchorUpdate, this);
+        this.tintRgb = new Float32Array([1, 1, 1]);
 
         /**
          * A map of renderer IDs to webgl render data
@@ -151,7 +130,7 @@ export default class Mesh extends core.Container
          * @member {PIXI.extras.TextureTransform}
          * @private
          */
-        this._uvTransform = new TextureTransform(texture);
+        this._uvTransform = new TextureTransform(texture, 0);
 
         /**
          * whether or not upload uvTransform to shader
@@ -163,21 +142,23 @@ export default class Mesh extends core.Container
         this.uploadUvTransform = false;
 
         /**
-         * Tracker for if the Plane is ready to be drawn. Needed because Mesh ctor can
-         * call _onTextureUpdated which could call refresh too early.
-         *
-         * @member {boolean}
-         * @private
-         */
-        this._ready = false;
-
-        /**
          * Plugin that is responsible for rendering this element.
          * Allows to customize the rendering process without overriding '_renderWebGL' & '_renderCanvas' methods.
          * @member {string}
          * @default 'mesh'
          */
         this.pluginName = 'mesh';
+    }
+
+    /**
+     * Updates the object transform for rendering
+     *
+     * @private
+     */
+    updateTransform()
+    {
+        this.refresh();
+        this.containerUpdateTransform();
     }
 
     /**
@@ -188,7 +169,6 @@ export default class Mesh extends core.Container
      */
     _renderWebGL(renderer)
     {
-        this.refresh();
         renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
         renderer.plugins[this.pluginName].render(this);
     }
@@ -201,7 +181,6 @@ export default class Mesh extends core.Container
      */
     _renderCanvas(renderer)
     {
-        this.refresh();
         renderer.plugins[this.pluginName].render(this);
     }
 
@@ -239,7 +218,7 @@ export default class Mesh extends core.Container
     {
         if (this._uvTransform.update(forceUpdate))
         {
-            this._refresh();
+            this._refreshUvs();
         }
     }
 
@@ -247,7 +226,7 @@ export default class Mesh extends core.Container
      * re-calculates mesh coords
      * @protected
      */
-    _refresh()
+    _refreshUvs()
     {
         /* empty */
     }
@@ -339,80 +318,19 @@ export default class Mesh extends core.Container
     }
 
     /**
-     * The tint applied to the mesh. This is a hex value.
-     * A value of 0xFFFFFF will remove any tint effect.
+     * The tint applied to the mesh. This is a hex value. A value of 0xFFFFFF will remove any tint effect.
      *
      * @member {number}
      * @default 0xFFFFFF
      */
     get tint()
     {
-        return this._tint;
+        return core.utils.rgb2hex(this.tintRgb);
     }
 
     set tint(value) // eslint-disable-line require-jsdoc
     {
-        this._tint = value;
-        this._tintRgb = core.utils.hex2rgb(value);
-    }
-
-    /**
-     * The immutable rgb value of tint applied to the mesh.
-     * This is a float array of a size of three.
-     * A value of [1,1,1] will remove any tint effect.
-     *
-     * @member {Float32Array}
-     * @memberof PIXI.mesh.Mesh#
-     * @default [1.0,1.0,1.0]
-     */
-    get tintRgb()
-    {
-        return this._tintRgb;
-    }
-
-    set tintRgb(value) // eslint-disable-line require-jsdoc
-    {
-        this._tintRgb = value;
-        this._tint = core.utils.rgb2hex(this._tintRgb);
-    }
-
-    /**
-     * Called when the anchor position updates.
-     *
-     * @private
-     */
-    _onAnchorUpdate()
-    {
-        this._transformID = -1;
-
-        if (this._ready)
-        {
-            this.refresh(true);
-        }
-    }
-
-    /**
-     * The anchor sets the origin point of the texture.
-     * The default is 0,0 this means the texture's origin is the top left
-     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
-     *
-     * @member {PIXI.ObservablePoint}
-     * @memberof PIXI.mesh.Mesh#
-     */
-    get anchor()
-    {
-        return this._anchor;
-    }
-
-    /**
-     * Copies the anchor to the plane.
-     *
-     * @param {number} value - The value to set to.
-     */
-    set anchor(value)
-    {
-        this._anchor.copy(value);
+        this.tintRgb = core.utils.hex2rgb(value, this.tintRgb);
     }
 }
 

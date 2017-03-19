@@ -1,5 +1,4 @@
 import Mesh from './Mesh';
-import * as core from '../core';
 
 /**
  * The rope allows you to draw a texture across several points and them manipulate these points
@@ -8,7 +7,7 @@ import * as core from '../core';
  * for (let i = 0; i < 20; i++) {
  *     points.push(new PIXI.Point(i * 50, 0));
  * };
- * let rope = new PIXI.Rope(PIXI.Texture.fromImage("snake.png"), points);
+ * let rope = new PIXI.mesh.Rope(PIXI.Texture.fromImage("snake.png"), points);
  *  ```
  *
  * @class
@@ -26,22 +25,9 @@ export default class Rope extends Mesh
     {
         super(texture);
 
-        /**
-         * Whether the rope is _vertical.
-         *
-         * @member {boolean}
-         * @private
+        /*
+         * @member {PIXI.Point[]} An array of points that determine the rope
          */
-        this._vertical = false;
-
-        /**
-         * An array of points that determine the rope
-         *
-         * @member {PIXI.Point[]}
-         * @private
-         */
-        this._points = null;
-
         this.points = points;
 
         /*
@@ -53,11 +39,6 @@ export default class Rope extends Mesh
          * @member {Float32Array} The WebGL Uvs of the rope.
          */
         this.uvs = new Float32Array(points.length * 4);
-
-        /*
-         * @member {Float32Array} An array containing the color components
-         */
-        this.colors = new Float32Array(points.length * 2);
 
         /*
          * @member {Uint16Array} An array containing the indices of the vertices
@@ -75,12 +56,12 @@ export default class Rope extends Mesh
     }
 
     /**
-     * Refreshes
+     * Refreshes both uvs and indices
      *
      */
-    _refresh()
+    _refreshUvs()
     {
-        const points = this._points;
+        const points = this.points;
 
         // if too little points, or texture hasn't got UVs set yet just move on.
         if (points.length < 1 || !this._texture._uvs)
@@ -93,87 +74,17 @@ export default class Rope extends Mesh
         {
             this.vertices = new Float32Array(points.length * 4);
             this.uvs = new Float32Array(points.length * 4);
-            this.colors = new Float32Array(points.length * 2);
             this.indices = new Uint16Array(points.length * 2);
         }
 
         const uvs = this.uvs;
 
         const indices = this.indices;
-        const colors = this.colors;
 
-        const texture = this._texture;
-
-        const trim = texture.trim;
-        const orig = texture.orig;
-        const anchor = this._anchor;
-
-        // calculate the space around pivot point.
-        this._pivotX = orig.width * anchor.x;
-        this._pivotY = orig.height * anchor.y;
-
-        if (this._vertical)
-        {
-            this._offsetHalf = -texture.frame.width / 2;
-
-            if (trim)
-            {
-                this._leftSpace = this._pivotX - trim.x;
-                this._rightSpace = trim.width - this._leftSpace;
-            }
-            else
-            {
-                this._leftSpace = this._pivotX;
-                this._rightSpace = orig.width - this._leftSpace;
-            }
-            this._topSpace = this._pivotY;
-            this._bottomSpace = orig.height - this._topSpace;
-
-            this._leftSpace += this._offsetHalf;
-            this._rightSpace += this._offsetHalf;
-        }
-        else
-        {
-            this._offsetHalf = texture.frame.height / 2;
-
-            this._leftSpace = this._pivotX;
-            this._rightSpace = orig.width - this._leftSpace;
-            if (trim)
-            {
-                this._topSpace = this._pivotY - trim.y;
-                this._bottomSpace = trim.height - this._topSpace;
-            }
-            else
-            {
-                this._topSpace = this._pivotY;
-                this._bottomSpace = orig.height - this._topSpace;
-            }
-
-            this._topSpace -= this._offsetHalf;
-            this._bottomSpace -= this._offsetHalf;
-        }
-
-        const textureUvs = texture._uvs;
-        // const offset = new core.Point(textureUvs.x0, textureUvs.y0);
-        // const factor = new core.Point(textureUvs.x2 - textureUvs.x0, Number(textureUvs.y2 - textureUvs.y0));
-        const offset = new core.Point(0, 0);
-        const factor = new core.Point(1, 1);
-
-        uvs[0] = 0 + offset.x;
-        uvs[1] = 0 + offset.y;
-        if (this._vertical)
-        {
-            uvs[2] = factor.x + offset.x;
-            uvs[3] = 0 + offset.y;
-        }
-        else
-        {
-            uvs[2] = 0 + offset.x;
-            uvs[3] = factor.y + offset.y;
-        }
-
-        colors[0] = 1;
-        colors[1] = 1;
+        uvs[0] = 0;
+        uvs[1] = 0;
+        uvs[2] = 0;
+        uvs[3] = 1;
 
         indices[0] = 0;
         indices[1] = 1;
@@ -186,24 +97,11 @@ export default class Rope extends Mesh
             let index = i * 4;
             const amount = i / (total - 1);
 
-            if (this._vertical)
-            {
-                uvs[index + 0] = 0 + offset.x;
-                uvs[index + 1] = (amount * factor.y) + offset.y;
-                uvs[index + 2] = factor.x + offset.x;
-                uvs[index + 3] = (amount * factor.y) + offset.y;
-            }
-            else
-            {
-                uvs[index + 0] = (amount * factor.x) + offset.x;
-                uvs[index + 1] = 0 + offset.y;
-                uvs[index + 2] = (amount * factor.x) + offset.x;
-                uvs[index + 3] = factor.y + offset.y;
-            }
+            uvs[index] = amount;
+            uvs[index + 1] = 0;
 
-            index = i * 2;
-            colors[index] = 1;
-            colors[index + 1] = 1;
+            uvs[index + 2] = amount;
+            uvs[index + 3] = 1;
 
             index = i * 2;
             indices[index] = index;
@@ -223,7 +121,7 @@ export default class Rope extends Mesh
      */
     refreshVertices()
     {
-        const points = this._points;
+        const points = this.points;
 
         if (points.length < 1)
         {
@@ -239,8 +137,6 @@ export default class Rope extends Mesh
 
         const vertices = this.vertices;
         const total = points.length;
-
-        const offsetHalf = this._offsetHalf;
 
         for (let i = 0; i < total; i++)
         {
@@ -259,27 +155,26 @@ export default class Rope extends Mesh
             perpY = -(nextPoint.x - lastPoint.x);
             perpX = nextPoint.y - lastPoint.y;
 
-            // let ratio = (1 - (i / (total - 1))) * 10;
+            let ratio = (1 - (i / (total - 1))) * 10;
 
-            // if (ratio > 1)
-            // {
-            //     ratio = 1;
-            // }
-
-            // const offsetHalf = (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
+            if (ratio > 1)
+            {
+                ratio = 1;
+            }
 
             const perpLength = Math.sqrt((perpX * perpX) + (perpY * perpY));
+            const num = this._texture.height / 2; // (20 + Math.abs(Math.sin((i + this.count) * 0.3) * 50) )* ratio;
 
             perpX /= perpLength;
             perpY /= perpLength;
 
-            perpX *= offsetHalf;
-            perpY *= offsetHalf;
+            perpX *= num;
+            perpY *= num;
 
-            vertices[index] = point.x + perpX - this._leftSpace;
-            vertices[index + 1] = point.y + perpY - this._topSpace;
-            vertices[index + 2] = point.x - perpX - this._leftSpace;
-            vertices[index + 3] = point.y - perpY - this._topSpace;
+            vertices[index] = point.x + perpX;
+            vertices[index + 1] = point.y + perpY;
+            vertices[index + 2] = point.x - perpX;
+            vertices[index + 3] = point.y - perpY;
 
             lastPoint = point;
         }
@@ -299,34 +194,4 @@ export default class Rope extends Mesh
         this.containerUpdateTransform();
     }
 
-    /**
-     * Get the array of {@link PIXI.Point} objects to construct this rope.
-     *
-     * @member {PIXI.Point[]}
-     */
-    get points()
-    {
-        return this._points;
-    }
-
-    /**
-     * Set the array of {@link PIXI.Point} objects to construct this rope.
-     *
-     * @param {PIXI.Point[]} value - The value to set to.
-     */
-    set points(value)
-    {
-        this._points = value;
-        if (!value || value.length < 2)
-        {
-            this._vertical = false;
-        }
-
-        const first = value[0];
-        const last = value[value.length - 1];
-        const dx = last.x - first.x;
-        const dy = last.y - first.y;
-
-        this._vertical = dx === 0 || Math.abs(dy / dx) > 1;
-    }
 }
