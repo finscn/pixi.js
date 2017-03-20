@@ -46,6 +46,12 @@ export default class NineSlicePlane extends Plane
     {
         super(texture, 4, 4);
 
+        this._lastWidth = null;
+        this._lastHeight = null;
+
+        this._width = texture.orig.width;
+        this._height = texture.orig.height;
+
         /**
          * The width of the left column (a)
          *
@@ -177,18 +183,23 @@ export default class NineSlicePlane extends Plane
 
         const vertices = this.vertices;
         const uvs = this.uvs;
-        const width = this.width;
-        const height = this.height;
         const offsetX = this._anchor._x * this.width;
         const offsetY = this._anchor._y * this.height;
 
-        for (let i = 0; i < 32; i += 2)
-        {
-            uvs[i] = vertices[i] / width;
-            uvs[i + 1] = vertices[i + 1] / height;
+        const verticesX = 4;
+        const verticesY = 4;
+        const total = verticesX * verticesY;
 
-            vertices[i] += offsetX;
-            vertices[i + 1] += offsetY;
+        const factorU = 1.0 / (verticesX - 1);
+        const factorV = 1.0 / (verticesY - 1);
+
+        for (let i = 0; i < total; ++i)
+        {
+            uvs[i * 2] = (i % verticesX) * factorU;
+            uvs[(i * 2) + 1] = ((i / verticesX) | 0) * factorV;
+
+            vertices[i * 2] += offsetX;
+            vertices[i * 2 + 1] += offsetY;
         }
         this.dirty++;
     }
