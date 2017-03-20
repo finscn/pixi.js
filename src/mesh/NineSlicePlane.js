@@ -182,24 +182,13 @@ export default class NineSlicePlane extends Plane
         this.updateVerticalVertices();
 
         const vertices = this.vertices;
-        const uvs = this.uvs;
         const offsetX = this._anchor._x * this.width;
         const offsetY = this._anchor._y * this.height;
 
-        const verticesX = 4;
-        const verticesY = 4;
-        const total = verticesX * verticesY;
-
-        const factorU = 1.0 / (verticesX - 1);
-        const factorV = 1.0 / (verticesY - 1);
-
-        for (let i = 0; i < total; ++i)
+        for (let i = 0; i < 32; i += 2)
         {
-            uvs[i * 2] = (i % verticesX) * factorU;
-            uvs[(i * 2) + 1] = ((i / verticesX) | 0) * factorV;
-
-            vertices[i * 2] += offsetX;
-            vertices[i * 2 + 1] += offsetY;
+            vertices[i] += offsetX;
+            vertices[i + 1] += offsetY;
         }
         this.dirty++;
     }
@@ -210,8 +199,27 @@ export default class NineSlicePlane extends Plane
      * @private
      */
     _refreshUvs()
-    { // eslint-disable-line
+    {
+        this._uvsID = this._lastUvsID;
 
+        const uvs = this.uvs;
+        const texture = this._texture;
+        const width = texture.orig.width;
+        const height = texture.orig.height;
+
+        uvs[0] = uvs[8] = uvs[16] = uvs[24] = 0;
+        uvs[2] = uvs[10] = uvs[18] = uvs[26] = this._leftWidth / width;
+        uvs[4] = uvs[12] = uvs[20] = uvs[28] = 1 - this._rightWidth / width;
+        uvs[6] = uvs[14] = uvs[22] = uvs[30] = 1;
+
+        uvs[1] = uvs[3] = uvs[5] = uvs[7] = 0;
+        uvs[9] = uvs[11] = uvs[13] = uvs[15] = this._topHeight / height;
+        uvs[17] = uvs[19] = uvs[21] = uvs[23] = 1 - this._bottomHeight / height;
+        uvs[25] = uvs[27] = uvs[29] = uvs[31] = 1;
+
+        this.dirty++;
+
+        this.multiplyUvs();
     }
 
     /**
@@ -242,6 +250,26 @@ export default class NineSlicePlane extends Plane
     }
 
     /**
+     * Renders the object using the WebGL renderer
+     *
+     * @private
+     * @param {PIXI.WebGLRenderer} renderer - a reference to the WebGL renderer
+     */
+    _renderWebGL(renderer)
+    {
+        // no texture - no drawImage
+        if (!this._texture.valid)
+        {
+            return;
+        }
+
+        this.refresh();
+
+        renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
+        renderer.plugins[this.pluginName].render(this);
+    }
+
+    /**
      * Renders the object using the Canvas renderer
      *
      * @private
@@ -254,6 +282,8 @@ export default class NineSlicePlane extends Plane
         {
             return;
         }
+
+        this.refresh();
 
         // advanced rendering - allow texture rotates
         if (this._texture.rotate)
