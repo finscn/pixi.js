@@ -203,7 +203,6 @@ export default class RenderContext
         }
 
         const renderer = this.renderer;
-
         const renderTextureChanged = renderTexture !== this._lastRenderTexture;
 
         if (renderTextureChanged)
