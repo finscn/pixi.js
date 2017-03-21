@@ -189,6 +189,12 @@ export default class RenderContext
         this.renderer.clearRenderTexture(renderTexture, clearColor);
     }
 
+    bindRenderTexture(renderTexture, transform)
+    {
+        this.renderer.bindRenderTexture(renderTexture, transform);
+        this._lastRenderTexture = renderTexture;
+    }
+
     renderCoreWebGL(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
