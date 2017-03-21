@@ -4,7 +4,7 @@ import * as mesh from '../mesh';
 const Texture = core.Texture;
 
 const Sprite = core.Sprite;
-const Rope = mesh.Rope;
+const RopeSprite = mesh.RopeSprite;
 const Plane = mesh.Plane;
 
 /**
@@ -583,19 +583,21 @@ export default class Animation
     }
 
     /**
-     * Create a Mesh Rope with animation
+     * Create a Rope Mesh with animation
      *
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {PIXI.Point[]} points - An array of {@link PIXI.Point} objects to construct this rope.
+     * @param {number} [verticesX=2] - How many vertices on diameter of the rope
+     * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
+     * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
      *
-     * @return {PIXI.mesh.Rope} a mesh rope with animation
+     * @return {PIXI.mesh.RopeSprite} a mesh rope with animation
      */
-    static createMeshRope(frames, duration, points)
+    static createRopeMesh(frames, duration, verticesX, verticesY, direction)
     {
-        const rope = new Rope(Texture.EMPTY, points);
+        const rope = new RopeSprite(Texture.EMPTY, verticesX, verticesY, direction);
 
         Animation.applyTo(rope);
         rope.initAnimation(frames, duration);
@@ -604,20 +606,21 @@ export default class Animation
     }
 
     /**
-     * Create a Mesh Plane with animation
+     * Create a Plane Mesh with animation
      *
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {number} verticesX - The number of vertices in the x-axis
-     * @param {number} verticesY - The number of vertices in the y-axis
+     * @param {number} [verticesX=2] - The number of vertices in the x-axis
+     * @param {number} [verticesY=2] - The number of vertices in the y-axis
+     * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
      *
      * @return {PIXI.mesh.Plane} a mesh plane with animation
      */
-    static createMeshPlane(frames, duration, verticesX, verticesY)
+    static createPlaneMesh(frames, duration, verticesX, verticesY, direction)
     {
-        const plane = new Plane(Texture.EMPTY, verticesX, verticesY);
+        const plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
 
         Animation.applyTo(plane);
         plane.initAnimation(frames, duration);

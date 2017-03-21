@@ -4,6 +4,8 @@ import { default as Mesh } from '../Mesh';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+const matrixIdentity = core.Matrix.IDENTITY;
+
 /**
  * WebGL renderer plugin for tiling sprites
  *
@@ -38,6 +40,9 @@ export default class MeshRenderer extends core.ObjectRenderer
         this.shader = new core.Shader(gl,
             readFileSync(join(__dirname, './mesh.vert'), 'utf8'),
             readFileSync(join(__dirname, './mesh.frag'), 'utf8'));
+        this.shaderTrim = new core.Shader(gl,
+            readFileSync(join(__dirname, './mesh.vert'), 'utf8'),
+            readFileSync(join(__dirname, './mesh_trim.frag'), 'utf8'));
     }
 
     /**
@@ -63,7 +68,6 @@ export default class MeshRenderer extends core.ObjectRenderer
             renderer.bindVao(null);
 
             glData = {
-                shader: this.shader,
                 vertexBuffer: glCore.GLBuffer.createVertexBuffer(gl, mesh.vertices, gl.STREAM_DRAW),
                 uvBuffer: glCore.GLBuffer.createVertexBuffer(gl, mesh.uvs, gl.STREAM_DRAW),
                 indexBuffer: glCore.GLBuffer.createIndexBuffer(gl, mesh.indices, gl.STATIC_DRAW),
@@ -76,8 +80,8 @@ export default class MeshRenderer extends core.ObjectRenderer
             // build the vao object that will render..
             glData.vao = new glCore.VertexArrayObject(gl)
                 .addIndex(glData.indexBuffer)
-                .addAttribute(glData.vertexBuffer, glData.shader.attributes.aVertexPosition, gl.FLOAT, false, 2 * 4, 0)
-                .addAttribute(glData.uvBuffer, glData.shader.attributes.aTextureCoord, gl.FLOAT, false, 2 * 4, 0);
+                .addAttribute(glData.vertexBuffer, this.shader.attributes.aVertexPosition, gl.FLOAT, false, 2 * 4, 0)
+                .addAttribute(glData.uvBuffer, this.shader.attributes.aTextureCoord, gl.FLOAT, false, 2 * 4, 0);
 
             mesh._glDatas[renderer.CONTEXT_UID] = glData;
         }
@@ -98,15 +102,34 @@ export default class MeshRenderer extends core.ObjectRenderer
 
         glData.vertexBuffer.upload(mesh.vertices);
 
-        renderer.bindShader(glData.shader);
+        const isTrimmed = texture.trim && (texture.trim.width < texture.orig.width
+            || texture.trim.height < texture.orig.height);
+        const shader = isTrimmed ? this.shaderTrim : this.shader;
 
-        glData.shader.uniforms.uSampler = renderer.bindTexture(texture);
+        renderer.bindShader(shader);
+
+        shader.uniforms.uSampler = renderer.bindTexture(texture);
 
         renderer.state.setBlendMode(mesh.blendMode);
 
-        glData.shader.uniforms.translationMatrix = mesh.worldTransform.toArray(true);
-        glData.shader.uniforms.alpha = mesh.worldAlpha;
-        glData.shader.uniforms.tint = mesh.tintRgb;
+        if (shader.uniforms.uTransform)
+        {
+            if (mesh.uploadUvTransform)
+            {
+                shader.uniforms.uTransform = mesh._uvTransform.mapCoord.toArray(true);
+            }
+            else
+            {
+                shader.uniforms.uTransform = matrixIdentity.toArray(true);
+            }
+        }
+        if (isTrimmed)
+        {
+            shader.uniforms.uClampFrame = mesh._uvTransform.uClampFrame;
+        }
+        shader.uniforms.translationMatrix = mesh.worldTransform.toArray(true);
+        shader.uniforms.alpha = mesh.worldAlpha;
+        shader.uniforms.tint = mesh.tintRgb;
 
         const drawMode = mesh.drawMode === Mesh.DRAW_MODES.TRIANGLE_MESH ? gl.TRIANGLE_STRIP : gl.TRIANGLES;
 
