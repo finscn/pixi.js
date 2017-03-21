@@ -218,6 +218,7 @@ export default class RenderContext
         const renderer = this.renderer;
         const renderTextureChanged = renderTexture !== this._lastRenderTexture;
 
+        // if (renderTextureChanged && !renderTexture)
         if (renderTextureChanged)
         {
             renderer.currentRenderer.flush();
@@ -227,6 +228,7 @@ export default class RenderContext
 
         // can be handy to know!
         renderer.renderingToScreen = !renderTexture;
+        // renderer._nextTextureLocation = 0;
 
         if (renderer.renderingToScreen)
         {
