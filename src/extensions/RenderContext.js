@@ -151,6 +151,12 @@ export default class RenderContext
 
     begin(clear)
     {
+        if (!this._renderingToScreen)
+        {
+            this.renderer.bindRenderTexture();
+            this._renderingToScreen = true;
+        }
+
         if (clear)
         {
             this.clear();
@@ -305,10 +311,6 @@ export default class RenderContext
             if (renderer.textureGC)
             {
                 renderer.textureGC.update();
-            }
-            if (!this._renderingToScreen)
-            {
-                this.renderer.bindRenderTexture();
             }
         }
         renderer.emit('postrender');
