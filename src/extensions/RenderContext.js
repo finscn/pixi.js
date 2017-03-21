@@ -84,6 +84,7 @@ export default class RenderContext
     {
         this._renderCore = this.renderCore;
         this._lastRenderTexture = null;
+        this._renderingToScreen = true;
 
         this._lastTransformSN = -1;
         this._transformSN = 1;
@@ -215,7 +216,7 @@ export default class RenderContext
         {
             renderer.currentRenderer.flush();
 
-            // this.emit('postrender');
+            // renderer.emit('postrender');
         }
 
         // can be handy to know!
@@ -256,6 +257,7 @@ export default class RenderContext
         displayObject.renderWebGL(renderer);
 
         this._lastRenderTexture = renderTexture;
+        this._renderingToScreen = renderer.renderingToScreen;
 
         // apply transform..
         // if (!batched)
@@ -303,6 +305,10 @@ export default class RenderContext
             if (renderer.textureGC)
             {
                 renderer.textureGC.update();
+            }
+            if (!this._renderingToScreen)
+            {
+                this.renderer.bindRenderTexture();
             }
         }
         renderer.emit('postrender');
