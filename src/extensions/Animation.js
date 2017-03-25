@@ -4,7 +4,7 @@ import * as mesh from '../mesh';
 const Texture = core.Texture;
 
 const Sprite = core.Sprite;
-const RopeSprite = mesh.RopeSprite;
+const Rope = mesh.Rope;
 const Plane = mesh.Plane;
 
 /**
@@ -593,11 +593,11 @@ export default class Animation
      * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
      * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
      *
-     * @return {PIXI.mesh.RopeSprite} a mesh rope with animation
+     * @return {PIXI.mesh.Rope} a mesh rope with animation
      */
     static createRopeMesh(frames, duration, verticesX, verticesY, direction)
     {
-        const rope = new RopeSprite(Texture.EMPTY, verticesX, verticesY, direction);
+        const rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
 
         Animation.applyTo(rope);
         rope.initAnimation(frames, duration);
