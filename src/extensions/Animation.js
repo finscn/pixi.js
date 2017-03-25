@@ -355,6 +355,7 @@ export default class Animation
 
         this.currentTexture = frame.texture;
 
+        // TODO
         if (frame.pivot)
         {
             const pivot = frame.pivot;
@@ -525,7 +526,7 @@ export default class Animation
     /**
      * Mixin properties of Animation to a display object , let it become a animation object
      *
-     *@param {PIXI.Sprite|PIXI.mesh.Rope} displayObject - the object to apply
+     *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
      */
     static applyTo(displayObject)
     {
