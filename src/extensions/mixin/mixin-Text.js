@@ -2,6 +2,7 @@ import * as core from '../../core';
 
 const Sprite = core.Sprite;
 const Text = core.Text;
+const TextMetrics = core.TextMetrics;
 
 /**
  * Renders simple text and updates it without some computations
@@ -52,7 +53,7 @@ Text.prototype.updateTextFast = function (recompute)
     if (!this._linePositionY || recompute)
     {
         // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
-        const fontProperties = Text.calculateFontProperties(this._font);
+        const fontProperties = TextMetrics.measureFont(this._font);
 
         linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding;
         this._linePositionY = linePositionY;
