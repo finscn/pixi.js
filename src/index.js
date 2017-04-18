@@ -44,15 +44,6 @@ export {
 // load extensions
 import * as extensions from './extensions';
 const ext = extensions;
-
-for (const key in ext.filters)
-{
-    filters[key] = ext.filters[key];
-}
-const renderers = ext.renderers;
-const DisplayPoint = renderers.DisplayPoint;
-const DisplayPointGroup = renderers.DisplayPointGroup;
-const lights = ext.lights;
 const Matrix3 = ext.Matrix3;
 const SimpleContainer = ext.SimpleContainer;
 const SimpleParticleContainer = ext.SimpleParticleContainer;
@@ -61,12 +52,20 @@ const Animation = ext.Animation;
 const SpriteTrail = ext.SpriteTrail;
 const RenderContext = ext.RenderContext;
 
+import * as morefilters from './morefilters';
+for (const key in morefilters)
+{
+    filters[key] = morefilters[key];
+}
+
+import * as morerenderers from './morerenderers';
+const renderers = morerenderers || {};
+const lights = renderers.lights;
+const DisplayPoint = renderers.DisplayPoint;
+const DisplayPointGroup = renderers.DisplayPointGroup;
+
 export {
     extensions,
-    renderers,
-    lights,
-    DisplayPoint,
-    DisplayPointGroup,
     Matrix3,
     SimpleContainer,
     SimpleParticleContainer,
@@ -74,6 +73,11 @@ export {
     Animation,
     SpriteTrail,
     RenderContext,
+
+    renderers,
+    lights,
+    DisplayPoint,
+    DisplayPointGroup,
 };
 
 // Always export pixi globally.

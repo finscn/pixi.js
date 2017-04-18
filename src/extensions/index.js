@@ -7,11 +7,5 @@ export { default as RenderContext } from './RenderContext';
 export { default as Animation } from './Animation';
 export { default as SpriteTrail } from './SpriteTrail';
 
-import * as filters from './filters';
-import * as renderers from './renderers';
-import * as lights from './renderers/light/lights';
-
 import './mixin';
 import './patch';
-
-export { filters, renderers, lights };
