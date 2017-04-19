@@ -2,10 +2,10 @@
 export * from './polyfill';
 
 // export core
-export * from './deprecation';
 export * from './core';
 
 // export libs
+import deprecation from './deprecation';
 import * as accessibility from './accessibility';
 import * as extract from './extract';
 import * as extras from './extras';
@@ -40,6 +40,12 @@ export {
     prepare,
     loader,
 };
+
+// Apply the deprecations
+if (typeof deprecation === 'function')
+{
+    deprecation(exports);
+}
 
 // load extensions
 import * as extensions from './extensions';
@@ -82,3 +88,4 @@ export {
 
 // Always export pixi globally.
 global.PIXI = exports; // eslint-disable-line
+
