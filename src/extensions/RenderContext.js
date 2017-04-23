@@ -1,6 +1,7 @@
 import * as core from '../core';
 import * as mesh from '../mesh';
 import * as particles from '../particles';
+import CanvasRenderTarget from '../core/renderers/canvas/utils/CanvasRenderTarget';
 import { RENDERER_TYPE, BLEND_MODES } from '../core/const';
 
 const BaseTexture = core.BaseTexture;
@@ -316,12 +317,83 @@ export default class RenderContext
         {
             return;
         }
+
+        // can be handy to know!
+        renderer.renderingToScreen = !renderTexture;
+
+        const rootResolution = renderer.resolution;
+
+        if (renderTexture)
+        {
+            renderTexture = renderTexture.baseTexture || renderTexture;
+
+            if (!renderTexture._canvasRenderTarget)
+            {
+                renderTexture._canvasRenderTarget = new CanvasRenderTarget(
+                    renderTexture.width,
+                    renderTexture.height,
+                    renderTexture.resolution
+                );
+                renderTexture.source = renderTexture._canvasRenderTarget.canvas;
+                renderTexture.valid = true;
+            }
+
+            renderer.context = renderTexture._canvasRenderTarget.context;
+            renderer.resolution = renderTexture._canvasRenderTarget.resolution;
+        }
+        else
+        {
+            renderer.context = renderer.rootContext;
+        }
+
+        const context = renderer.context;
+
+        if (!renderTexture)
+        {
+            renderer._lastObjectRendered = displayObject;
+        }
+
         if (!skipUpdateTransform)
         {
             displayObject.updateTransformWithParent();
         }
 
-        renderer.render(displayObject, renderTexture, clear, null, true);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.globalAlpha = 1;
+        context.globalCompositeOperation = renderer.blendModes[BLEND_MODES.NORMAL];
+
+        if (navigator.isCocoonJS && renderer.view.screencanvas)
+        {
+            context.fillStyle = 'black';
+            context.clear();
+        }
+
+        if (clear)
+        {
+            if (renderer.renderingToScreen)
+            {
+                if (renderer.transparent)
+                {
+                    context.clearRect(0, 0, renderer.width, renderer.height);
+                }
+                else
+                {
+                    context.fillStyle = renderer._backgroundColorString;
+                    context.fillRect(0, 0, renderer.width, renderer.height);
+                }
+            } // else {
+            // TODO: implement background for CanvasRenderTarget or RenderTexture?
+            // }
+        }
+
+        // TODO RENDER TARGET STUFF HERE..
+        const tempContext = renderer.context;
+
+        renderer.context = context;
+        displayObject.renderCanvas(renderer);
+        renderer.context = tempContext;
+
+        renderer.resolution = rootResolution;
     }
 
     endCanvas()
