@@ -21,7 +21,10 @@ export default class RenderContext
 
         this.canvas = renderer.view;
         this.webgl = renderer.type === RENDERER_TYPE.WEBGL;
-        this.renderCore = this.webgl ? this.renderCoreWebGL : this.renderCanvasCore;
+
+        this.begin = this.webgl ? this.beginWebGL : this.beginCanvas;
+        this.renderCore = this.webgl ? this.renderCoreWebGL : this.renderCoreCanvas;
+        this.end = this.webgl ? this.endWebGL : this.endCanvas;
 
         this.initBlendModes();
 
@@ -149,7 +152,7 @@ export default class RenderContext
      *
      **/
 
-    begin(clear)
+    beginWebGL(clear)
     {
         if (!this._renderingToScreen)
         {
@@ -185,22 +188,6 @@ export default class RenderContext
         // {
         renderer.currentRenderer.start();
         // }
-    }
-
-    clear(clearColor)
-    {
-        this.renderer.clear(clearColor);
-    }
-
-    clearRenderTexture(renderTexture, clearColor)
-    {
-        this.renderer.clearRenderTexture(renderTexture, clearColor);
-    }
-
-    bindRenderTexture(renderTexture, transform)
-    {
-        this.renderer.bindRenderTexture(renderTexture, transform);
-        this._lastRenderTexture = renderTexture;
     }
 
     renderCoreWebGL(displayObject, renderTexture, clear, skipUpdateTransform)
@@ -275,33 +262,7 @@ export default class RenderContext
         // }
     }
 
-    renderCoreCanvas(displayObject, renderTexture, clear, skipUpdateTransform)
-    {
-        if (this.blend !== null)
-        {
-            // TODO
-            // displayObject.blendMode = this.blend;
-        }
-
-        const renderer = this.renderer;
-
-        if (!renderer.view)
-        {
-            return;
-        }
-        if (!skipUpdateTransform)
-        {
-            displayObject.updateTransformWithParent();
-        }
-        renderer.render(displayObject, renderTexture, clear, null, skipUpdateTransform);
-    }
-
-    flush()
-    {
-        this.renderer.currentRenderer.flush();
-    }
-
-    end()
+    endWebGL()
     {
         const renderer = this.renderer;
 
@@ -323,6 +284,75 @@ export default class RenderContext
             }
         }
         renderer.emit('postrender');
+    }
+
+    beginCanvas(clear)
+    {
+        this._renderingToScreen = true;
+        if (clear)
+        {
+            this.clear();
+        }
+
+        this.mask = null;
+        this.renderTexture = null;
+
+        const renderer = this.renderer;
+
+        renderer.emit('prerender');
+    }
+
+    renderCoreCanvas(displayObject, renderTexture, clear, skipUpdateTransform)
+    {
+        if (this.blend !== null)
+        {
+            // TODO
+            // displayObject.blendMode = this.blend;
+        }
+
+        const renderer = this.renderer;
+
+        if (!renderer.view)
+        {
+            return;
+        }
+        if (!skipUpdateTransform)
+        {
+            displayObject.updateTransformWithParent();
+        }
+
+        renderer.render(displayObject, renderTexture, clear, null, true);
+    }
+
+    endCanvas()
+    {
+        const renderer = this.renderer;
+
+        renderer.emit('postrender');
+    }
+
+    flush()
+    {
+        if (this.renderer.currentRenderer)
+        {
+            this.renderer.currentRenderer.flush();
+        }
+    }
+
+    clear(clearColor)
+    {
+        this.renderer.clear(clearColor);
+    }
+
+    clearRenderTexture(renderTexture, clearColor)
+    {
+        this.renderer.clearRenderTexture(renderTexture, clearColor);
+    }
+
+    bindRenderTexture(renderTexture, transform)
+    {
+        this.renderer.bindRenderTexture(renderTexture, transform);
+        this._lastRenderTexture = renderTexture;
     }
 
     /**
