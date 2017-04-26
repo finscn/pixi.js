@@ -104,15 +104,15 @@ export default class RenderContext
 
         this.root = this.root || new Container();
 
+        this.globalContainer = new Container();
+        this.globalContainer.visible = false;
+        this.root.addChild(this.globalContainer);
+
         this.maskContainer = new Container();
         this.maskContainer.visible = false;
         this.root.addChild(this.maskContainer);
         this.maskShape = new Graphics();
         this.maskContainer.addChild(this.maskShape);
-
-        this.globalContainer = new Container();
-        this.globalContainer.visible = false;
-        this.root.addChild(this.globalContainer);
 
         this.resetGlobalContainer(false);
     }
@@ -709,6 +709,7 @@ export default class RenderContext
         const dx = x - t.originX;
         const dy = y - t.originY;
 
+        this.maskContainer.updateTransform();
         this.maskShape.clear();
         this.maskShape.updateTransform();
         this.maskShape.beginFill(0x000000);
