@@ -7,6 +7,5 @@ import './mixin-DisplayObject';
 import './mixin-Container';
 import './mixin-Sprite';
 import './mixin-Mesh';
-import './mixin-AnimatedSprite';
 import './mixin-Text';
 import './mixin-utils';
