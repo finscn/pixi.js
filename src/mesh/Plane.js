@@ -49,6 +49,11 @@ export default class Plane extends Mesh
 
         this._lastDimensionsID = -1;
 
+        /*
+         * @member {Float32Array} Generated vertices positions, useful as starting position for vertices
+         */
+        this.calculatedVertices = null;
+
         /**
          *  Version counter for vertices updates
          *
