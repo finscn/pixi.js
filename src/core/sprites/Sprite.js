@@ -492,6 +492,16 @@ export default class Sprite extends Container
     }
 
     /**
+     * Update texture if the content of texture has changed.
+     * e.g. If texture is based on a canvas , and after the canvas changed, please call this method.
+     */
+    updateTexture()
+    {
+        this._onTextureUpdate();
+        this._texture.baseTexture.emit('update', texture.baseTexture);
+    }
+
+    /**
      * The width of the texture's real size
      *
      * @member {number}
@@ -508,8 +518,22 @@ export default class Sprite extends Container
         return texture.orig.width;
     }
 
+    set textureWidth(value)  // eslint-disable-line require-jsdoc
+    {
+        const texture = this._texture;
+
+        if (texture.trim)
+        {
+            texture.trim.width = value;
+        }
+        else
+        {
+            texture.orig.width = value;
+        }
+    }
+
     /**
-     * The height of the texture's real size
+     * Set the height of the texture's real size
      *
      * @member {number}
      */
@@ -523,6 +547,20 @@ export default class Sprite extends Container
         }
 
         return texture.orig.height;
+    }
+
+    set textureHeight(value)  // eslint-disable-line require-jsdoc
+    {
+        const texture = this._texture;
+
+        if (texture.trim)
+        {
+            texture.trim.height = value;
+        }
+        else
+        {
+            texture.orig.height = value;
+        }
     }
 
     /**
