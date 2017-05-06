@@ -497,8 +497,11 @@ export default class Sprite extends Container
      */
     updateTexture()
     {
+        const baseTexture = this._texture.baseTexture;
+
         this._onTextureUpdate();
-        this._texture.baseTexture.emit('update', texture.baseTexture);
+
+        baseTexture.emit('update', baseTexture);
     }
 
     /**
