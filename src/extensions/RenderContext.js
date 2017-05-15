@@ -741,34 +741,38 @@ export default class RenderContext
     {
         const shape = this.shape;
 
+        alpha = alpha === 0 || alpha ? alpha : 1;
+
         shape.clear();
-        shape.beginFill(color || 0x000000, alpha !== undefined ? alpha : 0);
+        shape.beginFill(color || 0x000000, alpha);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
         this.renderCore(shape, undefined, false, false);
     }
 
-    strokeRect(x, y, width, height, color, lineWidth)
+    strokeRect(x, y, width, height, lineWidth, color, alpha)
     {
         const shape = this.shape;
 
-        color = color || color === 0 ? color : this.strokeStyle;
         lineWidth = lineWidth || this.lineWidth;
+        color = color || color === 0 ? color : this.strokeStyle;
+        alpha = alpha === 0 || alpha ? alpha : 1;
 
         shape.clear();
-        shape.lineStyle(lineWidth, color);
+        shape.lineStyle(lineWidth, color, alpha);
         this.drawShapeRect(shape, x, y, width, height);
         this.renderCore(shape, undefined, false, false);
     }
 
-    fillRect(x, y, width, height, color)
+    fillRect(x, y, width, height, color, alpha)
     {
         const shape = this.shape;
 
         color = color || color === 0 ? color : this.fillStyle;
+        alpha = alpha === 0 || alpha ? alpha : 1;
 
         shape.clear();
-        shape.beginFill(color);
+        shape.beginFill(color, alpha);
         this.drawShapeRect(shape, x, y, width, height);
         shape.endFill();
         this.renderCore(shape, undefined, false, false);
@@ -787,22 +791,26 @@ export default class RenderContext
         shape.drawRect(dx, dy, width, height);
     }
 
-    strokeCircle(x, y, radius, color, lineWidth)
+    strokeCircle(x, y, radius, lineWidth, color, alpha)
     {
         const shape = this.shape;
 
+        alpha = alpha === 0 || alpha ? alpha : 1;
+
         shape.clear();
-        shape.lineStyle(lineWidth, color);
+        shape.lineStyle(lineWidth, color, alpha);
         this.drawShapeCircle(shape, x, y, radius);
         this.renderCore(shape, undefined, false, false);
     }
 
-    fillCircle(x, y, radius, color)
+    fillCircle(x, y, radius, color, alpha)
     {
         const shape = this.shape;
 
+        alpha = alpha === 0 || alpha ? alpha : 1;
+
         shape.clear();
-        shape.beginFill(color);
+        shape.beginFill(color, alpha || 1);
         this.drawShapeCircle(shape, x, y, radius);
         shape.endFill();
         this.renderCore(shape, undefined, false, false);
@@ -820,22 +828,26 @@ export default class RenderContext
         shape.drawCircle(dx, dy, radius);
     }
 
-    strokeArc(x, y, radius, startAngle, endAngle, anticlockwise, color, lineWidth)
+    strokeArc(x, y, radius, startAngle, endAngle, anticlockwise, lineWidth, color, alpha)
     {
         const shape = this.shape;
 
+        alpha = alpha === 0 || alpha ? alpha : 1;
+
         shape.clear();
-        shape.lineStyle(lineWidth, color);
+        shape.lineStyle(lineWidth, color, alpha);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
         this.renderCore(shape, undefined, false, false);
     }
 
-    fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color)
+    fillArc(x, y, radius, startAngle, endAngle, anticlockwise, color, alpha)
     {
         const shape = this.shape;
 
+        alpha = alpha === 0 || alpha ? alpha : 1;
+
         shape.clear();
-        shape.beginFill(color);
+        shape.beginFill(color, alpha);
         this.drawShapeArc(shape, x, y, radius, startAngle, endAngle, anticlockwise);
         shape.endFill();
         this.renderCore(shape, undefined, false, false);
@@ -853,7 +865,7 @@ export default class RenderContext
         shape.arc(dx, dy, radius, startAngle, endAngle, anticlockwise);
     }
 
-    strokeText(text, x, y, color, lineWidth, style)
+    strokeText(text, x, y, lineWidth, color, style)
     {
         style = style || {};
         style.stroke = color || style.stroke;
