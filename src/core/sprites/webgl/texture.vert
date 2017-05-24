@@ -1,5 +1,4 @@
 precision highp float;
-
 attribute vec2 aVertexPosition;
 attribute vec2 aTextureCoord;
 attribute vec4 aColor;
@@ -17,5 +16,6 @@ void main(void){
 
     vTextureCoord = aTextureCoord;
     vTextureId = aTextureId;
-    vColor = vec4(aColor.rgb * aTintScale * aColor.a, aColor.a);
+    vColor = aColor;
+    vColor = vec4(aColor.rgb * aTintScale, aColor.a);
 }
