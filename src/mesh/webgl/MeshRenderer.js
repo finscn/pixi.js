@@ -71,7 +71,6 @@ export default class MeshRenderer extends core.ObjectRenderer
             renderer.bindVao(null);
 
             glData = {
-                shader,
                 vertexBuffer: glCore.GLBuffer.createVertexBuffer(gl, mesh.vertices, gl.STREAM_DRAW),
                 uvBuffer: glCore.GLBuffer.createVertexBuffer(gl, mesh.uvs, gl.STREAM_DRAW),
                 indexBuffer: glCore.GLBuffer.createIndexBuffer(gl, mesh.indices, gl.STATIC_DRAW),
