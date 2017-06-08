@@ -89,6 +89,13 @@ export default class Animation
          */
         this.onFrameChange = null;
 
+         /**
+         * Function to call when 'loop' is true, and an AnimatedSprite is played and loops around to start again
+         *
+         * @member {Function}
+         */
+        this.onLoop = null;
+
         /**
          * Elapsed time since animation has been started, used internally to display current texture
          *
@@ -276,6 +283,10 @@ export default class Animation
                     {
                         time += duration;
                         index = this._maxIndex;
+                        if (this.onLoop)
+                        {
+                            this.onLoop();
+                        }
                         continue;
                     }
                     completed = true;
@@ -298,6 +309,10 @@ export default class Animation
                 {
                     time -= duration;
                     index = this._minIndex;
+                    if (this.onLoop)
+                    {
+                        this.onLoop();
+                    }
                     continue;
                 }
                 completed = true;
