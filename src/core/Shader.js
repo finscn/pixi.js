@@ -36,7 +36,7 @@ export default class Shader extends GLShader
 
     /**
      *
-     * @param {WebGLRenderingContext} gl - The current WebGL rendering context.
+     * @param {WebGLRenderingContext} gl - The current WebGL rendering context
      * @param {string|string[]} vertexSrc - The vertex shader source as an array of strings.
      * @param {string|string[]} fragmentSrc - The fragment shader source as an array of strings.
      * @param {string} precision - The float precision of the shader. Options are 'lowp', 'mediump' or 'highp'.
