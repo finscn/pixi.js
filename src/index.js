@@ -86,6 +86,6 @@ export {
     DisplayPointGroup,
 };
 
-// Always export pixi globally.
+// Always export PixiJS globally.
 global.PIXI = exports; // eslint-disable-line
 
