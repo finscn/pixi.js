@@ -49,6 +49,8 @@ export default class FilterManager extends WebGLManager
         this.pool = {};
 
         this.filterData = null;
+
+        this.managedFilters = [];
     }
 
     /**
@@ -232,6 +234,8 @@ export default class FilterManager extends WebGLManager
                 shader = filter.glShaders[renderer.CONTEXT_UID] = new Shader(this.gl, filter.vertexSrc, filter.fragmentSrc);
             }
 
+            this.managedFilters.push(filter);
+
             // TODO - this only needs to be done once?
             renderer.bindVao(null);
 
@@ -327,7 +331,7 @@ export default class FilterManager extends WebGLManager
         // TODO Cacheing layer..
         for (const i in uniformData)
         {
-            const type = uniformData[i].type.toLowerCase();
+            const type = uniformData[i].type;
 
             if (type === 'sampler2d' && uniforms[i] !== 0)
             {
@@ -488,11 +492,32 @@ export default class FilterManager extends WebGLManager
     /**
      * Destroys this Filter Manager.
      *
+     * @param {boolean} [contextLost=false] context was lost, do not free shaders
+     *
      */
-    destroy()
+    destroy(contextLost = false)
     {
+        const renderer = this.renderer;
+        const filters = this.managedFilters;
+
+        for (let i = 0; i < filters.length; i++)
+        {
+            if (!contextLost)
+            {
+                filters[i].glShaders[renderer.CONTEXT_UID].destroy();
+            }
+            delete filters[i].glShaders[renderer.CONTEXT_UID];
+        }
+
         this.shaderCache = {};
-        this.emptyPool();
+        if (!contextLost)
+        {
+            this.emptyPool();
+        }
+        else
+        {
+            this.pool = {};
+        }
     }
 
     /**
