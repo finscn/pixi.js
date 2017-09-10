@@ -191,6 +191,9 @@ export default class RenderContext
         // }
     }
 
+    // renderTexture: undefined
+    // clear: false
+    // skipUpdateTransform: false
     renderCoreWebGL(displayObject, renderTexture, clear, skipUpdateTransform)
     {
         if (this.blend !== null)
@@ -903,25 +906,6 @@ export default class RenderContext
         this.renderer.flush();
     }
 
-    drawDisplayObject(displayObject, dx, dy, dw, dh)
-    {
-        if (arguments.length === 5)
-        {
-            displayObject.width = dw;
-            displayObject.height = dh;
-            this.renderAt(displayObject, dx, dy);
-        }
-        else
-        {
-            this.renderAt(displayObject, dx, dy);
-        }
-    }
-
-    drawDisplayObjectAt(displayObject, dx, dy)
-    {
-        this.renderAt(displayObject, dx, dy);
-    }
-
     drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh)
     {
         const count = arguments.length;
@@ -957,6 +941,20 @@ export default class RenderContext
 
         this.renderAt(sprite, dx, dy);
         this.unlinkDisplayObject(sprite);
+    }
+
+    drawDisplayObject(displayObject, dx, dy, dw, dh)
+    {
+        if (arguments.length === 5)
+        {
+            displayObject.width = dw;
+            displayObject.height = dh;
+            this.renderAt(displayObject, dx, dy, undefined, false, false);
+        }
+        else
+        {
+            this.renderAt(displayObject, dx, dy, undefined, false, false);
+        }
     }
 
     /**
