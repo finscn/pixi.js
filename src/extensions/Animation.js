@@ -393,8 +393,9 @@ export default class Animation
      */
     updateTexture()
     {
-        this._host._textureID = -1;
         this._host._texture = this.currentTexture;
+        this._host._textureID = -1;
+        this._host.cachedTint = 0xFFFFFF;
 
         // // TODO: `refresh` is hard code , not good enough.
         // if (this._host.refresh)
