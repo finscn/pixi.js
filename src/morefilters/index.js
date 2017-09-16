@@ -3,7 +3,6 @@
  */
 export { default as BloomFilter } from './bloom/BloomFilter';
 export { default as BloomBrightnessFilter } from './bloom/BloomBrightnessFilter';
-export { default as OutlineFilter } from './outline/OutlineFilter';
 export { default as ShockwaveFilter } from './shockwave/ShockwaveFilter';
 export { default as ZoomBlurFilter } from './zoomblur/ZoomBlurFilter';
 export { default as PerspectiveFilter } from './perspective/PerspectiveFilter';
