@@ -31,7 +31,7 @@ export default class Mesh extends core.Container
          */
         this._texture = texture;
 
-        if (!texture.baseTexture.hasLoaded)
+        if (texture && !texture.baseTexture.hasLoaded)
         {
             texture.once('update', this._onTextureUpdate, this);
         }
