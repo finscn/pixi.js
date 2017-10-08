@@ -213,7 +213,7 @@ export default class Animation
     {
         if (frameIndex !== this.currentIndex)
         {
-            this.changeFrame(frameIndex);
+            this.changeFrame(frameIndex, this.currentIndex);
         }
         this.currentTime = this.currentFrame._startTime;
         this.play();
@@ -230,7 +230,7 @@ export default class Animation
 
         if (frameIndex !== this.currentIndex)
         {
-            this.changeFrame(frameIndex);
+            this.changeFrame(frameIndex, this.currentIndex);
         }
         this.currentTime = this.currentFrame._startTime;
     }
@@ -265,9 +265,9 @@ export default class Animation
         const duration = this.duration;
         const frames = this._frames;
 
-        let index = this.currentIndex;
-        const lastIndex = index;
         let frame;
+        let index = this.currentIndex;
+        const prevIndex = index;
 
         let completed = false;
 
@@ -327,9 +327,9 @@ export default class Animation
         {
             this.playing = false;
 
-            if (lastIndex !== this.completeIndex)
+            if (prevIndex !== this.completeIndex)
             {
-                this.changeFrame(this.completeIndex);
+                this.changeFrame(this.completeIndex, prevIndex);
                 this.currentTime = this.currentFrame._startTime;
             }
             if (this.onComplete)
@@ -340,9 +340,9 @@ export default class Animation
             return;
         }
 
-        if (lastIndex !== index)
+        if (prevIndex !== index)
         {
-            this.changeFrame(index);
+            this.changeFrame(index, prevIndex);
 
             // TODO: Whether snap currentTime to frame ?
             // if (!skipFrame)
@@ -360,14 +360,16 @@ export default class Animation
      * Function to call when a Animation changes which texture is being rendered
      *
      * @param {number} frameIndex - new frame index
+     * @param {number} prevIndex - previous frame index
      * @private
      */
-    changeFrame(frameIndex)
+    changeFrame(frameIndex, prevIndex)
     {
         this.currentIndex = frameIndex;
 
-        const frame = this.currentFrame = this._frames[frameIndex];
+        const frame = this.getNextFrame(frameIndex, prevIndex);
 
+        this.currentFrame = frame;
         this.currentTexture = frame.texture;
 
         // TODO
@@ -384,6 +386,20 @@ export default class Animation
         {
             this.onFrameChange(frameIndex, frame);
         }
+    }
+
+    /**
+     * Get next frame.
+     * User could OVERRIDE this method to implement custom animation order.
+     *
+     * @param {number} frameIndex - new frame index
+     * @param {number} prevIndex - previous frame index
+     * @return {FrameObject} The next frame object in animation
+     * @private
+     */
+    getNextFrame(frameIndex, prevIndex) // eslint-disable-line no-unused-vars
+    {
+        return this._frames[frameIndex];
     }
 
     /**
@@ -512,7 +528,7 @@ export default class Animation
         this._host = host;
         this._bindName = bindName || 'anim';
         this._host[this._bindName] = this;
-        this.changeFrame(this._minIndex);
+        this.changeFrame(this._minIndex, null);
     }
 
     /**
@@ -557,6 +573,7 @@ export default class Animation
             'update',
             'updateByTime',
             'changeFrame',
+            'getNextFrame',
             'updateTexture',
             'getHost',
             'getFrames',
@@ -575,7 +592,7 @@ export default class Animation
             this._initAnimation(frames, duration);
             this._host = this;
             this._bindName = '_anim';
-            this.changeFrame(this._minIndex);
+            this.changeFrame(this._minIndex, null);
         };
     }
 
