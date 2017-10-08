@@ -1,6 +1,6 @@
 import * as core from '../../core';
 import { BLEND_MODES } from '../../core/const';
-import VoidFilter from '../../filters/void/VoidFilter';
+import AlphaFilter from '../../filters/alpha/AlphaFilter';
 import BlurXFilter from '../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../filters/blur/BlurYFilter';
 
@@ -16,7 +16,7 @@ export default class BloomFilter extends core.Filter
         this.quality = quality || 4;
         this.resolution = resolution || 1;
 
-        this.defaultFilter = new VoidFilter();
+        this.defaultFilter = new AlphaFilter();
         this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.sampleCount);
         this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.sampleCount);
         this.blurYFilter.blendMode = BLEND_MODES.SCREEN;

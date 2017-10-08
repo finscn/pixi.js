@@ -2,7 +2,6 @@ import * as core from '../../core';
 import ExtractBrightnessFilter from './ExtractBrightnessFilter';
 import BlurXFilter from '../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../filters/blur/BlurYFilter';
-import VoidFilter from '../../filters/void/VoidFilter';
 
 export default class BloomBrightnessFilter extends core.Filter
 {
@@ -56,7 +55,6 @@ export default class BloomBrightnessFilter extends core.Filter
         this.extractBrightnessFilter = new ExtractBrightnessFilter(this.minBright);
         this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.sampleCount);
         this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.sampleCount);
-        this.voidFilter = new VoidFilter();
     }
 
     apply(filterManager, input, output, clear, currentState)
