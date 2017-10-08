@@ -377,7 +377,7 @@ export default class Animation
         {
             const pivot = frame.pivot;
 
-            this._host.transform.pivot.set(pivot[0], pivot[1]);
+            this._target.transform.pivot.set(pivot[0], pivot[1]);
         }
 
         this.updateTexture();
@@ -409,17 +409,17 @@ export default class Animation
      */
     updateTexture()
     {
-        this._host._texture = this.currentTexture;
-        this._host._textureID = -1;
-        this._host.cachedTint = 0xFFFFFF;
+        this._target._texture = this.currentTexture;
+        this._target._textureID = -1;
+        this._target.cachedTint = 0xFFFFFF;
 
         // // TODO: `refresh` is hard code , not good enough.
-        // if (this._host.refresh)
+        // if (this._target.refresh)
         // {
-        //     this._host.refresh();
+        //     this._target.refresh();
         // }
 
-        this._host._onTextureUpdate();
+        this._target._onTextureUpdate();
     }
 
     /**
@@ -507,27 +507,27 @@ export default class Animation
     }
 
     /**
-     * Get the host of Animation
+     * Get the target of Animation
      *
-     * @return {PIXI.DisplayObject} The host of Animation
+     * @return {PIXI.DisplayObject} The target of Animation
      */
-    getHost()
+    getTarget()
     {
-        return this._host;
+        return this._target;
     }
 
     /**
      * Add the animation to a display object.
      *
-     * @param {PIXI.DisplayObject} host - The host of Animation
-     * @param {string} [bindName='anim'] - The property name of host for binding
+     * @param {PIXI.DisplayObject} target - The target of Animation
+     * @param {string} [bindName='anim'] - The property name of target for binding
      */
-    bind(host, bindName)
+    bind(target, bindName)
     {
         this.unbind();
-        this._host = host;
+        this._target = target;
         this._bindName = bindName || 'anim';
-        this._host[this._bindName] = this;
+        this._target[this._bindName] = this;
         this.changeFrame(this._minIndex, null);
     }
 
@@ -536,10 +536,10 @@ export default class Animation
      */
     unbind()
     {
-        if (this._host)
+        if (this._target)
         {
-            delete this._host[this._bindName];
-            this._host = null;
+            delete this._target[this._bindName];
+            this._target = null;
         }
     }
 
@@ -575,7 +575,7 @@ export default class Animation
             'changeFrame',
             'getNextFrame',
             'updateTexture',
-            'getHost',
+            'getTarget',
             'getFrames',
             'setFrames',
             'onFrameChange',
@@ -590,7 +590,7 @@ export default class Animation
         displayObject.initAnimation = function (frames, duration)
         {
             this._initAnimation(frames, duration);
-            this._host = this;
+            this._target = this;
             this._bindName = '_anim';
             this.changeFrame(this._minIndex, null);
         };
