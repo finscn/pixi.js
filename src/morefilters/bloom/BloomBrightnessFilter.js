@@ -6,7 +6,7 @@ import BlurYFilter from '../../filters/blur/BlurYFilter';
 export default class BloomBrightnessFilter extends core.Filter
 {
 
-    constructor(sampleCount, minBright, toneScale)
+    constructor(minBright, toneScale, strength, quality, resolution, kernelSize)
     {
         const vertSrc = [
             'attribute vec2 aVertexPosition;',
@@ -44,17 +44,17 @@ export default class BloomBrightnessFilter extends core.Filter
 
         this._quality = 0;
 
-        this.sampleCount = sampleCount || 9;
         this.minBright = minBright || 0.2;
         this.toneScale = toneScale || 0.8;
 
-        this.strength = 8;
-        this.quality = 4;
-        this.resolution = 1;
+        this.strength = strength || 8;
+        this.quality = quality || 4;
+        this.resolution = resolution || core.settings.RESOLUTION;
+        this.kernelSize = kernelSize || 5;
 
         this.extractBrightnessFilter = new ExtractBrightnessFilter(this.minBright);
-        this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.sampleCount);
-        this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.sampleCount);
+        this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.kernelSize);
+        this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.kernelSize);
     }
 
     apply(filterManager, input, output, clear, currentState)

@@ -1,7 +1,6 @@
 /**
  * @namespace PIXI.filters
  */
-export { default as BloomFilter } from './bloom/BloomFilter';
 export { default as BloomBrightnessFilter } from './bloom/BloomBrightnessFilter';
 export { default as ShockwaveFilter } from './shockwave/ShockwaveFilter';
 export { default as ZoomBlurFilter } from './zoomblur/ZoomBlurFilter';
