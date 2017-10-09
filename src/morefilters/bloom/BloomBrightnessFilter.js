@@ -47,7 +47,7 @@ export default class BloomBrightnessFilter extends core.Filter
         this.minBright = minBright || 0.2;
         this.toneScale = toneScale || 0.8;
 
-        this.strength = strength || 8;
+        this.strength = strength || 7;
         this.quality = quality || 4;
         this.resolution = resolution || core.settings.RESOLUTION;
         this.kernelSize = kernelSize || 8;
