@@ -42,8 +42,6 @@ export default class BloomBrightnessFilter extends core.Filter
             fragSrc
         );
 
-        this._quality = 0;
-
         this.minBright = minBright || 0.2;
         this.toneScale = toneScale || 0.8;
 
