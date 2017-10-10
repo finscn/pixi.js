@@ -1,3 +1,5 @@
+export default `
+
 attribute vec2 aVertexPosition;
 attribute vec2 aTextureCoord;
 uniform mat3 projectionMatrix;
@@ -60,3 +62,5 @@ void main(void) {
     gl_Position = proM4 * worldM4 * restoreM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);
     vTextureCoord = aTextureCoord;
 }
+
+`;

@@ -1,3 +1,5 @@
+export default `
+
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
 uniform vec2 uViewSize;
@@ -100,3 +102,5 @@ void main()
 //     float damping = 1.0;//(1.0 + 0.002 * dist * dist);
 //     uv = uv - normalize(vector) * wave * disFade * timeFade;
 // }
+
+`;

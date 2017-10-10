@@ -1,3 +1,5 @@
+export default `
+
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
 uniform float range;
@@ -38,3 +40,5 @@ void main(void)
 
     gl_FragColor = c;
 }
+
+`;

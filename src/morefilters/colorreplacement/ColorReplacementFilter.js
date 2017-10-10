@@ -1,20 +1,16 @@
 import * as core from '../../core';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import vertex from './color-replacement.vert.js';
+import fragment from './color-replacement.frag.js';
 
 export default class ColorReplacementFilter extends core.Filter
 {
     constructor(sourceColors, targetColors, range)
     {
-        const vertSrc = readFileSync(join(__dirname, '../../filters/fragments/default.vert'), 'utf8');
-        const fragSrc = readFileSync(join(__dirname, './colorReplacement.frag'), 'utf8');
         const colorCount = Math.min(sourceColors.length, targetColors.length);
 
         super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc.replace(/%colorCount%/g, colorCount)
+            vertex,
+            fragment.replace(/%colorCount%/g, colorCount)
         );
 
         this.range = range || range === 0 ? range : 0.075;

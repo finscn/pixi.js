@@ -1,20 +1,14 @@
 import * as core from '../../core';
-
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './zoom-blur.vert.js';
+import fragment from './zoom-blur.frag.js';
 
 export default class ZoomBlurFilter extends core.Filter
 {
     constructor(centerX, centerY, strength)
     {
-        const vertSrc = glslify('../../filters/fragments/default.vert');
-        const fragSrc = glslify('./zoomblur.frag');
-
         super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc
+            vertex,
+            fragment
         );
 
         this._rendererSize = new Float32Array([0, 0]);

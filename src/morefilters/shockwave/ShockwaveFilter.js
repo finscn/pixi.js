@@ -1,20 +1,14 @@
 import * as core from '../../core';
-
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './shockwave.vert.js';
+import fragment from './shockwave.frag.js';
 
 export default class ShockwaveFilter extends core.Filter
 {
     constructor()
     {
-        const vertSrc = glslify('../../filters/fragments/default.vert');
-        const fragSrc = glslify('./shockwave.frag');
-
         super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc
+            vertex,
+            fragment
         );
 
         this._rendererSize = new Float32Array([0, 0]);

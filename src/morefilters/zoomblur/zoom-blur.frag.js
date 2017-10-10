@@ -1,3 +1,5 @@
+export default `
+
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
 
@@ -88,3 +90,5 @@ void main() {
     /* switch back from pre-multiplied alpha */
     gl_FragColor.rgb /= gl_FragColor.a + 0.00001;
 }
+
+`;

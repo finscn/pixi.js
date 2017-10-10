@@ -1,7 +1,7 @@
 import * as core from '../../core';
 import mat3 from '../../extensions/Matrix3';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import vertex from './perspective.vert.js';
+import fragment from './perspective.frag.js';
 
 const Matrix3 = mat3;
 
@@ -10,14 +10,9 @@ export default class PerspectiveFilter extends core.Filter
 
     constructor(fromQuad, toQuad)
     {
-        const vertSrc =  readFileSync(join(__dirname, './perspective.vert'), 'utf8');
-        const fragSrc =  readFileSync(join(__dirname, './perspective.frag'), 'utf8');
-
         super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc
+            vertex,
+            fragment
         );
 
         this.perspectiveMatrix = new Float32Array([

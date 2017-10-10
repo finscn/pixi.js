@@ -2,44 +2,16 @@ import * as core from '../../core';
 import ExtractBrightnessFilter from './ExtractBrightnessFilter';
 import BlurXFilter from '../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../filters/blur/BlurYFilter';
+import vertex from './bloom-brightness.vert.js';
+import fragment from './bloom-brightness.frag.js';
 
 export default class BloomBrightnessFilter extends core.Filter
 {
-
     constructor(toneScale, minBright, strength, quality, resolution, kernelSize)
     {
-        const vertSrc = [
-            'attribute vec2 aVertexPosition;',
-            'attribute vec2 aTextureCoord;',
-            'uniform mat3 projectionMatrix;',
-            'varying vec2 vTextureCoord;',
-
-            'void main() {',
-            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
-            '    vTextureCoord = aTextureCoord;',
-            '}',
-        ].join('\n');
-
-        const fragSrc = [
-            'uniform sampler2D uSampler;',
-            'varying vec2 vTextureCoord;',
-
-            'uniform sampler2D bloomTexture;',
-            'uniform float toneScale;',
-
-            'void main() {',
-            '    vec4 color = vec4(0.0);',
-            '    color  = texture2D(uSampler, vTextureCoord) * toneScale;',
-            '    color += texture2D(bloomTexture, vTextureCoord);',
-            '    gl_FragColor = color;',
-            '}',
-        ].join('\n');
-
         super(
-            // vertex shader
-            vertSrc,
-            // fragment shader
-            fragSrc
+            vertex,
+            fragment
         );
 
         this.toneScale = toneScale || 0.6;
