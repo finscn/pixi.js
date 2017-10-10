@@ -76,8 +76,6 @@
     "electron": "^1.4.15",
     "eslint": "^3.5.0",
     "floss": "^2.0.1",
-    "glslify": "^5.0.2",
-    "glslify-import": "^3.0.0",
     "js-md5": "^0.4.1",
     "jsdoc": "3.4.3",
     "minimist": "^1.2.0",
@@ -86,16 +84,5 @@
     "pixify": "^1.7.0",
     "rimraf": "^2.5.3",
     "watch": "^0.19.1"
-  },
-  "browserify": {
-    "transform": [
-      "babelify",
-      "glslify"
-    ]
-  },
-  "glslify": {
-    "transform": [
-      "glslify-import"
-    ]
   }
 }

@@ -1,8 +1,8 @@
 import Light from '../light/Light';
 import { BLEND_MODES } from '../../../../core/const';
 
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './ambient.vert.js';
+import fragment from './ambient.frag.js';
 
 export default class AmbientLight extends Light
 {
@@ -26,15 +26,11 @@ export default class AmbientLight extends Light
 
     getVertexSource()
     {
-        const vertexSrc = glslify('./ambient.vert');
-
-        return vertexSrc;
+        return vertex;
     }
 
     getFragmentSource()
     {
-        const fragmentSrc = glslify('./ambient.frag');
-
-        return fragmentSrc;
+        return fragment;
     }
 }

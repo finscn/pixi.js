@@ -1,4 +1,5 @@
 import * as core from '../../core';
+
 import vertex from './extract-brightness.vert.js';
 import fragment from './extract-brightness.frag.js';
 

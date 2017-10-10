@@ -1,9 +1,8 @@
 import * as core from '../../core';
 import glCore from 'pixi-gl-core';
 import * as mesh from '../../mesh';
-
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './trail.vert.js';
+import fragment from './trail.frag.js';
 
 // const ObjectRenderer = core.ObjectRenderer;
 const WebGLRenderer = core.WebGLRenderer;
@@ -36,9 +35,7 @@ export default class TrailRenderer extends MeshRenderer
 
     generateShader(gl)
     {
-        const vertexSrc = glslify('./trail.vert');
-        const fragmentSrc = glslify('./trail.frag');
-        const shader = new Shader(gl, vertexSrc, fragmentSrc);
+        const shader = new Shader(gl, vertex, fragment);
 
         return shader;
     }

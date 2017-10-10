@@ -1,3 +1,5 @@
+export default `
+
 attribute vec2 aVertexPosition;
 attribute vec2 aTextureCoord;
 
@@ -12,3 +14,5 @@ void main(void)
 
     vTextureCoord = aTextureCoord;
 }
+
+`;

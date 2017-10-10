@@ -1,3 +1,5 @@
+export default `
+
 uniform sampler2D uSampler;
 uniform sampler2D uNormalSampler;
 
@@ -14,3 +16,5 @@ uniform vec2 uViewSize;
 
 uniform mat3 uWorldMatrix;
 uniform bool uFixedNormal;
+
+`;

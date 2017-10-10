@@ -1,4 +1,5 @@
 import * as core from '../../core';
+
 import vertex from './shockwave.vert.js';
 import fragment from './shockwave.frag.js';
 

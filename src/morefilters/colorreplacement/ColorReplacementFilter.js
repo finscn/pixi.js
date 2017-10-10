@@ -1,4 +1,5 @@
 import * as core from '../../core';
+
 import vertex from './color-replacement.vert.js';
 import fragment from './color-replacement.frag.js';
 

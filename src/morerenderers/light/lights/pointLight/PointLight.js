@@ -1,8 +1,8 @@
 import * as core from '../../../../core';
 import LightWithAmbient from '../light/LightWithAmbient';
 
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './point.vert.js';
+import fragment from './point.frag.js';
 
 export default class PointLight extends LightWithAmbient
 {
@@ -19,16 +19,12 @@ export default class PointLight extends LightWithAmbient
 
     getVertexSource()
     {
-        const vertexSrc = glslify('./point.vert');
-
-        return vertexSrc;
+        return vertex;
     }
 
     getFragmentSource()
     {
-        const fragmentSrc = glslify('./point.frag');
-
-        return fragmentSrc;
+        return fragment;
     }
 
     syncShader(sprite)

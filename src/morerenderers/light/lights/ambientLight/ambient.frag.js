@@ -1,11 +1,17 @@
+import commonHead from '../_shared/common-head.frag.js';
+import loadDiffuse from '../_shared/load-diffuse.frag.js';
+import loadNormal from '../_shared/load-normal.frag.js';
+import computeNormal from '../_shared/compute-normal.frag.js';
 
-#pragma glslify: import("../_shared/commonHead.frag.glsl");
+export default `
+
+${commonHead}
 
 void main(void)
 {
 
-#pragma glslify: import("../_shared/loadDiffuse.glsl");
-#pragma glslify: import("../_shared/loadNormal.glsl");
+${loadDiffuse}
+${loadNormal}
 
     uViewSize;
 
@@ -14,7 +20,7 @@ void main(void)
     // compute Distance
     float D = 1.0;
 
-#pragma glslify: import("../_shared/computeNormal.glsl");
+${computeNormal}
 
     vec3 L = vec3(1.0, 1.0, 1.0);
 
@@ -26,3 +32,5 @@ void main(void)
 
     gl_FragColor = vec4(finalColor, diffuseColor.a);
 }
+
+`;

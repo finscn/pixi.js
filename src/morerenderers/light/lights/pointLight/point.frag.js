@@ -1,6 +1,12 @@
+import commonHead from '../_shared/common-head.frag.js';
+import loadDiffuse from '../_shared/load-diffuse.frag.js';
+import loadNormal from '../_shared/load-normal.frag.js';
+import computeNormal from '../_shared/compute-normal.frag.js';
+
+export default `
 
 // imports the common uniforms like samplers, and ambient color
-#pragma glslify: import("../_shared/commonHead.frag.glsl");
+${commonHead}
 
 varying float flippedY;
 
@@ -8,12 +14,11 @@ uniform vec3 uAmbientColor;
 uniform vec3 uLightPosition;
 uniform float uLightRadius;
 
-
 void main()
 {
 
-#pragma glslify: import("../_shared/loadDiffuse.glsl");
-#pragma glslify: import("../_shared/loadNormal.glsl");
+${loadDiffuse}
+${loadNormal}
 
     vec2 fragCoord = gl_FragCoord.xy / uViewSize;
 
@@ -39,7 +44,7 @@ void main()
     // bail out early when pixel outside of light sphere
     if (D <= lightRadius) {
 
-#pragma glslify: import("../_shared/computeNormal.glsl");
+${computeNormal}
 
         // vec3 L = normalize(lightVector);
         vec3 L = lightVector / D;
@@ -61,3 +66,5 @@ void main()
     vec3 finalColor = diffuseColor.rgb * intensity;
     gl_FragColor = vec4(finalColor, diffuseColor.a);
 }
+
+`;

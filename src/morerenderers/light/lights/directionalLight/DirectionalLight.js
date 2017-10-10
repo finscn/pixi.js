@@ -1,7 +1,7 @@
 import LightWithAmbient from '../light/LightWithAmbient';
 
-// @see https://github.com/substack/brfs/issues/25
-const glslify = require('glslify'); // eslint-disable-line no-undef
+import vertex from './directional.vert.js';
+import fragment from './directional.frag.js';
 
 export default class DirectionalLight extends LightWithAmbient
 {
@@ -29,16 +29,12 @@ export default class DirectionalLight extends LightWithAmbient
 
     getVertexSource()
     {
-        const vertexSrc = glslify('./directional.vert');
-
-        return vertexSrc;
+        return vertex;
     }
 
     getFragmentSource()
     {
-        const fragmentSrc = glslify('./directional.frag');
-
-        return fragmentSrc;
+        return fragment;
     }
 
     updateDirection()

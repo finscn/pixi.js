@@ -2,6 +2,7 @@ import * as core from '../../core';
 import ExtractBrightnessFilter from './ExtractBrightnessFilter';
 import BlurXFilter from '../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../filters/blur/BlurYFilter';
+
 import vertex from './bloom-brightness.vert.js';
 import fragment from './bloom-brightness.frag.js';
 

@@ -1,8 +1,9 @@
 import * as core from '../../core';
 import BaseSpriteShaderRenderer from '../BaseSpriteShaderRenderer';
 import mat3 from '../../extensions/Matrix3';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+
+import vertex from './perspective.vert.js';
+import fragment from './perspective.frag.js';
 
 const Matrix3 = mat3;
 
@@ -54,16 +55,12 @@ export default class PerspectiveRenderer extends BaseSpriteShaderRenderer
 
     getVertexSrc()
     {
-        const vertSrc = readFileSync(join(__dirname, './perspective.vert'), 'utf8');
-
-        return vertSrc;
+        return vertex;
     }
 
     getFragmentSrc()
     {
-        const fragSrc = readFileSync(join(__dirname, './perspective.frag'), 'utf8');
-
-        return fragSrc;
+        return fragment;
     }
 
     static applyTo(sprite)

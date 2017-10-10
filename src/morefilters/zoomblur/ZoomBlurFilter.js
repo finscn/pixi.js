@@ -1,4 +1,5 @@
 import * as core from '../../core';
+
 import vertex from './zoom-blur.vert.js';
 import fragment from './zoom-blur.frag.js';
 
