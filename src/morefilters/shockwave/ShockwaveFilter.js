@@ -5,86 +5,85 @@ import fragment from './shockwave.frag.js';
 
 export default class ShockwaveFilter extends core.Filter
 {
-    constructor()
+    constructor(center = [0, 0], params = [10, 0.8, 20.0, 1.0], time = 0, duration = 1.0, radius = 50)
     {
         super(
             vertex,
             fragment
         );
 
-        this._rendererSize = new Float32Array([0, 0]);
-        this.viewSize = null;
-        this.radius = 100;
-        this.center = new Float32Array([0, 0]);
-        this.params = new Float32Array([10, 0.8, 20.0, 1.0]);
-        this.duration = 1.0;
-        this.time = 0;
-    }
-
-    apply(filterManager, input, output, clear)
-    {
-        if (this.viewSize)
-        {
-            this.uniforms.uViewSize = this.viewSize;
-        }
-        else
-        {
-            this._rendererSize[0] = filterManager.renderer.width;
-            this._rendererSize[1] = filterManager.renderer.height;
-            this.uniforms.uViewSize = this._rendererSize;
-        }
-
-        this.uniforms.uRadius = this.radius;
-        this.uniforms.uCenter = this.center;
-        this.uniforms.uParams = this.params;
-        this.uniforms.uDuration = this.duration;
-        this.uniforms.uTime = this.time;
-
-        filterManager.applyFilter(this, input, output, clear);
-    }
-
-    setRadius(radius)
-    {
+        this.center = center;
+        this.params = params;
+        this.time = time;
+        this.duration = duration;
         this.radius = radius;
     }
 
-    setDuration(duration)
+    /**
+     * Center of the effect.
+     *
+     * @member {PIXI.Point|number[]}
+     * @default [0, 0]
+     */
+    get center()
     {
-        this.duration = duration;
+        return this.uniforms.uCenter;
     }
 
-    setTime(time)
+    set center(value)
     {
-        this.time = time;
+        this.uniforms.uCenter = value;
     }
 
-    setCenter(x, y)
+    /**
+     * Sets the params of the shockwave. These modify the look and behavior of
+     * the shockwave as it ripples out.
+     * [ amplitude, refraction, width, lighter ]
+     * @member {Array<number>}
+     */
+    get params()
     {
-        this.center[0] = x;
-        this.center[1] = y;
+        return this.uniforms.uParams;
     }
 
-    setParams(amplitude, refraction, width, lighter)
+    set params(value)
     {
-        this.params[0] = amplitude;
-        this.params[1] = refraction;
-        this.params[2] = width;
-        this.params[3] = lighter || 1.0;
+        this.uniforms.uParams = value;
     }
 
-    setViewSize(width, height)
+    /**
+     * Sets the elapsed time of the shockwave. This controls the speed at which
+     * the shockwave ripples out.
+     *
+     * @member {number}
+     */
+    get time()
     {
-        if (width === null)
-        {
-            this.viewSize = null;
+        return this.uniforms.uTime;
+    }
 
-            return;
-        }
-        if (!this.viewSize)
-        {
-            this.viewSize = new Float32Array(2);
-        }
-        this.viewSize[0] = width;
-        this.viewSize[1] = height;
+    set time(value)
+    {
+        this.uniforms.uTime = value;
+    }
+
+    get duration()
+    {
+        return this.uniforms.uDuration;
+    }
+
+    set duration(value)
+    {
+        this.uniforms.uDuration = value;
+    }
+
+    get radius()
+    {
+        return this.uniforms.uRadius;
+    }
+
+    set radius(value)
+    {
+        this.uniforms.uRadius = value;
     }
 }
