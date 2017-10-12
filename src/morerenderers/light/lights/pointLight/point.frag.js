@@ -20,7 +20,7 @@ void main()
 ${loadDiffuse}
 ${loadNormal}
 
-    vec2 fragCoord = gl_FragCoord.xy / uViewSize;
+    vec2 fragCoord = gl_FragCoord.xy / uViewSize.xy;
 
     if (flippedY > 0.0)
     {
@@ -28,14 +28,14 @@ ${loadNormal}
         fragCoord.y = 1.0 - fragCoord.y;
     }
 
-    vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.y);
-    float lightRadius = uLightRadius / uViewSize.y;
+    vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.x);
+    float lightRadius = uLightRadius / uViewSize.x;
 
     // the directional vector of the light
     vec3 lightVector = vec3(lightPosition.xy - fragCoord, lightPosition.z);
 
     // correct for aspect ratio
-    lightVector.x *= uViewSize.x / uViewSize.y;
+    lightVector.y *= uViewSize.y / uViewSize.x;
 
     // compute Distance
     float D = length(lightVector);

@@ -21,7 +21,7 @@ ${loadNormal}
     vec3 lightVector = uLightDirection;
 
     // correct for aspect ratio
-    lightVector.x *= uViewSize.x / uViewSize.y;
+    lightVector.y *= uViewSize.y / uViewSize.x;
 
     // compute Distance
     // float D = length(lightVector);
