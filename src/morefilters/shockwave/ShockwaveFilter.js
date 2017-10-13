@@ -5,7 +5,7 @@ import fragment from './shockwave.frag.js';
 
 export default class ShockwaveFilter extends core.Filter
 {
-    constructor(center = [0, 0], params = [10, 0.8, 20.0, 1.0], time = 0, duration = 1.0, radius = 50)
+    constructor(center = [0, 0], params = [30.0, 30.0, 1.0, 1.0], radius = 100, duration = 1.0, time = 0)
     {
         super(
             vertex,
@@ -14,9 +14,9 @@ export default class ShockwaveFilter extends core.Filter
 
         this.center = center;
         this.params = params;
-        this.time = time;
-        this.duration = duration;
         this.radius = radius;
+        this.duration = duration;
+        this.time = time;
     }
 
     /**
@@ -38,7 +38,7 @@ export default class ShockwaveFilter extends core.Filter
     /**
      * Sets the params of the shockwave. These modify the look and behavior of
      * the shockwave as it ripples out.
-     * [ amplitude, refraction, width, lighter ]
+     * [ amplitude, wavelength, refraction, lighter ]
      * @member {Array<number>}
      */
     get params()
@@ -49,6 +49,26 @@ export default class ShockwaveFilter extends core.Filter
     set params(value)
     {
         this.uniforms.uParams = value;
+    }
+
+    get radius()
+    {
+        return this.uniforms.uRadius;
+    }
+
+    set radius(value)
+    {
+        this.uniforms.uRadius = value;
+    }
+
+    get duration()
+    {
+        return this.uniforms.uDuration;
+    }
+
+    set duration(value)
+    {
+        this.uniforms.uDuration = value;
     }
 
     /**
@@ -65,25 +85,5 @@ export default class ShockwaveFilter extends core.Filter
     set time(value)
     {
         this.uniforms.uTime = value;
-    }
-
-    get duration()
-    {
-        return this.uniforms.uDuration;
-    }
-
-    set duration(value)
-    {
-        this.uniforms.uDuration = value;
-    }
-
-    get radius()
-    {
-        return this.uniforms.uRadius;
-    }
-
-    set radius(value)
-    {
-        this.uniforms.uRadius = value;
     }
 }

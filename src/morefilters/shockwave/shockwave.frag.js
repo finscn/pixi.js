@@ -16,8 +16,8 @@ uniform vec4 uParams;
 void main()
 {
     float amplitude = uParams.x;
-    float refraction = uParams.y;
-    float wavelength = uParams.z;
+    float wavelength = uParams.y;
+    float refraction = uParams.z;
     float lighter = uParams.w;
 
     float halfWavelength = wavelength * 0.5 / filterArea.x;
@@ -33,30 +33,29 @@ void main()
 
     vec2 uv = vTextureCoord;
 
-    if (dist >= maxRadius || dist <= (currentRadius - halfWavelength) || dist >= (currentRadius + halfWavelength))
+    if (amplitude <= 0.0 || dist >= maxRadius ||
+        dist <= (currentRadius - halfWavelength) || dist >= (currentRadius + halfWavelength))
     {
       gl_FragColor = texture2D(uSampler, uv);
       return;
     }
 
-    float damping = 1.0 - dist / maxRadius;
-
     float wave = dist - currentRadius;
-    float wavePow = 1.0 - pow(abs(wave * amplitude), refraction);
-    float waveFinal = wave * wavePow;
+    float waveAbs = abs(wave);
+
+    // float wavePow = 1.0 - pow(abs(wave * amplitude), refraction);
+
+    float radiusDamping = currentRadius / maxRadius;
+    float waveDamping = waveAbs / halfWavelength;
+    float wavePow = pow(waveAbs, refraction) * amplitude;
+    wavePow *= (1.0 - radiusDamping) * (1.0 - waveDamping);
 
     vec2 waveDir = normalize(dir);
-    uv = uv + waveDir * waveFinal * damping;
+    uv = uv + wave * waveDir * wavePow;
 
     vec4 color = texture2D(uSampler, uv);
 
-    // vec2 clampedCoord = clamp(uv, filterClamp.xy, filterClamp.zw);
-    // vec4 color = texture2D(uSampler, clampedCoord);
-    // if (uv != clampedCoord) {
-    //     color *= max(0.0, 1.0 - length(uv - clampedCoord));
-    // }
-
-    gl_FragColor =  vec4(color.rgb * lighter, color.a);
+    gl_FragColor = vec4(color.rgb * lighter, color.a);
 
 }
 
