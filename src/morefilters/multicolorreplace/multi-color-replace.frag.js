@@ -2,29 +2,33 @@ export default `
 
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
+
 uniform float epsilon;
 uniform vec3 originalColors[%colorCount%];
 uniform vec3 targetColors[%colorCount%];
 
 void main(void)
 {
-    vec4 color = texture2D(uSampler, vTextureCoord);
+    gl_FragColor = texture2D(uSampler, vTextureCoord);
 
-    color.rgb /= max(color.a, 0.0000000001);
+    float alpha = gl_FragColor.a;
+    if (alpha < 0.0001)
+    {
+      return;
+    }
+
+    vec3 color = gl_FragColor.rgb / alpha;
 
     for(int i = 0; i < %colorCount%; i++)
     {
       vec3 origColor = originalColors[i];
-      vec3 colorDiff = origColor - color.rgb;
+      vec3 colorDiff = origColor - color;
       if (length(colorDiff) < epsilon) {
         vec3 targetColor = targetColors[i];
-        gl_FragColor = vec4((targetColor + colorDiff) * color.a ,color.a);
+        gl_FragColor = vec4((targetColor + colorDiff) * alpha, alpha);
         return;
       }
     }
-
-    color.rgb *= color.a;
-    gl_FragColor = color;
 }
 
 `;
