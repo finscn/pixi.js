@@ -2,80 +2,84 @@ export default `
 
 varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
-uniform vec2 filterArea;
+uniform vec4 filterArea;
+// uniform vec4 filterClamp;
 
 uniform vec2 uCenter;
 uniform float uRadius;
 uniform float uTime;
 uniform float uDuration;
 
-// Amplitude Effect, Refraction, Width, Lighter;
+// Amplitude, Refraction, Wavelength, Lighter;
 uniform vec4 uParams;
-
-// non-loop
-float time = uTime;
-// loop
-// float time = mod(uTime, uDuration);
-
-float timeRate = time / uDuration;
-
-float amplitude = uParams.x;
-float refraction = uParams.y;
-float waveWidth = uParams.z * 0.5 / filterArea.x;
-float lighter = uParams.w;
-
-float speed = (uRadius + uParams.z) / uDuration;
-float currentRadius = time * speed / filterArea.x;
 
 void main()
 {
+    float amplitude = uParams.x;
+    float refraction = uParams.y;
+    float wavelength = uParams.z;
+    float lighter = uParams.w;
+
+    float halfWavelength = wavelength * 0.5 / filterArea.x;
+    float maxRadius = uRadius / filterArea.x;
+    float speed = (maxRadius + halfWavelength) / uDuration;
+    float currentRadius = uTime * speed;
+
     vec2 center = uCenter.xy / filterArea.xy;
-    float radius = uRadius / filterArea.x;
-    vec2 dir = vec2(vTextureCoord - center);
+    vec2 dir = vec2(center - vTextureCoord);
     dir.y *= filterArea.y / filterArea.x;
 
     float dist = length(dir);
 
-    if (dist > radius || dist < (currentRadius - waveWidth) || dist > (currentRadius + waveWidth))
+    vec2 uv = vTextureCoord;
+
+    if (dist >= maxRadius || dist <= (currentRadius - halfWavelength) || dist >= (currentRadius + halfWavelength))
     {
-        gl_FragColor = texture2D(uSampler, vTextureCoord);
-        return;
+      gl_FragColor = texture2D(uSampler, uv);
+      return;
     }
 
-    // float disFade = pow(1.0 - dist / radius, 0.8);
-    float disFade = 1.0 - dist / radius;
+    float damping = 1.0 - dist / maxRadius;
 
-    // from -1.0 to 1.0
-    float wave = (dist - currentRadius);
-    // wave = sin( PI * 0.5 * (dist - currentRadius));
-    // wave = sin(PI * dist * 0.5 - time * 1.0);
-
+    float wave = dist - currentRadius;
     float wavePow = 1.0 - pow(abs(wave * amplitude), refraction);
-
     float waveFinal = wave * wavePow;
 
     vec2 waveDir = normalize(dir);
-    vec2 uv = vTextureCoord + (waveDir * waveFinal) * disFade ; // * timeFade;
+    uv = uv + waveDir * waveFinal * damping;
+
     vec4 color = texture2D(uSampler, uv);
 
-    float light = ( lighter - 1.0) *  disFade + 1.0;
+    // vec2 clampedCoord = clamp(uv, filterClamp.xy, filterClamp.zw);
+    // vec4 color = texture2D(uSampler, clampedCoord);
+    // if (uv != clampedCoord) {
+    //     color *= max(0.0, 1.0 - length(uv - clampedCoord));
+    // }
 
-    gl_FragColor =  vec4(color.rgb * light, color.a);
+    gl_FragColor =  vec4(color.rgb * lighter, color.a);
+
 }
 
 `;
-
 // uniform vec2 uViewSize;
+
+// ...
+
+// float timeRate = time / uDuration;
 
 // ...
 
 // vec2 texCoord = gl_FragCoord.xy / filterArea.xy;
 // texCoord.y = 1.0 - texCoord.y;
 
-// float disFade = pow(1.0 - dist / radius, 0.8);
-
 // vec2 center = uCenter.xy / uViewSize.xy;
-// float radius = uRadius / uViewSize.x;
+// float maxRadius = uRadius / uViewSize.x;
+
+// float disFade = pow(1.0 - dist / maxRadius, 0.8);
+
+// from -1.0 to 1.0
+// wave = sin( PI * 0.5 * (dist - currentRadius));
+// wave = sin(PI * dist * 0.5 - uTime * 1.0);
 
 // vec2 vector = vec2(texCoord - center);
 // vector.x *= uViewSize.x / uViewSize.x;
@@ -83,11 +87,11 @@ void main()
 // float durationRate = pow(timeRate * 1.25, 0.8);
 // float timeFade = pow(1.0 - timeRate ,0.8);
 
-// if (dist < radius && timeRate <= 1.0 && dist < durationRate)
+// if (dist < maxRadius && timeRate <= 1.0 && dist < durationRate)
 // {
-//     float disFade = pow(1.0-dist/radius ,0.8);
+//     float disFade = pow(1.0-dist/maxRadius ,0.8);
 
-//     float wave = sin(PI * 1.0 * dist/radius - time * 20.0) * disFade * timeFade;
+//     float wave = sin(PI * 1.0 * dist/maxRadius - time * 20.0) * disFade * timeFade;
 //     float wavePow;
 
 //     // wave = (wave + 1.0) * 0.5 - 1.0;
