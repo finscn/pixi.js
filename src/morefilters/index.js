@@ -7,4 +7,4 @@ export { default as PerspectiveFilter } from './perspective/PerspectiveFilter';
 export { default as RadialBlurXFilter } from './radialblur/RadialBlurXFilter';
 export { default as RadialBlurYFilter } from './radialblur/RadialBlurYFilter';
 export { default as RadialBlurFilter } from './radialblur/RadialBlurFilter';
-export { default as ColorReplacementFilter } from './colorreplacement/ColorReplacementFilter';
+export { default as MultiColorReplaceFilter } from './multicolorreplace/MultiColorReplaceFilter';
