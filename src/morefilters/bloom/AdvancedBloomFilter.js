@@ -15,7 +15,8 @@ export default class AdvancedBloomFilter extends core.Filter
             fragment
         );
 
-        this.minBright = minBright || 0.5;
+        minBright = minBright || 0.5;
+
         this.brightScale = brightScale || 1.0;
         this.toneScale = toneScale || 1.0;
 
@@ -24,7 +25,7 @@ export default class AdvancedBloomFilter extends core.Filter
         this.resolution = resolution || core.settings.RESOLUTION;
         this.kernelSize = kernelSize || 5;
 
-        this.extractBrightnessFilter = new ExtractBrightnessFilter(this.minBright);
+        this.extractBrightnessFilter = new ExtractBrightnessFilter(minBright);
         this.blurXFilter = new BlurXFilter(this.strength, this.quality, this.resolution, this.kernelSize);
         this.blurYFilter = new BlurYFilter(this.strength, this.quality, this.resolution, this.kernelSize);
     }
@@ -46,4 +47,13 @@ export default class AdvancedBloomFilter extends core.Filter
         filterManager.returnRenderTarget(brightTarget);
     }
 
+    get minBright()
+    {
+        return this.extractBrightnessFilter.minBright;
+    }
+
+    set minBright(value)
+    {
+        this.extractBrightnessFilter.minBright = value;
+    }
 }
