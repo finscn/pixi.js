@@ -3,20 +3,20 @@ import ExtractBrightnessFilter from './ExtractBrightnessFilter';
 import BlurXFilter from '../../filters/blur/BlurXFilter';
 import BlurYFilter from '../../filters/blur/BlurYFilter';
 
-import vertex from './bloom-brightness.vert.js';
-import fragment from './bloom-brightness.frag.js';
+import vertex from './advanced-bloom.vert.js';
+import fragment from './advanced-bloom.frag.js';
 
-export default class BloomBrightnessFilter extends core.Filter
+export default class AdvancedBloomFilter extends core.Filter
 {
-    constructor(toneScale, minBright, strength, quality, resolution, kernelSize)
+    constructor(minBright, toneScale, strength, quality, resolution, kernelSize)
     {
         super(
             vertex,
             fragment
         );
 
-        this.toneScale = toneScale || 0.6;
-        this.minBright = minBright || 0.2;
+        this.minBright = minBright || 0.5;
+        this.toneScale = toneScale || 1.0;
 
         this.strength = strength || 8;
         this.quality = quality || 4;
