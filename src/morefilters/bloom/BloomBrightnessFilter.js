@@ -33,18 +33,15 @@ export default class BloomBrightnessFilter extends core.Filter
         const brightTarget = filterManager.getRenderTarget(true);
 
         this.extractBrightnessFilter.apply(filterManager, input, brightTarget, true, currentState);
-
-        const blurTarget = filterManager.getRenderTarget(true);
-
-        this.blurXFilter.apply(filterManager, brightTarget, blurTarget, true, currentState);
-        this.blurYFilter.apply(filterManager, blurTarget, brightTarget, true, currentState);
+        this.blurXFilter.apply(filterManager, brightTarget, brightTarget, true, currentState);
+        this.blurYFilter.apply(filterManager, brightTarget, brightTarget, true, currentState);
 
         this.uniforms.toneScale = this.toneScale;
         this.uniforms.bloomTexture = brightTarget;
+
         filterManager.applyFilter(this, input, output, clear);
 
         filterManager.returnRenderTarget(brightTarget);
-        filterManager.returnRenderTarget(blurTarget);
     }
 
 }
