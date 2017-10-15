@@ -8,7 +8,7 @@ import fragment from './advanced-bloom.frag.js';
 
 export default class AdvancedBloomFilter extends core.Filter
 {
-    constructor(minBright, toneScale, strength, quality, resolution, kernelSize)
+    constructor(minBright, lightScale, toneScale, strength, quality, resolution, kernelSize)
     {
         super(
             vertex,
@@ -16,6 +16,7 @@ export default class AdvancedBloomFilter extends core.Filter
         );
 
         this.minBright = minBright || 0.5;
+        this.lightScale = lightScale || 1.0;
         this.toneScale = toneScale || 1.0;
 
         this.strength = strength || 8;
@@ -36,6 +37,7 @@ export default class AdvancedBloomFilter extends core.Filter
         this.blurXFilter.apply(filterManager, brightTarget, brightTarget, true, currentState);
         this.blurYFilter.apply(filterManager, brightTarget, brightTarget, true, currentState);
 
+        this.uniforms.lightScale = this.lightScale;
         this.uniforms.toneScale = this.toneScale;
         this.uniforms.bloomTexture = brightTarget;
 
