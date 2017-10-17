@@ -408,7 +408,7 @@ export default class Container extends DisplayObject
         {
             this._renderWebGL(renderer);
 
-            this.renderWebGLChildren(renderer);
+            this.renderChildrenWebGL(renderer);
         }
     }
 
@@ -458,7 +458,7 @@ export default class Container extends DisplayObject
         this._renderWebGL(renderer);
 
         // now loop through the children and make sure they get rendered
-        this.renderWebGLChildren(renderer);
+        this.renderChildrenWebGL(renderer);
 
         renderer.flush();
 
@@ -479,7 +479,7 @@ export default class Container extends DisplayObject
      * @private
      * @param {PIXI.WebGLRenderer} renderer - The renderer
      */
-    renderWebGLChildren(renderer)
+    renderChildrenWebGL(renderer)
     {
         for (let i = 0, j = this.children.length; i < j; i++)
         {
@@ -528,7 +528,7 @@ export default class Container extends DisplayObject
         }
 
         this._renderCanvas(renderer);
-        this.renderCanvasChildren(renderer);
+        this.renderChildrenCanvas(renderer);
 
         if (this._mask)
         {
@@ -542,7 +542,7 @@ export default class Container extends DisplayObject
      * @private
      * @param {PIXI.CanvasRenderer} renderer - The renderer
      */
-    renderCanvasChildren(renderer)
+    renderChildrenCanvas(renderer)
     {
         for (let i = 0, j = this.children.length; i < j; i++)
         {

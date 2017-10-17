@@ -76,7 +76,7 @@ Container.prototype._removeChildAt = function (index, child)
     return child;
 };
 
-Container.prototype.renderWebGLChildren = function (renderer)
+Container.prototype.renderChildrenWebGL = function (renderer)
 {
     let i = 0;
     let len = this.children.length;
@@ -96,7 +96,7 @@ Container.prototype.renderWebGLChildren = function (renderer)
     }
 };
 
-Container.prototype.renderCanvasChildren = function (renderer)
+Container.prototype.renderChildrenCanvas = function (renderer)
 {
     let i = 0;
     let len = this.children.length;
