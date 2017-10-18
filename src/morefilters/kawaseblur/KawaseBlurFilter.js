@@ -23,16 +23,14 @@ export default class KawaseBlurFilter extends core.Filter
         const renderTargetA = filterManager.getRenderTarget(true);
         const renderTargetB = filterManager.getRenderTarget(true);
 
-        this.uniforms.iteration = 0.0;
+        this.uniforms.iteration = 3.0;
         filterManager.applyFilter(this, input, renderTargetA, false);
-        this.uniforms.iteration = 1.0;
+        this.uniforms.iteration = 2.0;
         filterManager.applyFilter(this, renderTargetA, renderTargetB, false);
         this.uniforms.iteration = 2.0;
         filterManager.applyFilter(this, renderTargetB, renderTargetA, false);
-        this.uniforms.iteration = 2.0;
-        filterManager.applyFilter(this, renderTargetA, renderTargetB, false);
-        this.uniforms.iteration = 3.0;
-        filterManager.applyFilter(this, renderTargetB, output, clear);
+        this.uniforms.iteration = 1.0;
+        filterManager.applyFilter(this, renderTargetA, output, clear);
 
         filterManager.returnRenderTarget(renderTargetA);
         filterManager.returnRenderTarget(renderTargetB);
