@@ -5,34 +5,67 @@ import fragment from './kawase-blur.frag.js';
 
 export default class KawaseBlurFilter extends core.Filter
 {
-    constructor()
+    constructor(kernels = [0], pixelSize = 1.0)
     {
         super(
             vertex,
             fragment
         );
+
+        this.kernels = kernels;
+
+        let pixelSizeX;
+        let pixelSizeY;
+
+        if (typeof pixelSize === 'number')
+        {
+            pixelSizeX = pixelSize;
+            pixelSizeY = pixelSize;
+        }
+        else if (pixelSize instanceof core.Point)
+        {
+            pixelSizeX = pixelSize.x;
+            pixelSizeY = pixelSize.y;
+        }
+        else if (Array.isArray(pixelSize))
+        {
+            pixelSizeX = pixelSize[0];
+            pixelSizeY = pixelSize[1];
+        }
+
+        this.pixelSize = new core.Point(pixelSizeX, pixelSizeY);
+
+        this.uniforms.pixelSize = new Float32Array(2);
     }
 
-    apply(filterManager, input, output, clear, currentState)
+    apply(filterManager, input, output, clear)
     {
-        const width = currentState.renderTarget.size.width;
-        const height = currentState.renderTarget.size.height;
+        // 1.0 / filterArea_Size
+        this.uniforms.pixelSize[0] = this.pixelSize.x / input.size.width;
+        this.uniforms.pixelSize[1] = this.pixelSize.y / input.size.height;
 
-        this.uniforms.pixelSize = [1.0 / width, 1.0 / height];
+        const renderTarget = filterManager.getRenderTarget(true);
 
-        const renderTargetA = filterManager.getRenderTarget(true);
-        const renderTargetB = filterManager.getRenderTarget(true);
+        let source = input;
+        let target = renderTarget;
+        let tmp;
 
-        this.uniforms.iteration = 3.0;
-        filterManager.applyFilter(this, input, renderTargetA, false);
-        this.uniforms.iteration = 2.0;
-        filterManager.applyFilter(this, renderTargetA, renderTargetB, false);
-        this.uniforms.iteration = 2.0;
-        filterManager.applyFilter(this, renderTargetB, renderTargetA, false);
-        this.uniforms.iteration = 1.0;
-        filterManager.applyFilter(this, renderTargetA, output, clear);
+        const last = this.kernels.length - 1;
 
-        filterManager.returnRenderTarget(renderTargetA);
-        filterManager.returnRenderTarget(renderTargetB);
+        for (let i = 0; i < last; i++)
+        {
+            const k = this.kernels[i];
+
+            this.uniforms.offset = k;
+            filterManager.applyFilter(this, source, target, false);
+
+            tmp = source;
+            source = target;
+            target = tmp;
+        }
+        this.uniforms.offset = this.kernels[last];
+        filterManager.applyFilter(this, source, output, clear);
+
+        filterManager.returnRenderTarget(renderTarget);
     }
 }

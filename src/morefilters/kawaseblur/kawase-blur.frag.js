@@ -4,11 +4,11 @@ varying vec2 vTextureCoord;
 uniform sampler2D uSampler;
 
 uniform vec2 pixelSize;
-uniform float iteration;
+uniform float offset;
 
 void main(void)
 {
-    vec2 dUV = (pixelSize * vec2(iteration, iteration)) + pixelSize * 0.5;
+    vec2 dUV = (pixelSize * vec2(offset, offset)) + pixelSize * 0.5;
 
     // Sample top left pixel
     vec2 sampleCoord;
