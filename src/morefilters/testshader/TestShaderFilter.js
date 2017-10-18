@@ -11,11 +11,16 @@ export default class TestShaderFilter extends core.Filter
             vertex,
             fragment
         );
+
+        this.alpha = 1.0;
+        this.glShaderKey = 'test-shader';
     }
 
     apply(filterManager, input, output, clear, currentState) // eslint-disable-line no-unused-vars
     {
         // const renderTarget = filterManager.getRenderTarget(true);
+
+        this.uniforms.uAlpha = this.alpha;
 
         filterManager.applyFilter(this, input, output, clear);
 
