@@ -43,10 +43,10 @@ export default class KawaseBlurFilter extends core.Filter
     apply(filterManager, input, output, clear)
     {
         // 1.0 / filterArea_Size
-        // this.uniforms.pixelSize[0] = this.pixelSize.x / input.size.width;
-        // this.uniforms.pixelSize[1] = this.pixelSize.y / input.size.height;
-        this.uniforms.pixelSize[0] = this.pixelSize.x / input.sourceFrame.width;
-        this.uniforms.pixelSize[1] = this.pixelSize.y / input.sourceFrame.height;
+        this.uniforms.pixelSize[0] = this.pixelSize.x / input.size.width;
+        this.uniforms.pixelSize[1] = this.pixelSize.y / input.size.height;
+        // this.uniforms.pixelSize[0] = this.pixelSize.x / input.sourceFrame.width;
+        // this.uniforms.pixelSize[1] = this.pixelSize.y / input.sourceFrame.height;
 
         if (this.passes === 1)
         {
