@@ -12,6 +12,8 @@ export default class KawaseBlurFilter extends core.Filter
             fragment
         );
 
+        this.passes = 0;
+        this._kernels = null;
         this.kernels = kernels;
 
         let pixelSizeX;
@@ -41,31 +43,52 @@ export default class KawaseBlurFilter extends core.Filter
     apply(filterManager, input, output, clear)
     {
         // 1.0 / filterArea_Size
-        this.uniforms.pixelSize[0] = this.pixelSize.x / input.size.width;
-        this.uniforms.pixelSize[1] = this.pixelSize.y / input.size.height;
+        // this.uniforms.pixelSize[0] = this.pixelSize.x / input.size.width;
+        // this.uniforms.pixelSize[1] = this.pixelSize.y / input.size.height;
+        this.uniforms.pixelSize[0] = this.pixelSize.x / input.sourceFrame.width;
+        this.uniforms.pixelSize[1] = this.pixelSize.y / input.sourceFrame.height;
 
-        const renderTarget = filterManager.getRenderTarget(true);
-
-        let source = input;
-        let target = renderTarget;
-        let tmp;
-
-        const last = this.kernels.length - 1;
-
-        for (let i = 0; i < last; i++)
+        if (this.passes === 1)
         {
-            const k = this.kernels[i];
-
-            this.uniforms.offset = k;
-            filterManager.applyFilter(this, source, target, false);
-
-            tmp = source;
-            source = target;
-            target = tmp;
+            this.uniforms.offset = this._kernels[0];
+            filterManager.applyFilter(this, input, output, clear);
         }
-        this.uniforms.offset = this.kernels[last];
-        filterManager.applyFilter(this, source, output, clear);
+        else
+        {
+            const renderTarget = filterManager.getRenderTarget(true);
 
-        filterManager.returnRenderTarget(renderTarget);
+            let source = input;
+            let target = renderTarget;
+            let tmp;
+
+            const last = this.passes - 1;
+
+            for (let i = 0; i < last; i++)
+            {
+                const k = this._kernels[i];
+
+                this.uniforms.offset = k;
+                filterManager.applyFilter(this, source, target, false);
+
+                tmp = source;
+                source = target;
+                target = tmp;
+            }
+            this.uniforms.offset = this._kernels[last];
+            filterManager.applyFilter(this, source, output, clear);
+
+            filterManager.returnRenderTarget(renderTarget);
+        }
+    }
+
+    get kernels() // eslint-disable-line require-jsdoc
+    {
+        return this._kernels;
+    }
+
+    set kernels(value) // eslint-disable-line require-jsdoc
+    {
+        this._kernels = value;
+        this.passes = value.length;
     }
 }
