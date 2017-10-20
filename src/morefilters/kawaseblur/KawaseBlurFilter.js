@@ -5,7 +5,7 @@ import fragment from './kawase-blur.frag.js';
 
 export default class KawaseBlurFilter extends core.Filter
 {
-    constructor(kernels = [0], pixelSize = 1.0)
+    constructor(kernels = [0], pixelSize = [1.0, 1.0], resolution = core.settings.RESOLUTION)
     {
         super(
             vertex,
@@ -15,6 +15,8 @@ export default class KawaseBlurFilter extends core.Filter
         this.passes = 0;
         this._kernels = null;
         this.kernels = kernels;
+
+        this.resolution = resolution;
 
         let pixelSizeX;
         let pixelSizeY;
