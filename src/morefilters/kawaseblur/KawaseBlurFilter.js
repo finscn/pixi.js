@@ -68,7 +68,7 @@ export default class KawaseBlurFilter extends core.Filter
                 const k = this._kernels[i];
 
                 this.uniforms.offset = k;
-                filterManager.applyFilter(this, source, target, false);
+                filterManager.applyFilter(this, source, target, true);
 
                 tmp = source;
                 source = target;
