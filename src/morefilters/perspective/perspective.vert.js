@@ -8,6 +8,7 @@ varying vec2 vTextureCoord;
 // uniform mat3 quadToSquareMatrix;
 // uniform mat3 squareToQuadMatrix;
 uniform mat3 perspectiveMatrix;
+
 uniform mat3 worldMatrix;
 uniform mat3 worldMatrixT;
 
