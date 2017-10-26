@@ -16,6 +16,6 @@ void main(void){
 
     vTextureCoord = aTextureCoord;
     vTextureId = aTextureId;
+    aColor.rgb *= aTintScale;
     vColor = aColor;
-    vColor = vec4(aColor.rgb * aTintScale, aColor.a);
 }

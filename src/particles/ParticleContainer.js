@@ -144,6 +144,14 @@ export default class ParticleContainer extends core.Container
         this._tint = 0;
         this.tintRgb = new Float32Array(4);
         this.tint = 0xFFFFFF;
+
+        /**
+         * The tintScale will scale the value of tint in shader. `new tint color = tint * tintScale` .
+         *
+         * @member {number}
+         * @default 1.0
+         */
+        this.tintScale = 1.0;
     }
 
     /**

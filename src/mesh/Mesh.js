@@ -123,6 +123,14 @@ export default class Mesh extends core.Container
         this.tintRgb = new Float32Array([1, 1, 1]);
 
         /**
+         * The tintScale will scale the value of tint in shader. `new tint color = tint * tintScale` .
+         *
+         * @member {number}
+         * @default 1.0
+         */
+        this.tintScale = 1.0;
+
+        /**
          * A map of renderer IDs to webgl render data
          *
          * @private

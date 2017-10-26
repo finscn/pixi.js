@@ -26,6 +26,7 @@ export default class ParticleShader extends Shader
 
                 'uniform mat3 projectionMatrix;',
                 'uniform vec4 uColor;',
+                'uniform float uTintScale;',
 
                 'varying vec2 vTextureCoord;',
                 'varying vec4 vColor;',
@@ -40,6 +41,7 @@ export default class ParticleShader extends Shader
                 '   gl_Position = vec4((projectionMatrix * vec3(v, 1.0)).xy, 0.0, 1.0);',
 
                 '   vTextureCoord = aTextureCoord;',
+                '   uColor.rgb *= uTintScale;',
                 '   vColor = aColor * uColor;',
                 '}',
             ].join('\n'),
