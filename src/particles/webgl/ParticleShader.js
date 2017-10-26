@@ -41,8 +41,8 @@ export default class ParticleShader extends Shader
                 '   gl_Position = vec4((projectionMatrix * vec3(v, 1.0)).xy, 0.0, 1.0);',
 
                 '   vTextureCoord = aTextureCoord;',
-                '   uColor.rgb *= uTintScale;',
                 '   vColor = aColor * uColor;',
+                '   vColor.rgb *= uTintScale;',
                 '}',
             ].join('\n'),
             // hello

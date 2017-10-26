@@ -22,11 +22,8 @@ ${loadNormal}
 
     vec2 fragCoord = gl_FragCoord.xy / uViewSize.xy;
 
-    if (flippedY > 0.0)
-    {
-        // FBOs positions are flipped.
-        fragCoord.y = 1.0 - fragCoord.y;
-    }
+    // FBOs positions are flipped.
+    fragCoord.y = flippedY > 0.0 ? 1.0 - fragCoord.y : fragCoord.y;
 
     vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.x);
     float lightRadius = uLightRadius / uViewSize.x;

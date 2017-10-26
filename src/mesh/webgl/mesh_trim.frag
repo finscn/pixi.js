@@ -12,6 +12,6 @@ void main(void)
         || coord.y < uClampFrame.y || coord.y > uClampFrame.w)
             discard;
 
-    uColor.rgb *= uTintScale;
     gl_FragColor = texture2D(uSampler, coord) * uColor;
+    gl_FragColor.rgb *= uTintScale;
 }

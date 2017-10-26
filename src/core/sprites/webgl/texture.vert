@@ -16,6 +16,6 @@ void main(void){
 
     vTextureCoord = aTextureCoord;
     vTextureId = aTextureId;
-    aColor.rgb *= aTintScale;
     vColor = aColor;
+    vColor.rgb *= aTintScale;
 }
