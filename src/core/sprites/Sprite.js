@@ -312,7 +312,7 @@ export default class Sprite extends Container
     {
         this.calculateVertices();
 
-        renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
+        renderer.batch.setObjectRenderer(renderer.plugins[this.pluginName]);
         renderer.plugins[this.pluginName].render(this);
     }
 
@@ -503,6 +503,11 @@ export default class Sprite extends Container
     static fromImage(imageId, crossorigin, scaleMode)
     {
         return new Sprite(Texture.fromImage(imageId, crossorigin, scaleMode));
+    }
+
+    static fromSVG(svgId, crossorigin, scaleMode)
+    {
+        return new Sprite(Texture.fromSVG(svgId, crossorigin, scaleMode));
     }
 
     /**

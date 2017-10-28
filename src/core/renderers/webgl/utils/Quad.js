@@ -1,5 +1,5 @@
-import glCore from 'pixi-gl-core';
 import createIndicesForQuads from '../../../utils/createIndicesForQuads';
+import Geometry from '../../../geometry/Geometry';
 
 /**
  * Helper class to create a quad
@@ -7,20 +7,15 @@ import createIndicesForQuads from '../../../utils/createIndicesForQuads';
  * @class
  * @memberof PIXI
  */
-export default class Quad
+export default class Quad extends Geometry
 {
     /**
      * @param {WebGLRenderingContext} gl - The gl context for this quad to use.
      * @param {object} state - TODO: Description
      */
-    constructor(gl, state)
+    constructor()
     {
-        /**
-         * the current WebGL drawing context
-         *
-         * @member {WebGLRenderingContext}
-         */
-        this.gl = gl;
+        super();
 
         /**
          * An array of vertices
@@ -56,8 +51,8 @@ export default class Quad
             this.interleaved[(i * 4) + 3] = this.uvs[(i * 2) + 1];
         }
 
-        /**
-         * An array containing the indices of the vertices
+        /*
+         * @member {Uint16Array} An array containing the indices of the vertices
          *
          * @member {Uint16Array}
          */
@@ -68,21 +63,25 @@ export default class Quad
          *
          * @member {glCore.GLBuffer}
          */
-        this.vertexBuffer = glCore.GLBuffer.createVertexBuffer(gl, this.interleaved, gl.STATIC_DRAW);
+       // this.vertexBuffer = glCore.GLBuffer.createVertexBuffer(gl, this.interleaved, gl.STATIC_DRAW);
 
         /**
          * The index buffer
          *
          * @member {glCore.GLBuffer}
          */
-        this.indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indices, gl.STATIC_DRAW);
+       // this.indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indices, gl.STATIC_DRAW);
 
         /**
          * The vertex array object
          *
          * @member {glCore.VertexArrayObject}
          */
-        this.vao = new glCore.VertexArrayObject(gl, state);
+       // this.vao = new glCore.VertexArrayObject(gl, state);
+
+        this.addAttribute('aVertexPosition', this.vertices)
+        .addAttribute('aTextureCoord', this.uvs)
+        .addIndex(this.indices);
     }
 
     /**
@@ -147,6 +146,9 @@ export default class Quad
      */
     upload()
     {
+        this.getAttribute('aVertexPosition').update();
+        this.getAttribute('aTextureCoord').update();
+
         for (let i = 0; i < 4; i++)
         {
             this.interleaved[i * 4] = this.vertices[(i * 2)];
@@ -165,9 +167,9 @@ export default class Quad
      */
     destroy()
     {
-        const gl = this.gl;
+     //   const gl = this.gl;
 
-        gl.deleteBuffer(this.vertexBuffer);
-        gl.deleteBuffer(this.indexBuffer);
+      //  gl.deleteBuffer(this.vertexBuffer);
+      //  gl.deleteBuffer(this.indexBuffer);
     }
 }

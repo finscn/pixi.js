@@ -1,15 +1,15 @@
-import WebGLManager from './WebGLManager';
+import WebGLSystem from './WebGLSystem';
 import AlphaMaskFilter from '../filters/spriteMask/SpriteMaskFilter';
 
 /**
  * @class
- * @extends PIXI.WebGLManager
+ * @extends PIXI.WebGLSystem
  * @memberof PIXI
  */
-export default class MaskManager extends WebGLManager
+export default class MaskSystem extends WebGLSystem
 {
     /**
-     * @param {PIXI.WebGLRenderer} renderer - The renderer this manager works for.
+     * @param {PIXI.WebGLRenderer} renderer - The renderer this System works for.
      */
     constructor(renderer)
     {
@@ -20,7 +20,7 @@ export default class MaskManager extends WebGLManager
         this.scissorData = null;
         this.scissorRenderTarget = null;
 
-        this.enableScissor = true;
+        this.enableScissor = false;
 
         this.alphaMaskPool = [];
         this.alphaMaskIndex = 0;
@@ -32,7 +32,7 @@ export default class MaskManager extends WebGLManager
      * @param {PIXI.DisplayObject} target - Display Object to push the mask to
      * @param {PIXI.Sprite|PIXI.Graphics} maskData - The masking data.
      */
-    pushMask(target, maskData)
+    push(target, maskData)
     {
         // TODO the root check means scissor rect will not
         // be used on render textures more info here:
@@ -45,7 +45,7 @@ export default class MaskManager extends WebGLManager
         else if (this.enableScissor
             && !this.scissor
             && this.renderer._activeRenderTarget.root
-            && !this.renderer.stencilManager.stencilMaskStack.length
+            && !this.renderer.stencil.stencilMaskStack.length
             && maskData.isFastRect())
         {
             const matrix = maskData.worldTransform;
@@ -76,13 +76,13 @@ export default class MaskManager extends WebGLManager
      * @param {PIXI.DisplayObject} target - Display Object to pop the mask from
      * @param {PIXI.Sprite|PIXI.Graphics} maskData - The masking data.
      */
-    popMask(target, maskData)
+    pop(target, maskData)
     {
         if (maskData.texture)
         {
             this.popSpriteMask(target, maskData);
         }
-        else if (this.enableScissor && !this.renderer.stencilManager.stencilMaskStack.length)
+        else if (this.enableScissor && !this.renderer.stencil.stencilMaskStack.length)
         {
             this.popScissorMask(target, maskData);
         }
@@ -113,7 +113,7 @@ export default class MaskManager extends WebGLManager
         // TODO - may cause issues!
         target.filterArea = maskData.getBounds(true);
 
-        this.renderer.filterManager.pushFilter(target, alphaMaskFilter);
+        this.renderer.filterSystem.pushFilter(target, alphaMaskFilter);
 
         this.alphaMaskIndex++;
     }
@@ -124,7 +124,7 @@ export default class MaskManager extends WebGLManager
      */
     popSpriteMask()
     {
-        this.renderer.filterManager.popFilter();
+        this.renderer.filterSystem.popFilter();
         this.alphaMaskIndex--;
     }
 
@@ -135,8 +135,8 @@ export default class MaskManager extends WebGLManager
      */
     pushStencilMask(maskData)
     {
-        this.renderer.currentRenderer.stop();
-        this.renderer.stencilManager.pushStencil(maskData);
+        this.renderer.batch.flush();
+        this.renderer.stencil.pushStencil(maskData);
     }
 
     /**
@@ -145,8 +145,8 @@ export default class MaskManager extends WebGLManager
      */
     popStencilMask()
     {
-        this.renderer.currentRenderer.stop();
-        this.renderer.stencilManager.popStencil();
+       // this.renderer.currentRenderer.stop();
+        this.renderer.stencil.popStencil();
     }
 
     /**

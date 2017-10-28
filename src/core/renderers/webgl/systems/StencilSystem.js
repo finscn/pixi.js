@@ -1,14 +1,14 @@
-import WebGLManager from './WebGLManager';
+import WebGLSystem from './WebGLSystem';
 
 /**
  * @class
- * @extends PIXI.WebGLManager
+ * @extends PIXI.WebGLSystem
  * @memberof PIXI
  */
-export default class StencilManager extends WebGLManager
+export default class StencilSystem extends WebGLSystem
 {
     /**
-     * @param {PIXI.WebGLRenderer} renderer - The renderer this manager works for.
+     * @param {PIXI.WebGLRenderer} renderer - The renderer this System works for.
      */
     constructor(renderer)
     {
@@ -17,7 +17,7 @@ export default class StencilManager extends WebGLManager
     }
 
     /**
-     * Changes the mask stack that is used by this manager.
+     * Changes the mask stack that is used by this System.
      *
      * @param {PIXI.Graphics[]} stencilMaskStack - The mask stack
      */
@@ -44,9 +44,9 @@ export default class StencilManager extends WebGLManager
      */
     pushStencil(graphics)
     {
-        this.renderer.setObjectRenderer(this.renderer.plugins.graphics);
+        this.renderer.batch.setObjectRenderer(this.renderer.plugins.graphics);
 
-        this.renderer._activeRenderTarget.attachStencilBuffer();
+//        this.renderer._activeRenderTarget.attachStencilBuffer();
 
         const gl = this.renderer.gl;
         const prevMaskCount = this.stencilMaskStack.length;
@@ -72,7 +72,7 @@ export default class StencilManager extends WebGLManager
      */
     popStencil()
     {
-        this.renderer.setObjectRenderer(this.renderer.plugins.graphics);
+        this.renderer.batch.setObjectRenderer(this.renderer.plugins.graphics);
 
         const gl = this.renderer.gl;
         const graphics = this.stencilMaskStack.pop();
@@ -123,8 +123,8 @@ export default class StencilManager extends WebGLManager
      */
     destroy()
     {
-        WebGLManager.prototype.destroy.call(this);
+        super.destroy(this);
 
-        this.stencilMaskStack.stencilStack = null;
+        this.stencilMaskStack = null;
     }
 }

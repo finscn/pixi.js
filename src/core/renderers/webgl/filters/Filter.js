@@ -1,9 +1,9 @@
-import extractUniformsFromSrc from './extractUniformsFromSrc';
-import { uid } from '../../../utils';
+import Shader from '../../../shader/Shader';
+import Program from '../../../shader/Program';
 import { BLEND_MODES } from '../../../const';
 import settings from '../../../settings';
-
-const SOURCE_KEY_MAP = {};
+import { uid } from '../../../utils';
+import extractUniformsFromSrc from './extractUniformsFromSrc';
 
 // let math = require('../../../math');
 /**
@@ -11,7 +11,7 @@ const SOURCE_KEY_MAP = {};
  * @memberof PIXI
  * @extends PIXI.Shader
  */
-export default class Filter
+export default class Filter extends Shader
 {
     /**
      * @param {string} [vertexSrc] - The source of the vertex shader.
@@ -20,19 +20,9 @@ export default class Filter
      */
     constructor(vertexSrc, fragmentSrc, uniforms)
     {
-        /**
-         * The vertex shader.
-         *
-         * @member {string}
-         */
-        this.vertexSrc = vertexSrc || Filter.defaultVertexSrc;
+        const program = Program.from(vertexSrc, fragmentSrc);
 
-        /**
-         * The fragment shader.
-         *
-         * @member {string}
-         */
-        this.fragmentSrc = fragmentSrc || Filter.defaultFragmentSrc;
+        super(program, uniforms);
 
         this._blendMode = BLEND_MODES.NORMAL;
 
@@ -61,12 +51,12 @@ export default class Filter
         this.glShaders = {};
 
         // used for cacheing.. sure there is a better way!
-        if (!SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc])
+        if (!Filter.SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc])
         {
-            SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc] = uid();
+            Filter.SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc] = uid();
         }
 
-        this.glShaderKey = SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc];
+        this.glShaderKey = Filter.SOURCE_KEY_MAP[this.vertexSrc + this.fragmentSrc];
 
         /**
          * The padding of the filter. Some filters require extra space to breath such as a blur.
@@ -114,12 +104,9 @@ export default class Filter
      */
     apply(filterManager, input, output, clear, currentState) // eslint-disable-line no-unused-vars
     {
-        // --- //
-        //  this.uniforms.filterMatrix = filterManager.calculateSpriteMatrix(tempMatrix, window.panda );
-
         // do as you please!
 
-        filterManager.applyFilter(this, input, output, clear);
+        filterManager.applyFilter(this, input, output, clear, currentState);
 
         // or just do a regular render..
     }
@@ -200,3 +187,12 @@ export default class Filter
         ].join('\n');
     }
 }
+
+/**
+ * Used for caching shader IDs
+ *
+ * @static
+ * @private
+ */
+Filter.SOURCE_KEY_MAP = {};
+

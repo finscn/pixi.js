@@ -24,30 +24,19 @@ export default class TilingSpriteRenderer extends core.ObjectRenderer
     {
         super(renderer);
 
-        this.shader = null;
-        this.simpleShader = null;
-        this.quad = null;
-    }
+        const uniforms = { globals: this.renderer.globalUniforms };
 
-    /**
-     * Sets up the renderer context and necessary buffers.
-     *
-     * @private
-     */
-    onContextChange()
-    {
-        const gl = this.renderer.gl;
-
-        this.shader = new core.Shader(gl,
+        this.shader = new core.Shader.from(
             readFileSync(join(__dirname, './tilingSprite.vert'), 'utf8'),
-            readFileSync(join(__dirname, './tilingSprite.frag'), 'utf8'));
-        this.simpleShader = new core.Shader(gl,
-            readFileSync(join(__dirname, './tilingSprite.vert'), 'utf8'),
-            readFileSync(join(__dirname, './tilingSprite_simple.frag'), 'utf8'));
+            readFileSync(join(__dirname, './tilingSprite.frag'), 'utf8'),
+            uniforms);
 
-        this.renderer.bindVao(null);
-        this.quad = new core.Quad(gl, this.renderer.state.attribState);
-        this.quad.initVao(this.shader);
+        this.simpleShader = new core.Shader.from(
+            readFileSync(join(__dirname, './tilingSprite.vert'), 'utf8'),
+            readFileSync(join(__dirname, './tilingSprite_simple.frag'), 'utf8'),
+            uniforms);
+
+        this.quad = new core.Quad();
     }
 
     /**
@@ -58,8 +47,6 @@ export default class TilingSpriteRenderer extends core.ObjectRenderer
     {
         const renderer = this.renderer;
         const quad = this.quad;
-
-        renderer.bindVao(quad.vao);
 
         let vertices = quad.vertices;
 
@@ -79,8 +66,6 @@ export default class TilingSpriteRenderer extends core.ObjectRenderer
             vertices[2] = vertices[4] = 1.0 - ts.anchor.x;
             vertices[5] = vertices[7] = 1.0 - ts.anchor.y;
         }
-
-        quad.upload();
 
         const tex = ts._texture;
         const baseTex = tex.baseTexture;
@@ -106,8 +91,6 @@ export default class TilingSpriteRenderer extends core.ObjectRenderer
         }
 
         const shader = isSimple ? this.simpleShader : this.shader;
-
-        renderer.bindShader(shader);
 
         const w = tex.width;
         const h = tex.height;
@@ -141,14 +124,15 @@ export default class TilingSpriteRenderer extends core.ObjectRenderer
 
         shader.uniforms.uTransform = tempMat.toArray(true);
         shader.uniforms.uColor = core.utils.premultiplyTintToRgba(ts.tint, ts.worldAlpha,
-            shader.uniforms.uColor, baseTex.premultipliedAlpha);
+            shader.uniforms.uColor, baseTex.premultiplyAlpha);
         shader.uniforms.translationMatrix = ts.transform.worldTransform.toArray(true);
+        shader.uniforms.uSampler = tex;
 
-        shader.uniforms.uSampler = renderer.bindTexture(tex);
+        renderer.shader.bind(shader);
+        renderer.geometry.bind(quad);// , renderer.shader.getGLShader());
 
-        renderer.setBlendMode(core.utils.correctBlendMode(ts.blendMode, baseTex.premultipliedAlpha));
-
-        quad.vao.draw(this.renderer.gl.TRIANGLES, 6, 0);
+        renderer.setBlendMode(core.utils.correctBlendMode(ts.blendMode, baseTex.premultiplyAlpha));
+        renderer.geometry.draw(this.renderer.gl.TRIANGLES, 6, 0);
     }
 }
 

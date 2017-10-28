@@ -1,5 +1,5 @@
 import BaseTexture from './BaseTexture';
-import settings from '../settings';
+import FrameBuffer from './FrameBuffer';
 
 /**
  * A BaseRenderTexture is a special texture that allows any PixiJS display object to be rendered to it.
@@ -50,17 +50,10 @@ export default class BaseRenderTexture extends BaseTexture
      */
     constructor(width = 100, height = 100, scaleMode, resolution)
     {
-        super(null, scaleMode);
-
-        this.resolution = resolution || settings.RESOLUTION;
+        super(null, scaleMode, resolution, width, height);
 
         this.width = Math.ceil(width);
         this.height = Math.ceil(height);
-
-        this.realWidth = this.width * this.resolution;
-        this.realHeight = this.height * this.resolution;
-
-        this.scaleMode = scaleMode !== undefined ? scaleMode : settings.SCALE_MODE;
         this.hasLoaded = true;
 
         /**
@@ -69,7 +62,7 @@ export default class BaseRenderTexture extends BaseTexture
          * @private
          * @member {object<number, WebGLTexture>}
          */
-        this._glRenderTargets = {};
+//        this._glRenderTargets = {};
 
         /**
          * A reference to the canvas render target (we only need one as this can be shared across renderers)
@@ -79,12 +72,26 @@ export default class BaseRenderTexture extends BaseTexture
          */
         this._canvasRenderTarget = null;
 
+        this.clearColor = [0, 0, 0, 0];
+
+        this.frameBuffer = new FrameBuffer(width, height)
+        .addColorTexture(0, this);
+
+        // TODO - could this be added the systems?
+
         /**
-         * This will let the renderer know if the texture is valid. If it's not then it cannot be rendered.
+         * The data structure for the stencil masks
          *
-         * @member {boolean}
+         * @member {PIXI.Graphics[]}
          */
-        this.valid = false;
+        this.stencilMaskStack = [];
+
+        /**
+         * The data structure for the filters
+         *
+         * @member {PIXI.Graphics[]}
+         */
+        this.filterStack = [];
     }
 
     /**
@@ -95,28 +102,10 @@ export default class BaseRenderTexture extends BaseTexture
      */
     resize(width, height)
     {
-        width = Math.ceil(width);
-        height = Math.ceil(height);
-
-        if (width === this.width && height === this.height)
-        {
-            return;
-        }
-
-        this.valid = (width > 0 && height > 0);
-
-        this.width = width;
-        this.height = height;
-
-        this.realWidth = this.width * this.resolution;
-        this.realHeight = this.height * this.resolution;
-
-        if (!this.valid)
-        {
-            return;
-        }
-
-        this.emit('update', this);
+        this.width = Math.ceil(width);
+        this.height = Math.ceil(height);
+        super.resize(width, height);
+        this.frameBuffer.resize(width, height);
     }
 
     /**

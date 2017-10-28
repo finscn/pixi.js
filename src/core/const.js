@@ -136,6 +136,38 @@ export const DRAW_MODES = {
     TRIANGLE_FAN:   6,
 };
 
+export const FORMATS = {
+    RGBA:             6408,
+    RGB:              6407,
+    ALPHA:            6406,
+    LUMINANCE:        6409,
+    LUMINANCE_ALPHA:  6410,
+    DEPTH_COMPONENT:  6402,
+    DEPTH_STENCIL:    34041,
+};
+
+export const TARGETS = {
+    TEXTURE_2D: 3553,
+    TEXTURE_CUBE_MAP: 34067,
+    TEXTURE_2D_ARRAY: 35866,
+    TEXTURE_CUBE_MAP_POSITIVE_X: 34069,
+    TEXTURE_CUBE_MAP_NEGATIVE_X: 34070,
+    TEXTURE_CUBE_MAP_POSITIVE_Y: 34071,
+    TEXTURE_CUBE_MAP_NEGATIVE_Y: 34072,
+    TEXTURE_CUBE_MAP_POSITIVE_Z: 34073,
+    TEXTURE_CUBE_MAP_NEGATIVE_Z: 34074,
+};
+
+export const TYPES = {
+    UNSIGNED_BYTE: 5121,
+    UNSIGNED_SHORT: 5123,
+    UNSIGNED_SHORT_5_6_5: 33635,
+    UNSIGNED_SHORT_4_4_4_4: 32819,
+    UNSIGNED_SHORT_5_5_5_1: 32820,
+    FLOAT: 5126,
+    HALF_FLOAT: 36193,
+};
+
 /**
  * The scale modes that are supported by pixi.
  *
@@ -151,8 +183,8 @@ export const DRAW_MODES = {
  * @property {number} NEAREST Pixelating scaling
  */
 export const SCALE_MODES = {
-    LINEAR:     0,
-    NEAREST:    1,
+    LINEAR:     1,
+    NEAREST:    0,
 };
 
 /**
@@ -175,9 +207,9 @@ export const SCALE_MODES = {
  * @property {number} MIRRORED_REPEAT - The texture uvs tile and repeat with mirroring
  */
 export const WRAP_MODES = {
-    CLAMP:          0,
-    REPEAT:         1,
-    MIRRORED_REPEAT: 2,
+    CLAMP:           33071,
+    REPEAT:          10497,
+    MIRRORED_REPEAT: 33648,
 };
 
 /**

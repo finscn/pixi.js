@@ -1,5 +1,6 @@
-import { GC_MODES } from '../../const';
-import settings from '../../settings';
+import WebGLSystem from '../WebGLSystem';
+import { GC_MODES } from '../../../../const';
+import settings from '../../../../settings';
 
 /**
  * TextureGarbageCollector. This class manages the GPU and ensures that it does not get clogged
@@ -8,14 +9,14 @@ import settings from '../../settings';
  * @class
  * @memberof PIXI
  */
-export default class TextureGarbageCollector
+export default class TextureGCSystem extends WebGLSystem
 {
     /**
-     * @param {PIXI.WebGLRenderer} renderer - The renderer this manager works for.
+     * @param {PIXI.WebGLRenderer} renderer - The renderer this System works for.
      */
     constructor(renderer)
     {
-        this.renderer = renderer;
+        super(renderer);
 
         this.count = 0;
         this.checkCount = 0;
@@ -28,7 +29,7 @@ export default class TextureGarbageCollector
      * Checks to see when the last time a texture was used
      * if the texture has not been used for a specified amount of time it will be removed from the GPU
      */
-    update()
+    postrender()
     {
         this.count++;
 
@@ -53,8 +54,8 @@ export default class TextureGarbageCollector
      */
     run()
     {
-        const tm = this.renderer.textureManager;
-        const managedTextures =  tm._managedTextures;
+        const tm = this.renderer.texture;
+        const managedTextures =  tm.managedTextures;
         let wasRemoved = false;
 
         for (let i = 0; i < managedTextures.length; i++)
@@ -62,7 +63,7 @@ export default class TextureGarbageCollector
             const texture = managedTextures[i];
 
             // only supports non generated textures at the moment!
-            if (!texture._glRenderTargets && this.count - texture.touched > this.maxIdle)
+            if (!texture.frameBuffer && this.count - texture.touched > this.maxIdle)
             {
                 tm.destroyTexture(texture, true);
                 managedTextures[i] = null;
@@ -93,7 +94,7 @@ export default class TextureGarbageCollector
      */
     unload(displayObject)
     {
-        const tm = this.renderer.textureManager;
+        const tm = this.renderer.textureSystem;
 
         // only destroy non generated textures
         if (displayObject._texture && displayObject._texture._glRenderTargets)

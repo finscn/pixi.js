@@ -1,4 +1,5 @@
-import glCore from 'pixi-gl-core';
+import Geometry from '../../geometry/Geometry';
+import Buffer from '../../geometry/Buffer';
 
 /**
  * An object containing WebGL specific properties to be used by the WebGL renderer
@@ -12,9 +13,8 @@ export default class WebGLGraphicsData
     /**
      * @param {WebGLRenderingContext} gl - The current WebGL drawing context
      * @param {PIXI.Shader} shader - The shader
-     * @param {object} attribsState - The state for the VAO
      */
-    constructor(gl, shader, attribsState)
+    constructor(gl, shader)
     {
         /**
          * The current WebGL drawing context
@@ -45,13 +45,13 @@ export default class WebGLGraphicsData
          * The main buffer
          * @member {WebGLBuffer}
          */
-        this.buffer = glCore.GLBuffer.createVertexBuffer(gl);
+        this.buffer = new Buffer();
 
         /**
          * The index buffer
          * @member {WebGLBuffer}
          */
-        this.indexBuffer = glCore.GLBuffer.createIndexBuffer(gl);
+        this.indexBuffer = new Buffer();
 
         /**
          * Whether this graphics is dirty or not
@@ -74,10 +74,9 @@ export default class WebGLGraphicsData
          */
         this.shader = shader;
 
-        this.vao = new glCore.VertexArrayObject(gl, attribsState)
-        .addIndex(this.indexBuffer)
-        .addAttribute(this.buffer, shader.attributes.aVertexPosition, gl.FLOAT, false, 4 * 6, 0)
-        .addAttribute(this.buffer, shader.attributes.aColor, gl.FLOAT, false, 4 * 6, 2 * 4);
+        this.geometry = new Geometry()
+        .addAttribute('aVertexPosition|aColor', this.buffer)
+        .addIndex(this.indexBuffer);
     }
 
     /**
@@ -95,11 +94,12 @@ export default class WebGLGraphicsData
     upload()
     {
         this.glPoints = new Float32Array(this.points);
-        this.buffer.upload(this.glPoints);
+        this.buffer.update(this.glPoints);
 
         this.glIndices = new Uint16Array(this.indices);
-        this.indexBuffer.upload(this.glIndices);
+        this.indexBuffer.update(this.glIndices);
 
+  //     console.log("UPKOADING,.",this.glPoints,this.glIndices)
         this.dirty = false;
     }
 

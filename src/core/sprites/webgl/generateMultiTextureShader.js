@@ -1,4 +1,5 @@
-import Shader from '../../Shader';
+import Shader from '../../shader/Shader';
+import UniformGroup from '../../shader/UniformGroup';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -18,23 +19,24 @@ const fragTemplate = [
 
 export default function generateMultiTextureShader(gl, maxTextures)
 {
-    const vertexSrc = readFileSync(join(__dirname, './texture.vert'), 'utf8');
-    let fragmentSrc = fragTemplate;
-
-    fragmentSrc = fragmentSrc.replace(/%count%/gi, maxTextures);
-    fragmentSrc = fragmentSrc.replace(/%forloop%/gi, generateSampleSrc(maxTextures));
-
-    const shader = new Shader(gl, vertexSrc, fragmentSrc);
-
-    const sampleValues = [];
+    const sampleValues = new Int32Array(maxTextures);
 
     for (let i = 0; i < maxTextures; i++)
     {
         sampleValues[i] = i;
     }
 
-    shader.bind();
-    shader.uniforms.uSamplers = sampleValues;
+    const uniforms = {
+        default: UniformGroup.from({ uSamplers: sampleValues }, true),
+    };
+
+    const vertexSrc = readFileSync(join(__dirname, './texture.vert'), 'utf8');
+    let fragmentSrc = fragTemplate;
+
+    fragmentSrc = fragmentSrc.replace(/%count%/gi, maxTextures);
+    fragmentSrc = fragmentSrc.replace(/%forloop%/gi, generateSampleSrc(maxTextures));
+
+    const shader = Shader.from(vertexSrc, fragmentSrc, uniforms);
 
     return shader;
 }

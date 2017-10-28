@@ -46,6 +46,8 @@ export default {
      */
     RESOLUTION: 1,
 
+    PREFER_WEBGL_2: false,
+
     /**
      * Default filter resolution.
      *
@@ -177,7 +179,7 @@ export default {
      * @type {PIXI.WRAP_MODES}
      * @default PIXI.WRAP_MODES.CLAMP
      */
-    WRAP_MODE: 0,
+    WRAP_MODE: 33071,
 
     /**
      * The scale modes that are supported by pixi.
@@ -187,7 +189,7 @@ export default {
      * @type {PIXI.SCALE_MODES}
      * @default PIXI.SCALE_MODES.LINEAR
      */
-    SCALE_MODE: 0,
+    SCALE_MODE: 1,
 
     /**
      * Default specify float precision in vertex shader.
@@ -218,5 +220,4 @@ export default {
      * @type {boolean}
      */
     CAN_UPLOAD_SAME_BUFFER: canUploadSameBuffer(),
-
 };

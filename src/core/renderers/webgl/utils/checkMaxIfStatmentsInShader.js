@@ -1,5 +1,3 @@
-import glCore from 'pixi-gl-core';
-
 const fragTemplate = [
     'precision mediump float;',
     'void main(void){',
@@ -11,24 +9,12 @@ const fragTemplate = [
 
 export default function checkMaxIfStatmentsInShader(maxIfs, gl)
 {
-    const createTempContext = !gl;
-
     // @if DEBUG
     if (maxIfs === 0)
     {
         throw new Error('Invalid value of `0` passed to `checkMaxIfStatementsInShader`');
     }
     // @endif
-
-    if (createTempContext)
-    {
-        const tinyCanvas = document.createElement('canvas');
-
-        tinyCanvas.width = 1;
-        tinyCanvas.height = 1;
-
-        gl = glCore.createContext(tinyCanvas);
-    }
 
     const shader = gl.createShader(gl.FRAGMENT_SHADER);
 
@@ -47,15 +33,6 @@ export default function checkMaxIfStatmentsInShader(maxIfs, gl)
         {
             // valid!
             break;
-        }
-    }
-
-    if (createTempContext)
-    {
-        // get rid of context
-        if (gl.getExtension('WEBGL_lose_context'))
-        {
-            gl.getExtension('WEBGL_lose_context').loseContext();
         }
     }
 
