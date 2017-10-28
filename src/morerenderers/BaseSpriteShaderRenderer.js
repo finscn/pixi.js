@@ -114,57 +114,32 @@ export default class BaseSpriteShaderRenderer extends core.ObjectRenderer
         }
     }
 
-    getVertexHeadSrc()
-    {
-        return [
-            'attribute vec2 aVertexPosition;',
-            'attribute vec2 aTextureCoord;',
-            'uniform mat3 projectionMatrix;',
-            // 'uniform vec4 uColor;',
-            'uniform float uAlpha;',
-            'varying vec2 vTextureCoord;',
-            // 'varying vec4 vColor;',
-            'varying float vAlpha;',
-        ].join('\n');
-    }
-
     getVertexSrc()
     {
-        return [
-            this.getVertexHeadSrc(),
+        return `
+            attribute vec2 aVertexPosition;
+            attribute vec2 aTextureCoord;
+            uniform mat3 projectionMatrix;
+            uniform float uAlpha;
+            varying vec2 vTextureCoord;
 
-            'void main(void) {',
-            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
-            // '    vColor = vec4(uColor.rgb * uColor.a, uColor.a);',
-            '    vAlpha = uAlpha;',
-            '    vTextureCoord = aTextureCoord;',
-            '}',
-        ].join('\n');
-    }
-
-    getFragmentHeadSrc()
-    {
-        return [
-            'uniform sampler2D uSampler;',
-            'varying vec2 vTextureCoord;',
-            // 'varying vec4 vColor;',
-            'varying float vAlpha;',
-        ].join('\n');
+            void main(void) {
+                gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+                vTextureCoord = aTextureCoord;
+            }
+        `;
     }
 
     getFragmentSrc()
     {
-        return [
-            this.getFragmentHeadSrc(),
+        return `
+            uniform sampler2D uSampler;
+            varying vec2 vTextureCoord;
+            uniform float uAlpha;
 
-            'void main(void) {',
-            // '    gl_FragColor = texture2D(uSampler, vTextureCoord) * vColor;',
-            '    gl_FragColor = texture2D(uSampler, vTextureCoord) * vAlpha;',
-            // // '    vec4 color = texture2D(uSampler, vTextureCoord) * vColor;',
-            // '    vec4 color = texture2D(uSampler, vTextureCoord) * uAlpha;',
-            // '    if (color.a == 0.0) discard;',
-            // '    gl_FragColor = color;',
-            '}',
-        ].join('\n');
+            void main(void) {
+                gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;
+            }
+        `;
     }
 }
