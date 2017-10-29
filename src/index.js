@@ -64,8 +64,8 @@ for (const key in morefilters)
     filters[key] = morefilters[key];
 }
 
-import * as morerenderers from './morerenderers';
-const renderers = morerenderers || {};
+import * as moreplugins from './moreplugins';
+const renderers = moreplugins || {};
 const lights = renderers.lights;
 const DisplayPoint = renderers.DisplayPoint;
 const DisplayPointGroup = renderers.DisplayPointGroup;
