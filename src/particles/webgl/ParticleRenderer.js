@@ -103,6 +103,13 @@ export default class ParticleRenderer extends core.ObjectRenderer
                 uploadFunction: this.uploadTint,
                 offset: 0,
             },
+            // tintScaleData
+            {
+                attribute: this.shader.attributes.aTintScale,
+                size: 1,
+                uploadFunction: this.uploadTintScale,
+                offset: 0,
+            },
         ];
     }
 
@@ -429,6 +436,30 @@ export default class ParticleRenderer extends core.ObjectRenderer
             array[offset + stride] = argb;
             array[offset + (stride * 2)] = argb;
             array[offset + (stride * 3)] = argb;
+
+            offset += stride * 4;
+        }
+    }
+
+    /**
+     *
+     * @param {PIXI.DisplayObject[]} children - the array of display objects to render
+     * @param {number} startIndex - the index to start from in the children array
+     * @param {number} amount - the amount of children that will have their rotation uploaded
+     * @param {number[]} array - The vertices to upload.
+     * @param {number} stride - Stride to use for iteration.
+     * @param {number} offset - Offset to start at.
+     */
+    uploadTintScale(children, startIndex, amount, array, stride, offset)
+    {
+        for (let i = 0; i < amount; i++)
+        {
+            const spriteTintScale = children[startIndex + i].tintScale;
+
+            array[offset] = spriteTintScale;
+            array[offset + stride] = spriteTintScale;
+            array[offset + (stride * 2)] = spriteTintScale;
+            array[offset + (stride * 3)] = spriteTintScale;
 
             offset += stride * 4;
         }

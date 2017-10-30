@@ -23,6 +23,7 @@ export default class ParticleShader extends Shader
                 'attribute vec2 aPositionCoord;',
                 'attribute vec2 aScale;',
                 'attribute float aRotation;',
+                'attribute float aTintScale;',
 
                 'uniform mat3 projectionMatrix;',
                 'uniform vec4 uColor;',
@@ -42,7 +43,7 @@ export default class ParticleShader extends Shader
 
                 '   vTextureCoord = aTextureCoord;',
                 '   vColor = aColor * uColor;',
-                '   vColor.rgb *= uTintScale;',
+                '   vColor.rgb *= aTintScale * uTintScale;',
                 '}',
             ].join('\n'),
             // hello
