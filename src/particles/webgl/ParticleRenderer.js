@@ -107,6 +107,7 @@ export default class ParticleRenderer extends core.ObjectRenderer
             {
                 attribute: this.shader.attributes.aTintScale,
                 size: 1,
+                unsignedByte: true,
                 uploadFunction: this.uploadTintScale,
                 offset: 0,
             },
