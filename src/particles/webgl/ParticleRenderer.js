@@ -103,12 +103,12 @@ export default class ParticleRenderer extends core.ObjectRenderer
                 uploadFunction: this.uploadTint,
                 offset: 0,
             },
-            // tintScaleData
+            // colorMultiplierData
             {
-                attribute: this.shader.attributes.aTintScale,
+                attribute: this.shader.attributes.aColorMultiplier,
                 size: 1,
                 unsignedByte: true,
-                uploadFunction: this.uploadTintScale,
+                uploadFunction: this.uploadColorMultiplier,
                 offset: 0,
             },
         ];
@@ -167,7 +167,7 @@ export default class ParticleRenderer extends core.ObjectRenderer
 
         this.shader.uniforms.uColor = core.utils.premultiplyRgba(container.tintRgb,
             container.worldAlpha, this.shader.uniforms.uColor, baseTexture.premultipliedAlpha);
-        this.shader.uniforms.uTintScale = container.tintScale;
+        this.shader.uniforms.uColorMultiplier = container.colorMultiplier;
         // make sure the texture is bound..
         this.shader.uniforms.uSampler = renderer.bindTexture(baseTexture);
 
@@ -451,16 +451,16 @@ export default class ParticleRenderer extends core.ObjectRenderer
      * @param {number} stride - Stride to use for iteration.
      * @param {number} offset - Offset to start at.
      */
-    uploadTintScale(children, startIndex, amount, array, stride, offset)
+    uploadColorMultiplier(children, startIndex, amount, array, stride, offset)
     {
         for (let i = 0; i < amount; i++)
         {
-            const spriteTintScale = children[startIndex + i].tintScale;
+            const spriteColorMultiplier = children[startIndex + i].colorMultiplier;
 
-            array[offset] = spriteTintScale;
-            array[offset + stride] = spriteTintScale;
-            array[offset + (stride * 2)] = spriteTintScale;
-            array[offset + (stride * 3)] = spriteTintScale;
+            array[offset] = spriteColorMultiplier;
+            array[offset + stride] = spriteColorMultiplier;
+            array[offset + (stride * 2)] = spriteColorMultiplier;
+            array[offset + (stride * 3)] = spriteColorMultiplier;
 
             offset += stride * 4;
         }

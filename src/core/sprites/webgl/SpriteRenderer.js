@@ -31,7 +31,7 @@ export default class SpriteRenderer extends ObjectRenderer
 
         /**
          * Number of values sent in the vertex buffer.
-         * aVertexPosition(2), aTextureCoord(1), aColor(1), aTintScale(1), aTextureId(1) = 6
+         * aVertexPosition(2), aTextureCoord(1), aColor(1), aColorMultiplier(1), aTextureId(1) = 6
          *
          * @member {number}
          */
@@ -140,7 +140,7 @@ export default class SpriteRenderer extends ObjectRenderer
                 .addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
                 .addAttribute(vertexBuffer, attrs.aTextureCoord, gl.UNSIGNED_SHORT, true, this.vertByteSize, 2 * 4)
                 .addAttribute(vertexBuffer, attrs.aColor, gl.UNSIGNED_BYTE, true, this.vertByteSize, 3 * 4)
-                .addAttribute(vertexBuffer, attrs.aTintScale, gl.FLOAT, false, this.vertByteSize, 4 * 4);
+                .addAttribute(vertexBuffer, attrs.aColorMultiplier, gl.FLOAT, false, this.vertByteSize, 4 * 4);
 
             if (attrs.aTextureId)
             {
@@ -375,7 +375,7 @@ export default class SpriteRenderer extends ObjectRenderer
                 : sprite._tintRGB + (alpha * 255 << 24);
 
             uint32View[index + 3] = uint32View[index + 9] = uint32View[index + 15] = uint32View[index + 21] = argb;
-            float32View[index + 4] = float32View[index + 10] = float32View[index + 16] = float32View[index + 22] = sprite.tintScale;
+            float32View[index + 4] = float32View[index + 10] = float32View[index + 16] = float32View[index + 22] = sprite.colorMultiplier;
 
             float32View[index + 5] = float32View[index + 11] = float32View[index + 17] = float32View[index + 23] = nextTexture._virtalBoundId;
             /* eslint-enable max-len */
@@ -405,7 +405,7 @@ export default class SpriteRenderer extends ObjectRenderer
                     .addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
                     .addAttribute(vertexBuffer, attrs.aTextureCoord, gl.UNSIGNED_SHORT, true, this.vertByteSize, 2 * 4)
                     .addAttribute(vertexBuffer, attrs.aColor, gl.UNSIGNED_BYTE, true, this.vertByteSize, 3 * 4)
-                    .addAttribute(vertexBuffer, attrs.aTintScale, gl.FLOAT, false, this.vertByteSize, 4 * 4);
+                    .addAttribute(vertexBuffer, attrs.aColorMultiplier, gl.FLOAT, false, this.vertByteSize, 4 * 4);
 
                 if (attrs.aTextureId)
                 {

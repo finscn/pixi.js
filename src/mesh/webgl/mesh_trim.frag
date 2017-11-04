@@ -1,7 +1,7 @@
 varying vec2 vTextureCoord;
 uniform vec4 uClampFrame;
 uniform vec4 uColor;
-uniform float uTintScale;
+uniform float uColorMultiplier;
 
 uniform sampler2D uSampler;
 
@@ -13,5 +13,5 @@ void main(void)
             discard;
 
     gl_FragColor = texture2D(uSampler, coord) * uColor;
-    gl_FragColor.rgb *= uTintScale;
+    gl_FragColor.rgb *= uColorMultiplier;
 }

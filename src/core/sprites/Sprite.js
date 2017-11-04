@@ -75,12 +75,12 @@ export default class Sprite extends Container
         this.tint = 0xFFFFFF;
 
         /**
-         * The tintScale will scale the value of tint in shader. `new tint color = tint * tintScale` .
+         * The colorMultiplier will scale the value of tint in shader. `new color = color * colorMultiplier` .
          *
          * @member {number}
          * @default 1.0
          */
-        this.tintScale = 1.0;
+        this.colorMultiplier = 1.0;
 
         /**
          * The blend mode to be applied to the sprite. Apply a value of `PIXI.BLEND_MODES.NORMAL` to reset the blend mode.
