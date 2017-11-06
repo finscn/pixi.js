@@ -36,6 +36,7 @@ export default class ParticleContainer extends core.Container
      * @param {boolean} [properties.rotation=false] - When true, rotation be uploaded and applied.
      * @param {boolean} [properties.uvs=false] - When true, uvs be uploaded and applied.
      * @param {boolean} [properties.tint=false] - When true, alpha and tint be uploaded and applied.
+     * @param {boolean} [properties.colorMultiplier=false] - When true, colorMultiplier be uploaded and applied.
      * @param {number} [batchSize=16384] - Number of particles per batch. If less than maxSize, it uses maxSize instead.
      * @param {boolean} [autoResize=true] If true, container allocates more batches in case
      *  there are more than `maxSize` particles.
@@ -65,7 +66,7 @@ export default class ParticleContainer extends core.Container
          * @member {boolean[]}
          * @private
          */
-        this._properties = [false, true, false, false, false];
+        this._properties = [false, true, false, false, false, false];
 
         /**
          * @member {number}
@@ -169,6 +170,7 @@ export default class ParticleContainer extends core.Container
             this._properties[3] = 'uvs' in properties ? !!properties.uvs : this._properties[3];
             this._properties[4] = 'alpha' in properties || 'tint' in properties
                 ? !!properties.alpha || !!properties.tint : this._properties[4];
+            this._properties[5] = 'colorMultiplier' in properties ? !!properties.colorMultiplier : this._properties[5];
         }
     }
 
