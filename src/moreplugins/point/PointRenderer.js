@@ -93,9 +93,9 @@ export default class PointRenderer extends ObjectRenderer
             this.vaos[i] = this.renderer.createVao()
                 .addIndex(this.indexBuffer)
                 .addAttribute(this.vertexBuffers[i], shader.attributes.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
-                .addAttribute(this.vertexBuffers[i], shader.attributes.aSize, gl.FLOAT, true, this.vertByteSize, 2 * 4)
-                .addAttribute(this.vertexBuffers[i], shader.attributes.aColor, gl.FLOAT, true, this.vertByteSize, 3 * 4)
-                .addAttribute(this.vertexBuffers[i], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 6 * 4);
+                .addAttribute(this.vertexBuffers[i], shader.attributes.aSize, gl.FLOAT, false, this.vertByteSize, 2 * 4)
+                .addAttribute(this.vertexBuffers[i], shader.attributes.aColor, gl.FLOAT, false, this.vertByteSize, 3 * 4)
+                .addAttribute(this.vertexBuffers[i], shader.attributes.aAlpha, gl.FLOAT, false, this.vertByteSize, 6 * 4);
 
             /* eslint-disable max-len */
         }
@@ -199,9 +199,9 @@ export default class PointRenderer extends ObjectRenderer
                 this.vaos[this.vertexCount] = this.renderer.createVao()
                     .addIndex(this.indexBuffer)
                     .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0)
-                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aSize, gl.FLOAT, true, this.vertByteSize, 2 * 4)
-                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aColor, gl.FLOAT, true, this.vertByteSize, 3 * 4)
-                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aAlpha, gl.FLOAT, true, this.vertByteSize, 6 * 4);
+                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aSize, gl.FLOAT, false, this.vertByteSize, 2 * 4)
+                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aColor, gl.FLOAT, false, this.vertByteSize, 3 * 4)
+                    .addAttribute(this.vertexBuffers[this.vertexCount], shader.attributes.aAlpha, gl.FLOAT, false, this.vertByteSize, 6 * 4);
 
                 /* eslint-disable max-len */
             }
