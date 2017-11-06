@@ -107,7 +107,6 @@ export default class ParticleRenderer extends core.ObjectRenderer
             {
                 attribute: this.shader.attributes.aColorMultiplier,
                 size: 1,
-                unsignedByte: true,
                 uploadFunction: this.uploadColorMultiplier,
                 offset: 0,
             },
