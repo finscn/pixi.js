@@ -33,7 +33,7 @@ export default class ParticleShader extends Shader
                 'varying vec4 vColor;',
 
                 'void main(void){',
-                '   vec2 v = vec(0, 0);',
+                '   vec2 v = vec2(0.0, 0.0);',
 
                 '   v.x = (aVertexPosition.x) * cos(aRotation) - (aVertexPosition.y) * sin(aRotation);',
                 '   v.y = (aVertexPosition.x) * sin(aRotation) + (aVertexPosition.y) * cos(aRotation);',
