@@ -65,10 +65,17 @@ for (const key in morefilters)
 }
 
 import * as moreplugins from './moreplugins';
+
 const renderers = moreplugins || {};
 const lights = renderers.lights;
 const DisplayPoint = renderers.DisplayPoint;
 const DisplayPointGroup = renderers.DisplayPointGroup;
+
+const ShaderParticle = renderers.ShaderParticle;
+const ShaderParticleDisplay = renderers.ShaderParticleDisplay;
+const ShaderParticleStatus = renderers.ShaderParticleStatus;
+const ShaderParticleGroup = renderers.ShaderParticleGroup;
+const ShaderParticleRenderer = renderers.ShaderParticleRenderer;
 
 export {
     extensions,
@@ -84,6 +91,12 @@ export {
     lights,
     DisplayPoint,
     DisplayPointGroup,
+
+    ShaderParticle,
+    ShaderParticleDisplay,
+    ShaderParticleStatus,
+    ShaderParticleGroup,
+    ShaderParticleRenderer,
 };
 
 // Always export PixiJS globally.

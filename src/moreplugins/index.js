@@ -9,5 +9,4 @@ export { default as DisplayPointGroup } from './point/DisplayPointGroup';
 export { default as PointGroupRenderer } from './point/PointGroupRenderer';
 export { default as TrailRenderer } from './trail/TrailRenderer';
 
-import * as lights from './light/lights';
-export { lights };
+export * from './shader-particle';
