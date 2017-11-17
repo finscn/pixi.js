@@ -52,26 +52,22 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         const instanceExt = this.instanceExt;
 
         const display = particleGroup.display;
-        const particles = particleGroup.particles;
-        const totalCount = particles.length;
-
-        display.shader.bind();
-
-        display.updateShader(particleGroup);
-
-        // bind the vao
-        display.vao.bind();
-
-        // // firt we clear the screen with a nice white
-        // gl.clear(gl.COLOR_BUFFER_BIT);
-        // // set the view port to be the correct size of the gl context
-        // gl.viewport(0, 0, this.width, this.height);
+        const particleCount = particleGroup.particleCount;
 
         // re-enable blending so our bunnies look good
-        renderer.state.setBlendMode(this.blendMode);
+        renderer.state.setBlendMode(particleGroup.blendMode);
+
+        display.update(renderer, particleGroup);
 
         // boom! draw some bunnies
-        instanceExt.drawElementsInstancedANGLE(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, totalCount);
+        if (display.useInstanced)
+        {
+            instanceExt.drawElementsInstancedANGLE(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, particleCount);
+        }
+        else
+        {
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+        }
     }
 
     /**
@@ -81,6 +77,10 @@ export default class ShaderParticleRenderer extends ObjectRenderer
     destroy()
     {
         super.destroy();
+
+        this.blendMode = null;
+        this.instanceExt = null;
+        this.gl = null;
     }
 }
 

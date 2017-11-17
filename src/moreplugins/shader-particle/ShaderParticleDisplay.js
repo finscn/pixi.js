@@ -1,33 +1,38 @@
 import glCore from 'pixi-gl-core';
 import Shader from '../../core/Shader';
 
+import vertex from './display.vert.js';
+import fragment from './display.frag.js';
+
 export default class ShaderParticleDisplay
 {
 
-    constructor(vertexSrc, fragmentSrc)
+    constructor(vertexSrc, fragmentSrc, fboSize = 1024)
     {
         // TODO
         this.id = null;
 
-        this.vertexSrc = vertexSrc;
-        this.fragmentSrc = fragmentSrc;
+        this.vertexSrc = vertexSrc || vertex;
+        this.fragmentSrc = fragmentSrc || fragment;
+        this.fboSize = fboSize;
+
+        this.useInstanced = true;
+
+        this.useStatus = [0];
     }
 
     init(gl, particleGroup)
     {
-        this.gl = gl;
-        this.instanceExt = gl.getExtension('ANGLE_instanced_arrays')
+        this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
+        this.initVao(gl, particleGroup);
+    }
+
+    initVao(gl, particleGroup)
+    {
+        const instanceExt = gl.getExtension('ANGLE_instanced_arrays')
              || gl.getExtension('MOZ_ANGLE_instanced_arrays')
              || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
 
-        this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
-        this.initVao(particleGroup);
-    }
-
-    initVao(particleGroup)
-    {
-        const gl = this.gl;
-        const instanceExt = this.instanceExt;
         const shader = this.shader;
         const fboSize = this.fboSize;
 
@@ -36,80 +41,60 @@ export default class ShaderParticleDisplay
 
         const vertCount = 4;
 
-        // aVertexPosition(2), aTextureCoord(2), aFrame(4)
-        const byteCount = 8;
+        // aVertexPosition(2), aTextureCoord(2), // aFrame(4)
+        const byteCount = 4;
         const vertSize = 4;
         const vertByteSize = byteCount * vertSize;
 
         const buff = new ArrayBuffer(vertByteSize * vertCount);
         const posView = new Float32Array(buff);
         const coordView = new Float32Array(buff);
-        const frameView = new Float32Array(buff);
 
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, buff, gl.STATIC_DRAW);
+        const particle = particleGroup.particle;
+        const particleCount = particleGroup.particleCount;
 
-        const particles = particleGroup.particles;
-        const totalCount = particles.length;
-        const firstParticle = particles[0];
-
-        const texture = firstParticle._texture;
-        const verts = firstParticle.vertexData;
-        const frame = texture._frame;
+        const verts = particle.vertexData;
+        const texture = particle._texture;
+        const uvs = texture._uvs;
 
         let offset = 0;
 
         posView[offset + 0] = verts[0];
         posView[offset + 1] = verts[1];
-        coordView[offset + 2] = 0;
-        coordView[offset + 3] = 0;
-        frameView[offset + 4] = frame.x;
-        frameView[offset + 5] = frame.y;
-        frameView[offset + 6] = frame.width;
-        frameView[offset + 7] = frame.height;
+        coordView[offset + 2] = uvs.x0;
+        coordView[offset + 3] = uvs.y0;
 
-        offset += 8;
+        offset += byteCount;
 
         posView[offset + 0] = verts[2];
         posView[offset + 1] = verts[3];
-        coordView[offset + 2] = 0;
-        coordView[offset + 3] = 1;
-        frameView[offset + 4] = frame.x;
-        frameView[offset + 5] = frame.y;
-        frameView[offset + 6] = frame.width;
-        frameView[offset + 7] = frame.height;
+        coordView[offset + 2] = uvs.x1;
+        coordView[offset + 3] = uvs.y1;
 
-        offset += 8;
+        offset += byteCount;
 
         posView[offset + 0] = verts[4];
         posView[offset + 1] = verts[5];
-        coordView[offset + 2] = 1;
-        coordView[offset + 3] = 1;
-        frameView[offset + 4] = frame.x;
-        frameView[offset + 5] = frame.y;
-        frameView[offset + 6] = frame.width;
-        frameView[offset + 7] = frame.height;
+        coordView[offset + 2] = uvs.x2;
+        coordView[offset + 3] = uvs.y2;
 
-        offset += 8;
+        offset += byteCount;
 
         posView[offset + 0] = verts[6];
         posView[offset + 1] = verts[7];
-        coordView[offset + 2] = 1;
-        coordView[offset + 3] = 0;
-        frameView[offset + 4] = frame.x;
-        frameView[offset + 5] = frame.y;
-        frameView[offset + 6] = frame.width;
-        frameView[offset + 7] = frame.height;
+        coordView[offset + 2] = uvs.x3;
+        coordView[offset + 3] = uvs.y3;
 
-        const spriteIndices = new Float32Array(totalCount * 2);
+        const particleIndicesBuff = new Float32Array(particleCount * 2);
 
         let idx = 0;
         let c = 0;
         let r = 0;
 
-        for (let i = 0; i < totalCount; i++)
+        for (let i = 0; i < particleCount; i++)
         {
-            spriteIndices[idx + 0] = c / fboSize;
-            spriteIndices[idx + 1] = r / fboSize;
+            particleIndicesBuff[idx + 0] = c / fboSize;
+            particleIndicesBuff[idx + 1] = r / fboSize;
 
             idx += 2;
             c++;
@@ -121,36 +106,72 @@ export default class ShaderParticleDisplay
         }
         idx = 0;
 
-        // create some buffers to hold our vertex data
-        // the vertex data here does not hold a posiiton of the bunny, but the uv of the pixle in the physics texture
-        const quadSpriteIndices = new glCore.GLBuffer.createVertexBuffer(gl, spriteIndices, gl.STATIC_DRAW);
+        const attrs = shader.attributes;
 
         // create a VertexArrayObject - this will hold all the details for rendering the texture
         const vao = new glCore.VertexArrayObject(gl);
-        const attrs = shader.attributes;
+        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, buff, gl.STATIC_DRAW);
+        const particleIndices = new glCore.GLBuffer.createVertexBuffer(gl, particleIndicesBuff, gl.STATIC_DRAW);
 
         vao.addIndex(indexBuffer);
-        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 8);
-        vao.addAttribute(vertexBuffer, attrs.aFrame, gl.FLOAT, false, vertByteSize, 16);
 
-        vao.addAttribute(quadSpriteIndices, attrs.aIndex);
+        // create some buffers to hold our vertex data
+        // the vertex data here does not hold a posiiton of the bunny, but the uv of the pixle in the physics texture
+        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, vertByteSize, 0);
+        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 2 * vertSize);
+        vao.addAttribute(particleIndices, attrs.aParticleIndex);
 
         vao.bind();
-        instanceExt.vertexAttribDivisorANGLE(attrs.aIndex.location, 1);
-        // instanceExt.vertexAttribDivisorANGLE(attrs.aFrame.location, 1);
+        instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
 
         this.vao = vao;
     }
 
-    update(particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
+    update(renderer, particleGroup)
     {
-        // nothing to do
+        const shader = this.shader;
+
+        renderer.bindVao(this.vao);
+        renderer.bindShader(shader);
+
+        const particle = particleGroup.particle;
+        const texture = particle._texture;
+
+        const texLocation = renderer.bindTexture(texture);
+
+        this.shader.uniforms.uTexture = texLocation;
+
+        const statusList = particleGroup.statusList;
+        let location = 1;
+
+        this.useStatus.forEach(function (statusIndex)
+        {
+            const texture = statusList[statusIndex].renderTargetOut.texture;
+
+            particleGroup.bindTexture(renderer, texture, location);
+            shader.uniforms['stateTex' + statusIndex] = location;
+            location++;
+        });
+
+        shader.uniforms.uAlpha = particleGroup.alpha;
+        shader.uniforms.uColorMultiplier = particleGroup.colorMultiplier;
+        shader.uniforms.uColorOffset = particleGroup.colorOffset;
+
+        const pos = shader.uniforms.uPosition;
+
+        if (pos)
+        {
+            pos[0] = particleGroup.position.x;
+            pos[1] = particleGroup.position.y;
+            shader.uniforms.uPosition = pos;
+        }
+
+        this.updateShader(renderer, particleGroup);
     }
 
-    updateShader(particleGroup)
+    updateShader(renderer, particleGroup)  // eslint-disable-line no-unused-vars
     {
-        const statusList = particleGroup.statusList;
+        // const statusList = particleGroup.statusList;
 
         // ==========================================
         //
@@ -158,18 +179,8 @@ export default class ShaderParticleDisplay
         //
         //
 
-        // bind the texture we just rendered in step one.
-        statusList[0].fboOut.texture.bind();
-
-        // statusList[1].fboOut.texture.bind(2);
-
-        // textures
-        this.shader.uniforms.positionTex = 0;
-        // this.shader.uniforms.tex1 = 1;
-        // this.shader.uniforms.tex2 = 2;
-
         // other params
-        this.shader.uniforms.timeStep = 1000 / 60;
+        // this.shader.uniforms.timeStep = 1000 / 60;
 
         //
         //

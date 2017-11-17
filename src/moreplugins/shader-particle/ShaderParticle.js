@@ -1,4 +1,4 @@
-import { Point } from '../../core/math';
+import { Point, ObservablePoint } from '../../core/math';
 import { sign } from '../../core/utils';
 import Texture from '../../core/textures/Texture';
 
@@ -18,72 +18,32 @@ import Texture from '../../core/textures/Texture';
 export default class ShaderParticle
 {
     /**
-     * @param {PIXI.Texture} texture - The texture for this sprite
+     * @param {PIXI.Texture} texture - The texture for this particle
+     * @param {number} width - The width of this particle
+     * @param {number} height - The height of this particle
      */
-    constructor(texture)
+    constructor(texture, width, height)
     {
         /**
-         * The opacity of the object.
+         * this is used to store the vertex data of the sprite (basically a quad)
          *
-         * @member {number}
+         * @private
+         * @member {Float32Array}
          */
-        this.alpha = 1;
+        this.vertexData = new Float32Array(8);
+
+        this._scale = new Point(1, 1);
 
         /**
-         * The colorMultiplier of the object.
+         * The anchor sets the origin point of the texture.
+         * The default is 0,0 this means the texture's origin is the top left
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
          *
-         * @member {number}
-         */
-        this.colorMultiplier = 1.0;
-
-        /**
-         * The colorOffset of the object.
-         *
-         * @member {number}
-         */
-        this.colorOffset = 0x000000;
-
-        /**
-        * The coordinate of the object relative to the local coordinates of the parent.
-        *
-        * @member {PIXI.Point}
-        */
-        this.position = new Point(0, 0);
-
-        this.velocity = new Point(0, 0);
-        this.accVelocity = new Point(0, 0);
-
-        /**
-         * The rotation value of the object, in radians
-         *
-         * @member {Number}
+         * @member {PIXI.ObservablePoint}
          * @private
          */
-        this.rotation = 0;
-
-        this.velocityRotate = 0;
-        this.accVelocityRotate = 0;
-
-        /**
-         * The scale factor of the object.
-         *
-         * @member {PIXI.Point}
-         */
-        this.scale = new Point(1, 1);
-
-        /**
-         * The skew amount, on the x and y axis.
-         *
-         * @member {PIXI.Point}
-         */
-        this.skew = new Point(0, 0);
-
-        /**
-         * The pivot point of the object that it rotates around
-         *
-         * @member {PIXI.Point}
-         */
-        this.pivot = new Point(0, 0);
+        this.anchor = new ObservablePoint(this._onAnchorUpdate, this);
 
         /**
          * The texture that the sprite is using
@@ -93,6 +53,11 @@ export default class ShaderParticle
          */
         this._texture = null;
 
+        // call texture setter
+        this.texture = texture || Texture.EMPTY;
+
+        this._textureID = -1;
+
         /**
          * The width of the sprite (this is initially set by the texture)
          *
@@ -100,6 +65,10 @@ export default class ShaderParticle
          * @member {number}
          */
         this._width = 0;
+        if (width)
+        {
+            this.width = width;
+        }
 
         /**
          * The height of the sprite (this is initially set by the texture)
@@ -108,31 +77,22 @@ export default class ShaderParticle
          * @member {number}
          */
         this._height = 0;
+        if (height)
+        {
+            this.height = height;
+        }
 
-        // call texture setter
-        this.texture = texture || Texture.EMPTY;
+        this.calculateVertices(true);
+    }
 
-        /**
-         * this is used to store the vertex data of the sprite (basically a quad)
-         *
-         * @private
-         * @member {Float32Array}
-         */
-        this.vertexData = new Float32Array(8);
-
-        this._textureID = -1;
-
-        this.state = {
-            alpha: 0,
-            colorMultiplier: 0,
-            colorOffset: 0,
-            rotation: 0,
-            position: new Point(),
-            velocity: new Point(),
-            scale: new Point(),
-            skew: new Point(),
-            pivot: new Point(),
-        };
+    /**
+     * Called when the anchor position updates.
+     *
+     * @private
+     */
+    _onAnchorUpdate()
+    {
+        this.calculateVertices(true);
     }
 
     /**
@@ -147,52 +107,20 @@ export default class ShaderParticle
         // so if _width is 0 then width was not set..
         if (this._width)
         {
-            this.scale.x = sign(this.scale.x) * this._width / this._texture.orig.width;
+            this._scale.x = sign(this._scale.x) * this._width / this._texture.orig.width;
         }
 
         if (this._height)
         {
-            this.scale.y = sign(this.scale.y) * this._height / this._texture.orig.height;
+            this._scale.y = sign(this._scale.y) * this._height / this._texture.orig.height;
         }
 
-        this.calculateVertices();
+        this.calculateVertices(true);
     }
 
-    save()
+    calculateVertices(force)
     {
-        const state = this.state;
-
-        state.alpha = this.alpha;
-        state.colorMultiplier = this.colorMultiplier;
-        state.colorOffset = this.colorOffset;
-        state.rotation = this.rotation;
-        state.position.copy(this.position);
-        state.velocity.copy(this.velocity);
-        state.scale.copy(this.scale);
-        state.skew.copy(this.skew);
-        state.pivot.copy(this.pivot);
-    }
-
-    restore()
-    {
-        const state = this.state;
-
-        this.alpha = state.alpha;
-        this.colorMultiplier = state.colorMultiplier;
-        this.colorOffset = state.colorOffset;
-        this.rotation = state.rotation;
-        this.position.copy(state.position);
-        this.velocity.copy(state.velocity);
-        this.scale.copy(state.scale);
-        this.skew.copy(state.skew);
-        this.pivot.copy(state.pivot);
-
-        this.calculateVertices();
-    }
-
-    calculateVertices()
-    {
-        if (this._textureID === this._texture._updateID)
+        if (force !== true && this._textureID === this._texture._updateID)
         {
             return;
         }
@@ -202,10 +130,12 @@ export default class ShaderParticle
         // set the vertex data
 
         const texture = this._texture;
-        const vertexData = this.vertexData;
         const trim = texture.trim;
         const orig = texture.orig;
-        const pivot = this.pivot;
+
+        const vertexData = this.vertexData;
+        const scale = this._scale;
+        const anchor = this.anchor;
 
         let w0 = 0;
         let w1 = 0;
@@ -216,19 +146,19 @@ export default class ShaderParticle
         {
             // if the sprite is trimmed and is not a tilingsprite then we need to add the extra
             // space before transforming the sprite coords.
-            w1 = trim.x - pivot.x;
-            w0 = w1 + trim.width;
+            w1 = (trim.x - (anchor._x * orig.width)) * scale.x;
+            w0 = w1 + trim.width * scale.x;
 
-            h1 = trim.y - pivot.y;
-            h0 = h1 + trim.height;
+            h1 = (trim.y - (anchor._y * orig.height)) * scale.y;
+            h0 = h1 + trim.height * scale.y;
         }
         else
         {
-            w1 = -pivot.x;
-            w0 = w1 + orig.width;
+            w1 = -anchor._x * orig.width * scale.x;
+            w0 = w1 + orig.width * scale.x;
 
-            h1 = -pivot.y;
-            h0 = h1 + orig.height;
+            h1 = -anchor._y * orig.height * scale.y;
+            h0 = h1 + orig.height * scale.y;
         }
 
         // xy
@@ -273,16 +203,9 @@ export default class ShaderParticle
      */
     destroy(options)
     {
-        this.alpha = null;
-        this.rotation = null;
-        this.position = null;
-        this.velocity = null;
-        this.accVelocity = null;
-        this.scale = null;
-        this.skew = null;
-        this.pivot = null;
-
-        this.state = null;
+        this.anchor = null;
+        this._scale = null;
+        this.vertexData = null;
 
         const destroyTexture = typeof options === 'boolean' ? options : options && options.texture;
 
@@ -303,14 +226,12 @@ export default class ShaderParticle
      */
     get width()
     {
-        return Math.abs(this.scale.x) * this._texture.orig.width;
+        return this._scale.x * this._texture.orig.width;
     }
 
     set width(value) // eslint-disable-line require-jsdoc
     {
-        const s = sign(this.scale.x) || 1;
-
-        this.scale.x = s * value / this._texture.orig.width;
+        this._scale.x = value / this._texture.orig.width;
         this._width = value;
     }
 
@@ -321,14 +242,12 @@ export default class ShaderParticle
      */
     get height()
     {
-        return Math.abs(this.scale.y) * this._texture.orig.height;
+        return this._scale.y * this._texture.orig.height;
     }
 
     set height(value) // eslint-disable-line require-jsdoc
     {
-        const s = sign(this.scale.y) || 1;
-
-        this.scale.y = s * value / this._texture.orig.height;
+        this._scale.y = value / this._texture.orig.height;
         this._height = value;
     }
 
@@ -365,107 +284,4 @@ export default class ShaderParticle
             }
         }
     }
-
-    /**
-     * The orig of the texture
-     *
-     * @member {PIXI.Rectangle}
-     */
-    get orig()
-    {
-        return this._texture.orig;
-    }
-
-    /**
-     * The frame of the texture
-     *
-     * @member {PIXI.Rectangle}
-     */
-    get frame()
-    {
-        return this._texture.frame;
-    }
-
-    /**
-     * The trim of the texture
-     *
-     * @member {PIXI.Rectangle}
-     */
-    get trim()
-    {
-        return this._texture.trim;
-    }
-
-    /**
-     * The baseTexture of the texture
-     *
-     * @member {PIXI.BaseTexture}
-     */
-    get baseTexture()
-    {
-        return this._texture.baseTexture;
-    }
-
-    /**
-     * The width of the texture's real size
-     *
-     * @member {number}
-     */
-    get textureWidth()
-    {
-        const texture = this._texture;
-
-        if (texture.trim)
-        {
-            return texture.trim.width;
-        }
-
-        return texture.orig.width;
-    }
-
-    set textureWidth(value)  // eslint-disable-line require-jsdoc
-    {
-        const texture = this._texture;
-
-        if (texture.trim)
-        {
-            texture.trim.width = value;
-        }
-        else
-        {
-            texture.orig.width = value;
-        }
-    }
-
-    /**
-     * Set the height of the texture's real size
-     *
-     * @member {number}
-     */
-    get textureHeight()
-    {
-        const texture = this._texture;
-
-        if (texture.trim)
-        {
-            return texture.trim.height;
-        }
-
-        return texture.orig.height;
-    }
-
-    set textureHeight(value)  // eslint-disable-line require-jsdoc
-    {
-        const texture = this._texture;
-
-        if (texture.trim)
-        {
-            texture.trim.height = value;
-        }
-        else
-        {
-            texture.orig.height = value;
-        }
-    }
-
 }

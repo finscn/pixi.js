@@ -1,5 +1,12 @@
 import glCore from 'pixi-gl-core';
 import Shader from '../../core/Shader';
+import RenderTarget from '../../core/renderers/webgl/utils/RenderTarget';
+import { SCALE_MODES } from '../../core/const';
+
+import vertex from './status.vert.js';
+import fragment from './status.frag.js';
+
+const tempDatas = {};
 
 export default class ShaderParticleStatus
 {
@@ -8,27 +15,50 @@ export default class ShaderParticleStatus
         // TODO
         this.id = null;
 
-        this.vertexSrc = vertexSrc;
-        this.fragmentSrc = fragmentSrc;
+        this.vertexSrc = vertexSrc || vertex;
+        this.fragmentSrc = fragmentSrc || fragment;
         this.fboSize = fboSize;
         this.fboBuffer = data;
     }
 
     init(gl, particleGroup)
     {
-        this.gl = gl;
-        this.instanceExt = gl.getExtension('ANGLE_instanced_arrays')
-             || gl.getExtension('MOZ_ANGLE_instanced_arrays')
-             || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
-
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
         const fboSize = this.fboSize;
+        let data = null;
 
-        this.fbo1 = glCore.GLFramebuffer.createFloat32(gl, fboSize, fboSize, this.fboBuffer);
-        this.fbo2 = glCore.GLFramebuffer.createFloat32(gl, fboSize, fboSize, this.fboBuffer);
-        this.fboOut = this.fbo2;
-        this.initVao(particleGroup);
+        if (this.fboBuffer)
+        {
+            data = this.fboBuffer;
+        }
+        else
+        {
+            data = tempDatas[fboSize];
+            if (!data)
+            {
+                data = new Float32Array(4 * fboSize * fboSize);
+                tempDatas[fboSize] = data;
+            }
+        }
+
+        this.renderTargetIn = this.createRenderTarget(gl, data);
+        this.renderTargetOut = this.createRenderTarget(gl, data);
+
+        this.initVao(gl, particleGroup);
+    }
+
+    createRenderTarget(gl, data)
+    {
+        const fboSize = this.fboSize;
+        const renderTarget = new RenderTarget(gl, fboSize, fboSize, SCALE_MODES.NEAREST);
+        const frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboSize, fboSize, data);
+
+        renderTarget.frameBuffer = frameBuffer;
+        frameBuffer.texture.enableNearestScaling();
+        renderTarget.texture = frameBuffer.texture;
+
+        return renderTarget;
     }
 
     // the same uvs/frame  --- one array
@@ -43,9 +73,8 @@ export default class ShaderParticleStatus
     // rotation
     // scaleX , scaleY
 
-    initVao(particleGroup) // eslint-disable-line no-unused-vars
+    initVao(gl, particleGroup) // eslint-disable-line no-unused-vars
     {
-        const gl = this.gl;
         const shader = this.shader;
 
         const indicesData = new Uint16Array([0, 1, 2, 0, 3, 2]);
@@ -99,33 +128,43 @@ export default class ShaderParticleStatus
         const fboSize = this.fboSize;
 
         this.fboBuffer = data;
-        this.fbo1.texture.uploadData(data, fboSize, fboSize);
-        // this.fbo2.texture.uploadData(data, fboSize, fboSize);
+        this.renderTargetIn.texture.uploadData(data, fboSize, fboSize);
     }
 
-    update(particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
+    update(renderer, particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
     {
-        const gl = this.gl;
+        const gl = renderer.gl;
         // const instanceExt = this.instanceExt;
         const shader = this.shader;
 
-        shader.bind();
+        renderer.bindVao(this.vao);
+        renderer.bindShader(shader);
 
-        this.updateShader(particleGroup, timeStep, now);
+        particleGroup.bindTexture(renderer, this.renderTargetIn.texture, 0);
+        shader.uniforms.uTextureIn = 0;
+
+        const viewSize = shader.uniforms.viewSize;
+
+        if (viewSize)
+        {
+            viewSize[0] = renderer.width;
+            viewSize[1] = renderer.height;
+            shader.uniforms.viewSize = viewSize;
+        }
+
+        this.updateShader(renderer, particleGroup, timeStep, now);
 
         // bind output texture;
-        this.fbo2.bind();
-        this.vao.bind();
+        renderer.bindRenderTarget(this.renderTargetOut);
 
         gl.disable(gl.BLEND);
-        gl.viewport(0, 0, this.fboSize, this.fboSize);
-        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-        this.fbo2.unbind();
 
-        this.fboOut = this.fbo2;
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+
+        gl.enable(gl.BLEND);
     }
 
-    updateShader(particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
+    updateShader(renderer, particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
     {
         // ==========================================
         //
@@ -134,17 +173,17 @@ export default class ShaderParticleStatus
         //
 
         // bind input textures;
-        this.fbo1.texture.bind(0);
-        // particleGroup.statusList[0].fboOut.texture.bind(1);
-        // particleGroup.statusList[1].fboOut.texture.bind(2);
+
+        // particleGroup.statusList[0].renderTargetOut.texture.bind(1);
+        // particleGroup.statusList[1].renderTargetOut.texture.bind(2);
 
         // textures
-        this.shader.uniforms.positionTex = 0;
         // this.shader.uniforms.tex1 = 1;
         // this.shader.uniforms.tex2 = 2;
 
         // other params
-        this.shader.uniforms.timeStep = 1000 / 60;
+        this.shader.uniforms.timeStep = timeStep;
+        this.shader.uniforms.time = now;
 
         //
         //
@@ -153,12 +192,12 @@ export default class ShaderParticleStatus
         // ==========================================
     }
 
-    swapFbo()
+    swapRenderTarget()
     {
-        const tmp = this.fbo1;
+        const tmp = this.renderTargetIn;
 
-        this.fbo1 = this.fbo2;
-        this.fbo2 = tmp;
+        this.renderTargetIn = this.renderTargetOut;
+        this.renderTargetOut = tmp;
     }
 
     /**
@@ -167,7 +206,7 @@ export default class ShaderParticleStatus
      */
     destroy()
     {
-        this.fboOut = null;
+        this.renderTargetOut = null;
         // TODO
     }
 }

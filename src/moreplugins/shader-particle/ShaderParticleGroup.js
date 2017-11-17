@@ -1,3 +1,5 @@
+import { BLEND_MODES } from '../../core/const';
+import { Point } from '../../core/math';
 import DisplayObject from '../../core/display/DisplayObject';
 
 /**
@@ -16,14 +18,24 @@ import DisplayObject from '../../core/display/DisplayObject';
 export default class ShaderParticleGroup extends DisplayObject
 {
     /**
-     * @param {Array} particles - The texture for this sprite
+     * @param {ShaderParticle} particle - The particle for this group
+     * @param {number} particleCount - The count of particles
      */
-    constructor(particles)
+    constructor(particle, particleCount)
     {
         //
         super();
 
-        this.particles = particles;
+        this.particle = particle;
+        this.particleCount = particleCount;
+
+        this.alpha = 1;
+        this.colorMultiplier = 1;
+        this.colorOffset = new Float32Array([0.0, 0.0, 0.0]);
+        this.position = new Point(0, 0);
+
+        this.blendMode = BLEND_MODES.NORMAL;
+
         this.statusList = null;
         this.display = null;
 
@@ -53,21 +65,39 @@ export default class ShaderParticleGroup extends DisplayObject
         this.inited = true;
     }
 
-    update(timeStep, now)
+    updateStatus(renderer, timeStep, now)
     {
         const particleGroup = this;
 
         this.statusList.forEach(function (status)
         {
-            status.update(particleGroup, timeStep, now);
+            status.update(renderer, particleGroup, timeStep, now);
         });
+    }
 
-        this.display.update(particleGroup, timeStep, now);
+    bindTexture(renderer, texture, textureIndex)
+    {
+        const gl = renderer.gl;
+
+        renderer.boundTextures[textureIndex] = renderer.emptyTextures[textureIndex];
+        gl.activeTexture(gl.TEXTURE0 + textureIndex);
+
+        texture.bind();
+    }
+
+    renderCanvas()
+    {
+        // nothing to do
     }
 
     renderWebGL(renderer)
     {
         renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
         renderer.plugins[this.pluginName].render(this);
+
+        this.statusList.forEach(function (status)
+        {
+            status.swapRenderTarget();
+        });
     }
 }
