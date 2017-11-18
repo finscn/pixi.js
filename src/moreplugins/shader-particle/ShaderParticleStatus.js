@@ -21,7 +21,7 @@ export default class ShaderParticleStatus
         this.fboBuffer = data;
     }
 
-    init(gl, particleGroup)
+    init(gl, particle)
     {
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
@@ -45,7 +45,7 @@ export default class ShaderParticleStatus
         this.renderTargetIn = this.createRenderTarget(gl, data);
         this.renderTargetOut = this.createRenderTarget(gl, data);
 
-        this.initVao(gl, particleGroup);
+        this.initVao(gl, particle);
     }
 
     createRenderTarget(gl, data)
@@ -73,7 +73,7 @@ export default class ShaderParticleStatus
     // rotation
     // scaleX , scaleY
 
-    initVao(gl, particleGroup) // eslint-disable-line no-unused-vars
+    initVao(gl, particle) // eslint-disable-line no-unused-vars
     {
         const shader = this.shader;
 
@@ -131,7 +131,7 @@ export default class ShaderParticleStatus
         this.renderTargetIn.texture.uploadData(data, fboSize, fboSize);
     }
 
-    update(renderer, particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
+    update(renderer, particle, timeStep, now) // eslint-disable-line no-unused-vars
     {
         const gl = renderer.gl;
         // const instanceExt = this.instanceExt;
@@ -140,7 +140,7 @@ export default class ShaderParticleStatus
         renderer.bindVao(this.vao);
         renderer.bindShader(shader);
 
-        particleGroup.bindTexture(renderer, this.renderTargetIn.texture, 0);
+        particle.bindTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
 
         const viewSize = shader.uniforms.viewSize;
@@ -152,7 +152,7 @@ export default class ShaderParticleStatus
             shader.uniforms.viewSize = viewSize;
         }
 
-        this.updateShader(renderer, particleGroup, timeStep, now);
+        this.updateShader(renderer, particle, timeStep, now);
 
         // bind output texture;
         renderer.bindRenderTarget(this.renderTargetOut);
@@ -164,7 +164,7 @@ export default class ShaderParticleStatus
         gl.enable(gl.BLEND);
     }
 
-    updateShader(renderer, particleGroup, timeStep, now) // eslint-disable-line no-unused-vars
+    updateShader(renderer, particle, timeStep, now) // eslint-disable-line no-unused-vars
     {
         // ==========================================
         //
@@ -174,8 +174,8 @@ export default class ShaderParticleStatus
 
         // bind input textures;
 
-        // particleGroup.statusList[0].renderTargetOut.texture.bind(1);
-        // particleGroup.statusList[1].renderTargetOut.texture.bind(2);
+        // particle.statusList[0].renderTargetOut.texture.bind(1);
+        // particle.statusList[1].renderTargetOut.texture.bind(2);
 
         // textures
         // this.shader.uniforms.tex1 = 1;

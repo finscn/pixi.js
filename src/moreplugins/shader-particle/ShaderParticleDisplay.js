@@ -21,13 +21,13 @@ export default class ShaderParticleDisplay
         this.useStatus = [0];
     }
 
-    init(gl, particleGroup)
+    init(gl, particle)
     {
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
-        this.initVao(gl, particleGroup);
+        this.initVao(gl, particle);
     }
 
-    initVao(gl, particleGroup)
+    initVao(gl, particle)
     {
         const instanceExt = gl.getExtension('ANGLE_instanced_arrays')
              || gl.getExtension('MOZ_ANGLE_instanced_arrays')
@@ -50,8 +50,7 @@ export default class ShaderParticleDisplay
         const posView = new Float32Array(buff);
         const coordView = new Float32Array(buff);
 
-        const particle = particleGroup.particle;
-        const particleCount = particleGroup.particleCount;
+        const particleCount = particle.count;
 
         const verts = particle.vertexData;
         const texture = particle._texture;
@@ -127,51 +126,50 @@ export default class ShaderParticleDisplay
         this.vao = vao;
     }
 
-    update(renderer, particleGroup)
+    update(renderer, particle)
     {
         const shader = this.shader;
 
         renderer.bindVao(this.vao);
         renderer.bindShader(shader);
 
-        const particle = particleGroup.particle;
         const texture = particle._texture;
 
         const texLocation = renderer.bindTexture(texture);
 
         this.shader.uniforms.uTexture = texLocation;
 
-        const statusList = particleGroup.statusList;
+        const statusList = particle.statusList;
         let location = 1;
 
         this.useStatus.forEach(function (statusIndex)
         {
             const texture = statusList[statusIndex].renderTargetOut.texture;
 
-            particleGroup.bindTexture(renderer, texture, location);
+            particle.bindTexture(renderer, texture, location);
             shader.uniforms['stateTex' + statusIndex] = location;
             location++;
         });
 
-        shader.uniforms.uAlpha = particleGroup.alpha;
-        shader.uniforms.uColorMultiplier = particleGroup.colorMultiplier;
-        shader.uniforms.uColorOffset = particleGroup.colorOffset;
+        shader.uniforms.uAlpha = particle.alpha;
+        shader.uniforms.uColorMultiplier = particle.colorMultiplier;
+        shader.uniforms.uColorOffset = particle.colorOffset;
 
         const pos = shader.uniforms.uPosition;
 
         if (pos)
         {
-            pos[0] = particleGroup.position.x;
-            pos[1] = particleGroup.position.y;
+            pos[0] = particle.position.x;
+            pos[1] = particle.position.y;
             shader.uniforms.uPosition = pos;
         }
 
-        this.updateShader(renderer, particleGroup);
+        this.updateShader(renderer, particle);
     }
 
-    updateShader(renderer, particleGroup)  // eslint-disable-line no-unused-vars
+    updateShader(renderer, particle)  // eslint-disable-line no-unused-vars
     {
-        // const statusList = particleGroup.statusList;
+        // const statusList = particle.statusList;
 
         // ==========================================
         //

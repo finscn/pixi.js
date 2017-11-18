@@ -74,7 +74,6 @@ const DisplayPointGroup = renderers.DisplayPointGroup;
 const ShaderParticle = renderers.ShaderParticle;
 const ShaderParticleDisplay = renderers.ShaderParticleDisplay;
 const ShaderParticleStatus = renderers.ShaderParticleStatus;
-const ShaderParticleGroup = renderers.ShaderParticleGroup;
 const ShaderParticleRenderer = renderers.ShaderParticleRenderer;
 
 export {
@@ -95,7 +94,6 @@ export {
     ShaderParticle,
     ShaderParticleDisplay,
     ShaderParticleStatus,
-    ShaderParticleGroup,
     ShaderParticleRenderer,
 };
 

@@ -1,6 +1,8 @@
 import { Point, ObservablePoint } from '../../core/math';
 import { sign } from '../../core/utils';
 import Texture from '../../core/textures/Texture';
+import DisplayObject from '../../core/display/DisplayObject';
+import { BLEND_MODES } from '../../core/const';
 
 /**
  * The Sprite object is the base for all textured objects that are rendered to the screen
@@ -15,15 +17,32 @@ import Texture from '../../core/textures/Texture';
  * @extends PIXI.Container
  * @memberof PIXI
  */
-export default class ShaderParticle
+export default class ShaderParticle extends DisplayObject
 {
     /**
+     * @param {number} count - The count of particles
      * @param {PIXI.Texture} texture - The texture for this particle
      * @param {number} width - The width of this particle
      * @param {number} height - The height of this particle
      */
-    constructor(texture, width, height)
+    constructor(count, texture, width, height)
     {
+        super();
+
+        this.count = count;
+
+        this.alpha = 1;
+        this.colorMultiplier = 1;
+        this.colorOffset = new Float32Array([0.0, 0.0, 0.0]);
+        this.position = new Point(0, 0);
+
+        this.blendMode = BLEND_MODES.NORMAL;
+
+        this.statusList = null;
+        this.display = null;
+
+        this.pluginName = 'shaderparticle';
+
         /**
          * this is used to store the vertex data of the sprite (basically a quad)
          *
@@ -83,6 +102,65 @@ export default class ShaderParticle
         }
 
         this.calculateVertices(true);
+    }
+
+    init(gl)
+    {
+        const particle = this;
+
+        this.statusList.forEach(function (status)
+        {
+            status.init(gl, particle);
+        });
+        this.display.init(gl, particle);
+
+        this.inited = true;
+    }
+
+    updateStatus(renderer, timeStep, now)
+    {
+        const particle = this;
+
+        this.statusList.forEach(function (status)
+        {
+            status.update(renderer, particle, timeStep, now);
+        });
+    }
+
+    setStatusList(statusList)
+    {
+        this.statusList = statusList;
+    }
+
+    setDisplay(display)
+    {
+        this.display = display;
+    }
+
+    bindTexture(renderer, texture, textureIndex)
+    {
+        const gl = renderer.gl;
+
+        renderer.boundTextures[textureIndex] = renderer.emptyTextures[textureIndex];
+        gl.activeTexture(gl.TEXTURE0 + textureIndex);
+
+        texture.bind();
+    }
+
+    renderCanvas()
+    {
+        // nothing to do
+    }
+
+    renderWebGL(renderer)
+    {
+        renderer.setObjectRenderer(renderer.plugins[this.pluginName]);
+        renderer.plugins[this.pluginName].render(this);
+
+        this.statusList.forEach(function (status)
+        {
+            status.swapRenderTarget();
+        });
     }
 
     /**

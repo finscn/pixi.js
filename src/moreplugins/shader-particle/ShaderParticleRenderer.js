@@ -38,11 +38,11 @@ export default class ShaderParticleRenderer extends ObjectRenderer
     /**
      * Renders the point object.
      *
-     * @param {ShaderParticleGroup} particleGroup - the point to render when using this pointbatch
+     * @param {ShaderParticle} particle - the point to render when using this pointbatch
      */
-    render(particleGroup)
+    render(particle)
     {
-        if (particleGroup.disabled)
+        if (particle.disabled)
         {
             return;
         }
@@ -51,13 +51,13 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         const gl = this.gl;
         const instanceExt = this.instanceExt;
 
-        const display = particleGroup.display;
-        const particleCount = particleGroup.particleCount;
+        const display = particle.display;
+        const particleCount = particle.count;
 
         // re-enable blending so our bunnies look good
-        renderer.state.setBlendMode(particleGroup.blendMode);
+        renderer.state.setBlendMode(particle.blendMode);
 
-        display.update(renderer, particleGroup);
+        display.update(renderer, particle);
 
         // boom! draw some bunnies
         if (display.useInstanced)
