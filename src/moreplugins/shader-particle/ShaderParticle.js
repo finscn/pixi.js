@@ -36,10 +36,13 @@ export default class ShaderParticle extends DisplayObject
         this.colorOffset = new Float32Array([0.0, 0.0, 0.0]);
         this.position = new Point(0, 0);
 
+        this.defaultFrame = new Float32Array([0.0, 0.0, 1.0, 1.0]);
+
         this.blendMode = BLEND_MODES.NORMAL;
 
         this.statusList = null;
         this.display = null;
+        this.frames = null;
 
         this.pluginName = 'shaderparticle';
 
@@ -133,6 +136,32 @@ export default class ShaderParticle extends DisplayObject
     setDisplay(display)
     {
         this.display = display;
+    }
+
+    setFrames(frames)
+    {
+        this.frames = frames;
+    }
+
+    getUvs(x, y, width, height)
+    {
+        const baseTexture = this._texture.baseTexture;
+        const tw = baseTexture.width;
+        const th = baseTexture.height;
+
+        return [
+            x / tw,
+            y / th,
+
+            (x + width) / tw,
+            y / th,
+
+            (x + width) / tw,
+            (y + height) / th,
+
+            x / tw,
+            (y + height) / th,
+        ];
     }
 
     bindTargetTexture(renderer, texture, textureIndex)

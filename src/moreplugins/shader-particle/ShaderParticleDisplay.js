@@ -36,24 +36,28 @@ export default class ShaderParticleDisplay
         const shader = this.shader;
         const fboSize = this.fboSize;
 
+        const particleCount = particle.count;
+        const verts = particle.vertexData;
+        const texture = particle._texture;
+        const frames = particle.frames;
+
+        const attrs = shader.attributes;
+        const withFrame = 'aParticleFrame' in attrs;
+
+        const vertCount = 4;
+        const vertSize = 4;
+
         const indicesData = new Uint16Array([0, 1, 2, 0, 3, 2]);
         const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, indicesData, gl.STATIC_DRAW);
 
-        const vertCount = 4;
-
-        // aVertexPosition(2), aTextureCoord(2), // aFrame(4)
+        // aVertexPosition(2), aTextureCoord(2)
         const byteCount = 4;
-        const vertSize = 4;
         const vertByteSize = byteCount * vertSize;
 
         const buff = new ArrayBuffer(vertByteSize * vertCount);
         const posView = new Float32Array(buff);
         const coordView = new Float32Array(buff);
 
-        const particleCount = particle.count;
-
-        const verts = particle.vertexData;
-        const texture = particle._texture;
         const uvs = texture._uvs;
 
         let offset = 0;
@@ -84,7 +88,21 @@ export default class ShaderParticleDisplay
         coordView[offset + 2] = uvs.x3;
         coordView[offset + 3] = uvs.y3;
 
-        const particleIndicesBuff = new Float32Array(particleCount * 2);
+        // aParticleIndex(2) , aFrame(4)
+        const byteCount2 = withFrame ? 6 : 2;
+        const vertByteSize2 = byteCount2 * vertSize;
+
+        const perBuff = new ArrayBuffer(vertByteSize2 * particleCount);
+
+        const indicesView = new Float32Array(perBuff);
+        let frameView;
+
+        if (withFrame)
+        {
+            frameView = new Float32Array(perBuff);
+        }
+
+        const defaultFrame = particle.defaultFrame;
 
         let idx = 0;
         let c = 0;
@@ -92,10 +110,20 @@ export default class ShaderParticleDisplay
 
         for (let i = 0; i < particleCount; i++)
         {
-            particleIndicesBuff[idx + 0] = c / fboSize;
-            particleIndicesBuff[idx + 1] = r / fboSize;
+            indicesView[idx + 0] = c / fboSize;
+            indicesView[idx + 1] = r / fboSize;
 
-            idx += 2;
+            if (withFrame)
+            {
+                const f = frames ? (frames[i] || defaultFrame) : defaultFrame;
+
+                frameView[idx + 2] = f[0];
+                frameView[idx + 3] = f[1];
+                frameView[idx + 4] = f[2];
+                frameView[idx + 5] = f[3];
+            }
+
+            idx += byteCount2;
             c++;
             if (c >= fboSize)
             {
@@ -103,14 +131,11 @@ export default class ShaderParticleDisplay
                 r++;
             }
         }
-        idx = 0;
-
-        const attrs = shader.attributes;
 
         // create a VertexArrayObject - this will hold all the details for rendering the texture
         const vao = new glCore.VertexArrayObject(gl);
         const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, buff, gl.STATIC_DRAW);
-        const particleIndices = new glCore.GLBuffer.createVertexBuffer(gl, particleIndicesBuff, gl.STATIC_DRAW);
+        const particleBuffer = new glCore.GLBuffer.createVertexBuffer(gl, perBuff, gl.STATIC_DRAW);
 
         vao.addIndex(indexBuffer);
 
@@ -118,10 +143,21 @@ export default class ShaderParticleDisplay
         // the vertex data here does not hold a posiiton of the bunny, but the uv of the pixle in the physics texture
         vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, vertByteSize, 0);
         vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 2 * vertSize);
-        vao.addAttribute(particleIndices, attrs.aParticleIndex);
 
-        vao.bind();
-        instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
+        if (withFrame)
+        {
+            vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, vertByteSize2, 0);
+            vao.addAttribute(particleBuffer, attrs.aParticleFrame, gl.FLOAT, false, vertByteSize2, 2 * vertSize);
+            vao.bind();
+            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
+            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleFrame.location, 1);
+        }
+        else
+        {
+            vao.addAttribute(particleBuffer, attrs.aParticleIndex);
+            vao.bind();
+            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
+        }
 
         this.vao = vao;
     }
