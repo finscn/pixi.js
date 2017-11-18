@@ -6,15 +6,16 @@ import fragment from './display.frag.js';
 
 export default class ShaderParticleDisplay
 {
-
-    constructor(vertexSrc, fragmentSrc, fboSize = 1024)
+    constructor(vertexSrc, fragmentSrc, fboWidth, fboHeight)
     {
         // TODO
         this.id = null;
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
-        this.fboSize = fboSize;
+
+        this.fboWidth = fboWidth || 0;
+        this.fboHeight = fboHeight || 0;
 
         this.useInstanced = true;
 
@@ -23,7 +24,11 @@ export default class ShaderParticleDisplay
 
     init(gl, particle)
     {
+        this.fboWidth = this.fboWidth || particle.fboWidth;
+        this.fboHeight = this.fboHeight || particle.fboHeight;
+
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
+
         this.initVao(gl, particle);
     }
 
@@ -34,7 +39,8 @@ export default class ShaderParticleDisplay
              || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
 
         const shader = this.shader;
-        const fboSize = this.fboSize;
+        const fboWidth = this.fboWidth;
+        const fboHeight = this.fboHeight;
 
         const particleCount = particle.count;
         const verts = particle.vertexData;
@@ -110,8 +116,8 @@ export default class ShaderParticleDisplay
 
         for (let i = 0; i < particleCount; i++)
         {
-            indicesView[idx + 0] = c / fboSize;
-            indicesView[idx + 1] = r / fboSize;
+            indicesView[idx + 0] = c / fboWidth;
+            indicesView[idx + 1] = r / fboHeight;
 
             if (withFrame)
             {
@@ -125,7 +131,7 @@ export default class ShaderParticleDisplay
 
             idx += byteCount2;
             c++;
-            if (c >= fboSize)
+            if (c >= fboWidth)
             {
                 c = 0;
                 r++;

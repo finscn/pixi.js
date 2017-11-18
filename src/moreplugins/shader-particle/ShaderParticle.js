@@ -1,5 +1,4 @@
 import { Point, ObservablePoint } from '../../core/math';
-import { sign } from '../../core/utils';
 import Texture from '../../core/textures/Texture';
 import DisplayObject from '../../core/display/DisplayObject';
 import { BLEND_MODES } from '../../core/const';
@@ -21,11 +20,12 @@ export default class ShaderParticle extends DisplayObject
 {
     /**
      * @param {number} count - The count of particles
-     * @param {PIXI.Texture} texture - The texture for this particle
-     * @param {number} width - The width of this particle
-     * @param {number} height - The height of this particle
+     * @param {PIXI.Texture} texture - The texture of particles
+     * @param {Float32Array} data - The  initial data of particles
+     * @param {number} fboWidth - The fboWidth of particles
+     * @param {number} fboHeight - The fboHeight of particles
      */
-    constructor(count, texture, width, height)
+    constructor(count, texture, data, fboWidth = 1024, fboHeight = 1024)
     {
         super();
 
@@ -46,6 +46,10 @@ export default class ShaderParticle extends DisplayObject
 
         this.pluginName = 'shaderparticle';
 
+        this.data = data;
+        this.fboWidth = fboWidth;
+        this.fboHeight = fboHeight;
+
         /**
          * this is used to store the vertex data of the sprite (basically a quad)
          *
@@ -53,8 +57,6 @@ export default class ShaderParticle extends DisplayObject
          * @member {Float32Array}
          */
         this.vertexData = new Float32Array(8);
-
-        this._scale = new Point(1, 1);
 
         /**
          * The anchor sets the origin point of the texture.
@@ -79,30 +81,6 @@ export default class ShaderParticle extends DisplayObject
         this.texture = texture || Texture.EMPTY;
 
         this._textureID = -1;
-
-        /**
-         * The width of the sprite (this is initially set by the texture)
-         *
-         * @private
-         * @member {number}
-         */
-        this._width = 0;
-        if (width)
-        {
-            this.width = width;
-        }
-
-        /**
-         * The height of the sprite (this is initially set by the texture)
-         *
-         * @private
-         * @member {number}
-         */
-        this._height = 0;
-        if (height)
-        {
-            this.height = height;
-        }
     }
 
     init(gl)
@@ -209,17 +187,6 @@ export default class ShaderParticle extends DisplayObject
     {
         this._textureID = -1;
 
-        // so if _width is 0 then width was not set..
-        if (this._width)
-        {
-            this._scale.x = sign(this._scale.x) * this._width / this._texture.orig.width;
-        }
-
-        if (this._height)
-        {
-            this._scale.y = sign(this._scale.y) * this._height / this._texture.orig.height;
-        }
-
         this.calculateVertices(true);
     }
 
@@ -239,7 +206,6 @@ export default class ShaderParticle extends DisplayObject
         const orig = texture.orig;
 
         const vertexData = this.vertexData;
-        const scale = this._scale;
         const anchor = this.anchor;
 
         let w0 = 0;
@@ -251,19 +217,19 @@ export default class ShaderParticle extends DisplayObject
         {
             // if the sprite is trimmed and is not a tilingsprite then we need to add the extra
             // space before transforming the sprite coords.
-            w1 = (trim.x - (anchor._x * orig.width)) * scale.x;
-            w0 = w1 + trim.width * scale.x;
+            w1 = trim.x - (anchor._x * orig.width);
+            w0 = w1 + trim.width;
 
-            h1 = (trim.y - (anchor._y * orig.height)) * scale.y;
-            h0 = h1 + trim.height * scale.y;
+            h1 = trim.y - (anchor._y * orig.height);
+            h0 = h1 + trim.height;
         }
         else
         {
-            w1 = -anchor._x * orig.width * scale.x;
-            w0 = w1 + orig.width * scale.x;
+            w1 = -anchor._x * orig.width;
+            w0 = w1 + orig.width;
 
-            h1 = -anchor._y * orig.height * scale.y;
-            h0 = h1 + orig.height * scale.y;
+            h1 = -anchor._y * orig.height;
+            h0 = h1 + orig.height;
         }
 
         // xy
@@ -309,7 +275,6 @@ export default class ShaderParticle extends DisplayObject
     destroy(options)
     {
         this.anchor = null;
-        this._scale = null;
         this.vertexData = null;
 
         const destroyTexture = typeof options === 'boolean' ? options : options && options.texture;
@@ -322,38 +287,6 @@ export default class ShaderParticle extends DisplayObject
         }
 
         this._texture = null;
-    }
-
-    /**
-     * The width of the sprite, setting this will actually modify the scale to achieve the value set
-     *
-     * @member {number}
-     */
-    get width()
-    {
-        return this._scale.x * this._texture.orig.width;
-    }
-
-    set width(value) // eslint-disable-line require-jsdoc
-    {
-        this._scale.x = value / this._texture.orig.width;
-        this._width = value;
-    }
-
-    /**
-     * The height of the sprite, setting this will actually modify the scale to achieve the value set
-     *
-     * @member {number}
-     */
-    get height()
-    {
-        return this._scale.y * this._texture.orig.height;
-    }
-
-    set height(value) // eslint-disable-line require-jsdoc
-    {
-        this._scale.y = value / this._texture.orig.height;
-        this._height = value;
     }
 
     /**

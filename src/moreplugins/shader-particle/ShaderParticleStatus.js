@@ -10,35 +10,43 @@ const tempDatas = {};
 
 export default class ShaderParticleStatus
 {
-    constructor(vertexSrc, fragmentSrc, fboSize = 1024, data)
+    constructor(vertexSrc, fragmentSrc, fboWidth, fboHeight)
     {
         // TODO
         this.id = null;
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
-        this.fboSize = fboSize;
-        this.fboBuffer = data;
+
+        this.fboWidth = fboWidth || 0;
+        this.fboHeight = fboHeight || 0;
+        this.fboData = null;
     }
 
     init(gl, particle)
     {
+        this.fboWidth = this.fboWidth || particle.fboWidth;
+        this.fboHeight = this.fboHeight || particle.fboHeight;
+
+        this.fboData = particle.data;
+
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
-        const fboSize = this.fboSize;
         let data = null;
 
-        if (this.fboBuffer)
+        if (this.fboData)
         {
-            data = this.fboBuffer;
+            data = this.fboData;
         }
         else
         {
-            data = tempDatas[fboSize];
+            const size = this.fboWidth * this.fboHeight;
+
+            data = tempDatas[size];
             if (!data)
             {
-                data = new Float32Array(4 * fboSize * fboSize);
-                tempDatas[fboSize] = data;
+                data = new Float32Array(4 * size);
+                tempDatas[size] = data;
             }
         }
 
@@ -50,9 +58,10 @@ export default class ShaderParticleStatus
 
     createRenderTarget(gl, data)
     {
-        const fboSize = this.fboSize;
-        const renderTarget = new RenderTarget(gl, fboSize, fboSize, SCALE_MODES.NEAREST);
-        const frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboSize, fboSize, data);
+        const fboWidth = this.fboWidth;
+        const fboHeight = this.fboHeight;
+        const renderTarget = new RenderTarget(gl, fboWidth, fboHeight, SCALE_MODES.NEAREST);
+        const frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboWidth, fboHeight, data);
 
         renderTarget.frameBuffer = frameBuffer;
         frameBuffer.texture.enableNearestScaling();
@@ -63,10 +72,17 @@ export default class ShaderParticleStatus
 
     uploadData(data)
     {
-        const fboSize = this.fboSize;
+        this.fboData = data;
 
-        this.fboBuffer = data;
-        this.renderTargetIn.texture.uploadData(data, fboSize, fboSize);
+        if (this.renderTargetIn)
+        {
+            this.renderTargetIn.texture.uploadData(data, this.fboWidth, this.fboHeight);
+        }
+
+        if (this.renderTargetOut)
+        {
+            this.renderTargetOut.texture.uploadData(data, this.fboWidth, this.fboHeight);
+        }
     }
 
     // the same uvs/frame  --- one array
@@ -143,7 +159,8 @@ export default class ShaderParticleStatus
         particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
         shader.uniforms.particleCount = particle.count;
-        shader.uniforms.fboSize = this.fboSize;
+        shader.uniforms.fboWidth = this.fboWidth;
+        shader.uniforms.fboHeight = this.fboHeight;
 
         const viewSize = shader.uniforms.viewSize;
 
