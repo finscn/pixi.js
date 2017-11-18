@@ -142,6 +142,8 @@ export default class ShaderParticleStatus
 
         particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
+        shader.uniforms.particleCount = particle.count;
+        shader.uniforms.fboSize = this.fboSize;
 
         const viewSize = shader.uniforms.viewSize;
 
