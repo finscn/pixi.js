@@ -61,6 +61,14 @@ export default class ShaderParticleStatus
         return renderTarget;
     }
 
+    uploadData(data)
+    {
+        const fboSize = this.fboSize;
+
+        this.fboBuffer = data;
+        this.renderTargetIn.texture.uploadData(data, fboSize, fboSize);
+    }
+
     // the same uvs/frame  --- one array
     // the same vertices  --- one array
 
@@ -121,14 +129,6 @@ export default class ShaderParticleStatus
         vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 8);
 
         this.vao = vao;
-    }
-
-    uploadData(data)
-    {
-        const fboSize = this.fboSize;
-
-        this.fboBuffer = data;
-        this.renderTargetIn.texture.uploadData(data, fboSize, fboSize);
     }
 
     update(renderer, particle, timeStep, now) // eslint-disable-line no-unused-vars
