@@ -1,6 +1,7 @@
 import { Point, ObservablePoint } from '../../core/math';
 import Texture from '../../core/textures/Texture';
 import DisplayObject from '../../core/display/DisplayObject';
+import Bounds from '../../core/display/Bounds';
 import { BLEND_MODES } from '../../core/const';
 
 /**
@@ -81,6 +82,8 @@ export default class ShaderParticle extends DisplayObject
         this.texture = texture || Texture.EMPTY;
 
         this._textureID = -1;
+
+        this._bounds = new Bounds();
     }
 
     init(gl)
@@ -150,6 +153,26 @@ export default class ShaderParticle extends DisplayObject
         gl.activeTexture(gl.TEXTURE0 + textureIndex);
 
         texture.bind();
+    }
+
+    setRegion(x, y, width, height)
+    {
+        this._bounds.minX = x;
+        this._bounds.minY = y;
+        this._bounds.maxX = x + width;
+        this._bounds.maxY = y + height;
+
+        this._bounds.rect = this._bounds.getRectangle(this._bounds.rect);
+    }
+
+    getRegion()
+    {
+        return this._bounds.rect;
+    }
+
+    calculateBounds()
+    {
+        // nothing to do
     }
 
     renderCanvas()
