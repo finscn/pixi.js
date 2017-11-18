@@ -28,7 +28,6 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
     /**
      * Called before the renderer starts rendering.
-     *
      */
     onPrerender()
     {

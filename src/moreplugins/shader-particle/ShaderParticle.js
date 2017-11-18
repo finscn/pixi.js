@@ -100,8 +100,6 @@ export default class ShaderParticle extends DisplayObject
         {
             this.height = height;
         }
-
-        this.calculateVertices(true);
     }
 
     init(gl)
@@ -137,7 +135,7 @@ export default class ShaderParticle extends DisplayObject
         this.display = display;
     }
 
-    bindTexture(renderer, texture, textureIndex)
+    bindTargetTexture(renderer, texture, textureIndex)
     {
         const gl = renderer.gl;
 

@@ -140,7 +140,7 @@ export default class ShaderParticleStatus
         renderer.bindVao(this.vao);
         renderer.bindShader(shader);
 
-        particle.bindTexture(renderer, this.renderTargetIn.texture, 0);
+        particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
 
         const viewSize = shader.uniforms.viewSize;

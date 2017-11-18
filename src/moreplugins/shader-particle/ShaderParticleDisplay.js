@@ -146,7 +146,7 @@ export default class ShaderParticleDisplay
         {
             const texture = statusList[statusIndex].renderTargetOut.texture;
 
-            particle.bindTexture(renderer, texture, location);
+            particle.bindTargetTexture(renderer, texture, location);
             shader.uniforms['stateTex' + statusIndex] = location;
             location++;
         });
