@@ -44,6 +44,8 @@ export default class ShaderParticle extends DisplayObject
         this.display = null;
         this.frames = null;
 
+        this.useHalfFloat = false;
+        this.useOffscreen = true;
         this.useStatus = [0];
 
         this.pluginName = 'shaderparticle';

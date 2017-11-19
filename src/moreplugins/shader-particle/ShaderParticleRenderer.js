@@ -114,7 +114,7 @@ export default class ShaderParticleRenderer extends ObjectRenderer
      */
     render(particle)
     {
-        if (particle.disabled)
+        if (particle.disabled || !particle.visible)
         {
             return;
         }
@@ -128,7 +128,7 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         const prevRenderTarget = renderer._activeRenderTarget;
 
-        if (prevRenderTarget.root)
+        if (particle.useOffscreen && prevRenderTarget.root)
         {
             renderer.bindRenderTarget(this.renderTarget);
             this.renderTarget.clear();
@@ -149,7 +149,7 @@ export default class ShaderParticleRenderer extends ObjectRenderer
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }
 
-        if (prevRenderTarget.root)
+        if (particle.useOffscreen && prevRenderTarget.root)
         {
             renderer.bindRenderTarget(prevRenderTarget);
 
