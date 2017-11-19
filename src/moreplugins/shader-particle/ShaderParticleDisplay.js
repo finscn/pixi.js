@@ -172,8 +172,8 @@ export default class ShaderParticleDisplay
     {
         const shader = this.shader;
 
-        renderer.bindVao(this.vao);
         renderer.bindShader(shader);
+        renderer.bindVao(this.vao);
 
         const texture = particle._texture;
 

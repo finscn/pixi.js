@@ -145,14 +145,11 @@ export default class ShaderParticle extends DisplayObject
         ];
     }
 
-    bindTargetTexture(renderer, texture, textureIndex)
+    bindTargetTexture(renderer, texture, textureLocation)
     {
-        const gl = renderer.gl;
+        renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
 
-        renderer.boundTextures[textureIndex] = renderer.emptyTextures[textureIndex];
-        gl.activeTexture(gl.TEXTURE0 + textureIndex);
-
-        texture.bind();
+        texture.bind(textureLocation);
     }
 
     setRegion(x, y, width, height)

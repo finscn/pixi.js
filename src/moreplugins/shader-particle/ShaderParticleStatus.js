@@ -153,8 +153,8 @@ export default class ShaderParticleStatus
         // const instanceExt = this.instanceExt;
         const shader = this.shader;
 
-        renderer.bindVao(this.vao);
         renderer.bindShader(shader);
+        renderer.bindVao(this.vao);
 
         particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
