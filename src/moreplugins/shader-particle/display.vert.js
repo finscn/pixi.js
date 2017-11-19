@@ -7,6 +7,7 @@ varying vec2 vTextureCoord;
 
 uniform sampler2D stateTex0;
 attribute vec2 aParticleIndex;
+// attribute vec4 aParticleFrame;
 
 uniform vec2 uPosition;
 
@@ -23,6 +24,7 @@ void main(void){
     gl_Position = vec4((projectionMatrix * vec3(v, 1.0)).xy, 0.0, 1.0);
 
     vTextureCoord = aTextureCoord;
+    // vTextureCoord = aParticleFrame.xy + aTextureCoord * aParticleFrame.zw;
 }
 
 `;
