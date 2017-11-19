@@ -138,6 +138,14 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         renderer.bindRenderTarget(prevRenderTarget);
         renderer.bindShader(this.shader);
         renderer.bindVao(this.vao);
+        if (prevRenderTarget.root)
+        {
+            this.shader.uniforms.flipY = 1.0;
+        }
+        else
+        {
+            this.shader.uniforms.flipY = -1.0;
+        }
         particle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
         this.shader.uniforms.uSampler = 1;
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
