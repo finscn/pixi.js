@@ -128,8 +128,11 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         const prevRenderTarget = renderer._activeRenderTarget;
 
-        renderer.bindRenderTarget(this.renderTarget);
-        this.renderTarget.clear();
+        if (prevRenderTarget.root)
+        {
+            renderer.bindRenderTarget(this.renderTarget);
+            this.renderTarget.clear();
+        }
 
         // re-enable blending so our bunnies look good
         renderer.state.setBlendMode(particle.blendMode);
@@ -146,26 +149,23 @@ export default class ShaderParticleRenderer extends ObjectRenderer
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }
 
-        renderer.bindRenderTarget(prevRenderTarget);
-
-        renderer.bindShader(this.shader);
-        // if (!settings.CAN_UPLOAD_SAME_BUFFER)
-        // {
-        //     this.createVao(renderer.gl);
-        // }
-        renderer.bindVao(this.vao);
-
         if (prevRenderTarget.root)
         {
+            renderer.bindRenderTarget(prevRenderTarget);
+
+            renderer.bindShader(this.shader);
+            // if (!settings.CAN_UPLOAD_SAME_BUFFER)
+            // {
+            //     this.createVao(renderer.gl);
+            // }
+            renderer.bindVao(this.vao);
+
             this.shader.uniforms.flipY = -1.0;
+
+            particle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
+            this.shader.uniforms.uSampler = 1;
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }
-        else
-        {
-            this.shader.uniforms.flipY = 1.0;
-        }
-        particle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
-        this.shader.uniforms.uSampler = 1;
-        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
     }
 
     /**
