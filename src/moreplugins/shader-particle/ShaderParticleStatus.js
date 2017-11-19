@@ -37,6 +37,7 @@ export default class ShaderParticleStatus
         this.vertSize = 4;
 
         let data = null;
+        const size = this.fboWidth * this.fboHeight;
 
         if (this.fboData)
         {
@@ -44,8 +45,6 @@ export default class ShaderParticleStatus
         }
         else
         {
-            const size = this.fboWidth * this.fboHeight;
-
             data = tempDatas[size];
             if (!data)
             {
@@ -57,8 +56,16 @@ export default class ShaderParticleStatus
         this.renderTargetInit = this.createRenderTarget(gl, data);
         this.renderTargetInit.initial = true;
         this.renderTargetIn = this.renderTargetInit;
-        this.renderTargetOut = this.createRenderTarget(gl);
-        this._renderTargetOut = this.createRenderTarget(gl);
+        if (particle.useHalfFloat)
+        {
+            this.renderTargetOut = this.createRenderTarget(gl);
+            this._renderTargetOut = this.createRenderTarget(gl);
+        }
+        else
+        {
+            this.renderTargetOut = this.createRenderTarget(gl, data);
+            this._renderTargetOut = this.createRenderTarget(gl, data);
+        }
 
         this.initVao(gl, particle);
     }
