@@ -2,6 +2,7 @@ import glCore from 'pixi-gl-core';
 import Shader from '../../core/Shader';
 import RenderTarget from '../../core/renderers/webgl/utils/RenderTarget';
 import { SCALE_MODES } from '../../core/const';
+// import settings from '../../core/settings';
 
 import vertex from './status.vert.js';
 import fragment from './status.frag.js';
@@ -31,6 +32,9 @@ export default class ShaderParticleStatus
         this.fboData = particle.data;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
+
+        this.vertCount = 4;
+        this.vertSize = 4;
 
         let data = null;
 
@@ -99,21 +103,20 @@ export default class ShaderParticleStatus
 
     initVao(gl, particle) // eslint-disable-line no-unused-vars
     {
-        const shader = this.shader;
+        this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
 
-        const indicesData = new Uint16Array([0, 1, 2, 0, 3, 2]);
-        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, indicesData, gl.STATIC_DRAW);
-
-        const vertCount = 4;
+        const vertCount = this.vertCount;
+        const vertSize = this.vertSize;
 
         // aVertexPosition(2), aTextureCoord(2)
         const byteCount = 4;
-        const vertSize = 4;
-        const vertByteSize = byteCount * vertSize;
 
-        const buff = new ArrayBuffer(vertByteSize * vertCount);
-        const posView = new Float32Array(buff);
-        const coordView = new Float32Array(buff);
+        this.vertByteSize = byteCount * vertSize;
+
+        this.vertexBufferData = new ArrayBuffer(this.vertByteSize * vertCount);
+
+        const posView = new Float32Array(this.vertexBufferData);
+        const coordView = new Float32Array(this.vertexBufferData);
 
         posView[0] = -1;
         posView[1] = -1;
@@ -135,25 +138,38 @@ export default class ShaderParticleStatus
         coordView[14] = 1;
         coordView[15] = 0;
 
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, buff, gl.STATIC_DRAW);
+        this.createVao(gl);
+    }
+
+    createVao(gl)
+    {
+        const vertSize = this.vertSize;
+
+        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+
+        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
 
         const vao = new glCore.VertexArrayObject(gl);
-        const attrs = shader.attributes;
+        const attrs = this.shader.attributes;
 
         vao.addIndex(indexBuffer);
-        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 8);
+        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
+        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
 
         this.vao = vao;
     }
 
-    update(renderer, particle, timeStep, now) // eslint-disable-line no-unused-vars
+    update(renderer, particle) // eslint-disable-line no-unused-vars
     {
         const gl = renderer.gl;
         // const instanceExt = this.instanceExt;
         const shader = this.shader;
 
         renderer.bindShader(shader);
+        // if (!settings.CAN_UPLOAD_SAME_BUFFER)
+        // {
+        //     this.createVao(renderer.gl);
+        // }
         renderer.bindVao(this.vao);
 
         particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
@@ -171,7 +187,10 @@ export default class ShaderParticleStatus
             shader.uniforms.viewSize = viewSize;
         }
 
-        this.updateShader(renderer, particle, timeStep, now);
+        shader.uniforms.uTime = particle.time;
+        shader.uniforms.uTimeStep = particle.timeStep;
+
+        this.updateShader(renderer, particle);
 
         // bind output texture;
         renderer.bindRenderTarget(this.renderTargetOut);
@@ -183,7 +202,7 @@ export default class ShaderParticleStatus
         gl.enable(gl.BLEND);
     }
 
-    updateShader(renderer, particle, timeStep, now) // eslint-disable-line no-unused-vars
+    updateShader(renderer, particle) // eslint-disable-line no-unused-vars
     {
         // ==========================================
         //
@@ -201,8 +220,8 @@ export default class ShaderParticleStatus
         // this.shader.uniforms.tex2 = 2;
 
         // other params
-        this.shader.uniforms.timeStep = timeStep;
-        this.shader.uniforms.time = now;
+        // this.shader.uniforms.foo = foo;
+        // this.shader.uniforms.bar = bar;
 
         //
         //

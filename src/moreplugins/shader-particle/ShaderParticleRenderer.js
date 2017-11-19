@@ -9,6 +9,7 @@ const WebGLRenderer = core.WebGLRenderer;
 const RenderTarget = core.RenderTarget;
 const Shader = core.Shader;
 const BLEND_MODES = core.BLEND_MODES;
+// const settings = core.settings;
 
 export default class ShaderParticleRenderer extends ObjectRenderer
 {
@@ -30,6 +31,8 @@ export default class ShaderParticleRenderer extends ObjectRenderer
              || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
 
         this.shader = new Shader(gl, vertex, fragment);
+        this.vertCount = 4;
+        this.vertSize = 4;
 
         const screen = this.renderer.screen;
 
@@ -38,52 +41,60 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         this.initVao(gl);
     }
 
-    initVao(gl) // eslint-disable-line no-unused-vars
+    initVao(gl, particle) // eslint-disable-line no-unused-vars
     {
-        const shader = this.shader;
+        this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
 
-        const indicesData = new Uint16Array([0, 1, 2, 0, 3, 2]);
-        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, indicesData, gl.STATIC_DRAW);
-
-        const vertCount = 4;
+        const vertCount = this.vertCount;
+        const vertSize = this.vertSize;
 
         // aVertexPosition(2), aTextureCoord(2)
         const byteCount = 4;
-        const vertSize = 4;
-        const vertByteSize = byteCount * vertSize;
 
-        const buff = new ArrayBuffer(vertByteSize * vertCount);
-        const posView = new Float32Array(buff);
-        const coordView = new Float32Array(buff);
+        this.vertByteSize = byteCount * vertSize;
+
+        this.vertexBufferData = new ArrayBuffer(this.vertByteSize * vertCount);
+
+        const posView = new Float32Array(this.vertexBufferData);
+        const coordView = new Float32Array(this.vertexBufferData);
 
         posView[0] = -1;
-        posView[1] = 1;
+        posView[1] = -1;
         coordView[2] = 0;
         coordView[3] = 0;
 
         posView[4] = -1;
-        posView[5] = -1;
+        posView[5] = 1;
         coordView[6] = 0;
         coordView[7] = 1;
 
         posView[8] = 1;
-        posView[9] = -1;
+        posView[9] = 1;
         coordView[10] = 1;
         coordView[11] = 1;
 
         posView[12] = 1;
-        posView[13] = 1;
+        posView[13] = -1;
         coordView[14] = 1;
         coordView[15] = 0;
 
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, buff, gl.STATIC_DRAW);
+        this.createVao(gl);
+    }
+
+    createVao(gl)
+    {
+        const vertSize = this.vertSize;
+
+        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+
+        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
 
         const vao = new glCore.VertexArrayObject(gl);
-        const attrs = shader.attributes;
+        const attrs = this.shader.attributes;
 
         vao.addIndex(indexBuffer);
-        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, vertByteSize, 8);
+        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
+        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
 
         this.vao = vao;
     }
@@ -136,15 +147,21 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         }
 
         renderer.bindRenderTarget(prevRenderTarget);
+
         renderer.bindShader(this.shader);
+        // if (!settings.CAN_UPLOAD_SAME_BUFFER)
+        // {
+        //     this.createVao(renderer.gl);
+        // }
         renderer.bindVao(this.vao);
+
         if (prevRenderTarget.root)
         {
-            this.shader.uniforms.flipY = 1.0;
+            this.shader.uniforms.flipY = -1.0;
         }
         else
         {
-            this.shader.uniforms.flipY = -1.0;
+            this.shader.uniforms.flipY = 1.0;
         }
         particle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
         this.shader.uniforms.uSampler = 1;

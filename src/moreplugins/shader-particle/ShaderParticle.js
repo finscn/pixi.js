@@ -37,6 +37,9 @@ export default class ShaderParticle extends DisplayObject
         this.colorOffset = new Float32Array([0.0, 0.0, 0.0]);
         this.position = new Point(0, 0);
 
+        this.time = 0.0;
+        this.timeStep = 0.0;
+
         this.defaultFrame = new Float32Array([0.0, 0.0, 1.0, 1.0]);
 
         this.blendMode = BLEND_MODES.NORMAL;
@@ -44,6 +47,8 @@ export default class ShaderParticle extends DisplayObject
         this.statusList = null;
         this.display = null;
         this.frames = null;
+
+        this.useStatus = [0];
 
         this.pluginName = 'shaderparticle';
 
@@ -99,13 +104,13 @@ export default class ShaderParticle extends DisplayObject
         this.inited = true;
     }
 
-    updateStatus(renderer, timeStep, now)
+    updateStatus(renderer)
     {
         const particle = this;
 
         this.statusList.forEach(function (status)
         {
-            status.update(renderer, particle, timeStep, now);
+            status.update(renderer, particle);
         });
     }
 
