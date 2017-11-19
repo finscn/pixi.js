@@ -54,8 +54,11 @@ export default class ShaderParticleStatus
             }
         }
 
-        this.renderTargetIn = this.createRenderTarget(gl, data);
-        this.renderTargetOut = this.createRenderTarget(gl, data);
+        this.renderTargetInit = this.createRenderTarget(gl, data);
+        this.renderTargetInit.initial = true;
+        this.renderTargetIn = this.renderTargetInit;
+        this.renderTargetOut = this.createRenderTarget(gl);
+        this._renderTargetOut = this.createRenderTarget(gl);
 
         this.initVao(gl, particle);
     }
@@ -65,7 +68,37 @@ export default class ShaderParticleStatus
         const fboWidth = this.fboWidth;
         const fboHeight = this.fboHeight;
         const renderTarget = new RenderTarget(gl, fboWidth, fboHeight, SCALE_MODES.NEAREST);
-        const frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboWidth, fboHeight, data);
+
+        const ext = gl.getExtension('OES_texture_half_float');
+
+        let frameBuffer;
+
+        if (data || !ext)
+        {
+            frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboWidth, fboHeight, data);
+        }
+        else
+        {
+            const texture = new glCore.GLTexture(gl);
+
+            texture.bind();
+            texture.type = ext.HALF_FLOAT_OES;
+            texture.fromat = gl.RGBA;
+            texture.width = fboWidth;
+            texture.height = fboHeight;
+
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+            gl.texImage2D(gl.TEXTURE_2D, 0, texture.format, fboWidth, fboHeight, 0, texture.format, texture.type, null);
+
+            texture.enableNearestScaling();
+            texture.enableWrapClamp();
+
+            // now create the framebuffer object and attach the texture to it.
+            frameBuffer = new glCore.GLFramebuffer(gl, fboWidth, fboHeight);
+            frameBuffer.enableTexture(texture);
+
+            frameBuffer.unbind();
+        }
 
         renderTarget.frameBuffer = frameBuffer;
         frameBuffer.texture.enableNearestScaling();
@@ -78,14 +111,9 @@ export default class ShaderParticleStatus
     {
         this.fboData = data;
 
-        if (this.renderTargetIn)
+        if (this.renderTargetInit)
         {
-            this.renderTargetIn.texture.uploadData(data, this.fboWidth, this.fboHeight);
-        }
-
-        if (this.renderTargetOut)
-        {
-            this.renderTargetOut.texture.uploadData(data, this.fboWidth, this.fboHeight);
+            this.renderTargetInit.texture.uploadData(data, this.fboWidth, this.fboHeight);
         }
     }
 
@@ -235,7 +263,7 @@ export default class ShaderParticleStatus
         const tmp = this.renderTargetIn;
 
         this.renderTargetIn = this.renderTargetOut;
-        this.renderTargetOut = tmp;
+        this.renderTargetOut = tmp.initial ? this._renderTargetOut : tmp;
     }
 
     /**

@@ -4,17 +4,13 @@ import DisplayObject from '../../core/display/DisplayObject';
 import Bounds from '../../core/display/Bounds';
 import { BLEND_MODES } from '../../core/const';
 
+const floatView = new Float32Array(1);
+const int32View = new Int32Array(floatView.buffer);
+
 /**
- * The Sprite object is the base for all textured objects that are rendered to the screen
- *
- * A sprite can be created directly from an image like this:
- *
- * ```js
- * let sprite = new PIXI.Sprite.fromImage('assets/image.png');
- * ```
  *
  * @class
- * @extends PIXI.Container
+ * @extends PIXI.DisplayObject
  * @memberof PIXI
  */
 export default class ShaderParticle extends DisplayObject
@@ -22,11 +18,10 @@ export default class ShaderParticle extends DisplayObject
     /**
      * @param {number} count - The count of particles
      * @param {PIXI.Texture} texture - The texture of particles
-     * @param {Float32Array} data - The  initial data of particles
      * @param {number} fboWidth - The fboWidth of particles
      * @param {number} fboHeight - The fboHeight of particles
      */
-    constructor(count, texture, data, fboWidth = 1024, fboHeight = 1024)
+    constructor(count, texture, fboWidth = 1024, fboHeight = 1024)
     {
         super();
 
@@ -44,6 +39,7 @@ export default class ShaderParticle extends DisplayObject
 
         this.blendMode = BLEND_MODES.NORMAL;
 
+        this.data = null;
         this.statusList = null;
         this.display = null;
         this.frames = null;
@@ -52,7 +48,6 @@ export default class ShaderParticle extends DisplayObject
 
         this.pluginName = 'shaderparticle';
 
-        this.data = data;
         this.fboWidth = fboWidth;
         this.fboHeight = fboHeight;
 
@@ -114,6 +109,11 @@ export default class ShaderParticle extends DisplayObject
         });
     }
 
+    setData(data)
+    {
+        this.data = data;
+    }
+
     setStatusList(statusList)
     {
         this.statusList = statusList;
@@ -155,6 +155,59 @@ export default class ShaderParticle extends DisplayObject
         renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
 
         texture.bind(textureLocation);
+    }
+
+    // var halfFloatData = new Uint16Array(4);
+    // // will divide by 400 in shader to prove it works.
+    // halfFloatData[0] = toHalfFloat(100);
+    // halfFloatData[1] = toHalfFloat(200);
+    // halfFloatData[2] = toHalfFloat(300);
+    // halfFloatData[3] = toHalfFloat(400);
+
+    toHalfFloat(value)
+    {
+        floatView[0] = value;
+
+        const x = int32View[0];
+        const e = (x >> 23) & 0xff; /* Using int is faster here */
+        let bits = (x >> 16) & 0x8000; /* Get the sign */
+        let m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
+
+        /* If zero, or denormal, or exponent underflows too much for a denormal
+         * half, return signed zero. */
+        if (e < 103)
+        {
+            return bits;
+        }
+
+        /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
+        if (e > 142)
+        {
+            bits |= 0x7c00;
+            /* If exponent was 0xff and one mantissa bit was set, it means NaN,
+                       * not Inf, so make sure we set one mantissa bit too. */
+            bits |= ((e === 255) ? 0 : 1) && (x & 0x007fffff);
+
+            return bits;
+        }
+
+        /* If exponent underflows but not too much, return a denormal */
+        if (e < 113)
+        {
+            m |= 0x0800;
+            /* Extra rounding may overflow and set mantissa to 0 and exponent
+            * to 1, which is OK. */
+            bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+
+            return bits;
+        }
+
+        bits |= ((e - 112) << 10) | (m >> 1);
+        /* Extra rounding. An overflow will set mantissa to 0 and increment
+         * the exponent, which is OK. */
+        bits += m & 1;
+
+        return bits;
     }
 
     setRegion(x, y, width, height)
