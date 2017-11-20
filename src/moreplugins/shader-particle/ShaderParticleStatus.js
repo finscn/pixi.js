@@ -21,7 +21,7 @@ export default class ShaderParticleStatus
 
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
-        this.fboData = null;
+        this.initialData = null;
     }
 
     init(gl, particle)
@@ -29,7 +29,7 @@ export default class ShaderParticleStatus
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
 
-        this.fboData = particle.data;
+        this.initialData = particle.data;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
@@ -39,9 +39,9 @@ export default class ShaderParticleStatus
         let data = null;
         const size = this.fboWidth * this.fboHeight;
 
-        if (this.fboData)
+        if (this.initialData)
         {
-            data = this.fboData;
+            data = this.initialData;
         }
         else
         {
@@ -53,9 +53,9 @@ export default class ShaderParticleStatus
             }
         }
 
-        this.renderTargetInit = this.createRenderTarget(gl, data);
-        this.renderTargetInit.initial = true;
-        this.renderTargetIn = this.renderTargetInit;
+        this.initialTarget = this.createRenderTarget(gl, data);
+        this.initialTarget.initial = true;
+        this.renderTargetIn = this.initialTarget;
         if (particle.useHalfFloat)
         {
             this.renderTargetOut = this.createRenderTarget(gl);
@@ -116,11 +116,11 @@ export default class ShaderParticleStatus
 
     uploadData(data)
     {
-        this.fboData = data;
+        this.initialData = data;
 
-        if (this.renderTargetInit)
+        if (this.initialTarget)
         {
-            this.renderTargetInit.texture.uploadData(data, this.fboWidth, this.fboHeight);
+            this.initialTarget.texture.uploadData(data, this.fboWidth, this.fboHeight);
         }
     }
 
@@ -279,7 +279,24 @@ export default class ShaderParticleStatus
      */
     destroy()
     {
+        this.initialTarget.destroy();
+        this.renderTargetIn.destroy();
+        this.renderTargetOut.destroy();
+        this.shader.destroy();
+        this.vao.destroy();
+
+        this.initialTarget = null;
+        this.renderTargetIn = null;
         this.renderTargetOut = null;
+        this._renderTargetOut = null;
+        this.shader = null;
+        this.vao = null;
+
+        this.initialData = null;
+        this.instanceExt = null;
+        this.indexBufferData = null;
+        this.vertexBufferData = null;
+        this.particleBufferData = null;
         // TODO
     }
 }

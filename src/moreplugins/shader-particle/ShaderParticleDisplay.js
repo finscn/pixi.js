@@ -266,6 +266,15 @@ export default class ShaderParticleDisplay
      */
     destroy()
     {
-        // TODO
+        this.shader.destroy();
+        this.vao.destroy();
+
+        this.shader = null;
+        this.vao = null;
+
+        this.instanceExt = null;
+        this.indexBufferData = null;
+        this.vertexBufferData = null;
+        this.particleBufferData = null;
     }
 }

@@ -176,9 +176,18 @@ export default class ShaderParticleRenderer extends ObjectRenderer
     {
         super.destroy();
 
-        this.blendMode = null;
-        this.instanceExt = null;
+        this.renderTarget.destroy();
+        this.shader.destroy();
+        this.vao.destroy();
+
+        this.renderTarget = null;
+        this.shader = null;
+        this.vao = null;
+
         this.gl = null;
+        this.instanceExt = null;
+        this.indexBufferData = null;
+        this.vertexBufferData = null;
     }
 }
 

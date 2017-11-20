@@ -40,13 +40,13 @@ export default class ShaderParticle extends DisplayObject
         this.blendMode = BLEND_MODES.NORMAL;
 
         this.data = null;
-        this.statusList = null;
-        this.display = null;
         this.frames = null;
+        this.display = null;
+        this.statusList = [];
 
+        this.useStatus = [];
         this.useHalfFloat = false;
         this.useOffscreen = true;
-        this.useStatus = [0];
 
         this.pluginName = 'shaderparticle';
 
@@ -111,19 +111,36 @@ export default class ShaderParticle extends DisplayObject
         });
     }
 
-    setData(data)
+    setDisplay(display)
     {
-        this.data = data;
+        this.display = display;
     }
 
     setStatusList(statusList)
     {
-        this.statusList = statusList;
+        const particle = this;
+
+        particle.statusList.length = 0;
+        particle.useStatus.length = 0;
+
+        statusList.forEach(function (s, index)
+        {
+            particle.statusList[index] = s;
+            particle.useStatus[index] = index;
+        });
     }
 
-    setDisplay(display)
+    addStatus(status)
     {
-        this.display = display;
+        const index = this.statusList.length;
+
+        this.statusList.push(status);
+        this.useStatus[index] = index;
+    }
+
+    setData(data)
+    {
+        this.data = data;
     }
 
     setFrames(frames)
