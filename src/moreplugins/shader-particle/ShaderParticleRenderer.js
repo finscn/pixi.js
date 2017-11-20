@@ -139,15 +139,7 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         display.update(renderer, particle);
 
-        // boom! draw some bunnies
-        if (display.useInstanced)
-        {
-            instanceExt.drawElementsInstancedANGLE(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, particleCount);
-        }
-        else
-        {
-            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-        }
+        instanceExt.drawElementsInstancedANGLE(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, particleCount);
 
         if (particle.useOffscreen && prevRenderTarget.root)
         {

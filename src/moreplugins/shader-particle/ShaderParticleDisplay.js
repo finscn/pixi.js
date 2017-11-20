@@ -17,8 +17,6 @@ export default class ShaderParticleDisplay
 
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
-
-        this.useInstanced = true;
     }
 
     init(gl, particle)
