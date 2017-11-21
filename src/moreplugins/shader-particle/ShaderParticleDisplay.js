@@ -14,6 +14,7 @@ export default class ShaderParticleDisplay
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
+        this.uniforms = {};
 
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
@@ -235,21 +236,31 @@ export default class ShaderParticleDisplay
             shader.uniforms.uPosition = pos;
         }
 
+        for (const key in this.uniforms)
+        {
+            shader.uniforms[key] = this.uniforms[key];
+        }
+
         this.updateShader(renderer, particle);
     }
 
     updateShader(renderer, particle)  // eslint-disable-line no-unused-vars
     {
-        // const statusList = particle.statusList;
-
         // ==========================================
         //
         //
         //
         //
 
+        // bind input textures;
+        // particle.statusList[0].renderTargetOut.texture.bind(1);
+        // this.shader.uniforms.tex1 = 1;
+        // particle.statusList[1].renderTargetOut.texture.bind(2);
+        // this.shader.uniforms.tex2 = 2;
+
         // other params
         // this.shader.uniforms.foo = foo;
+        // this.shader.uniforms.bar = bar;
 
         //
         //

@@ -18,6 +18,7 @@ export default class ShaderParticleStatus
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
+        this.uniforms = {};
 
         this.initialData = initialData || null;
         this.fboWidth = fboWidth || 0;
@@ -294,6 +295,11 @@ export default class ShaderParticleStatus
         shader.uniforms.uTime = particle.time;
         shader.uniforms.uTimeStep = particle.timeStep;
 
+        for (const key in this.uniforms)
+        {
+            shader.uniforms[key] = this.uniforms[key];
+        }
+
         this.updateShader(renderer, particle);
 
         // bind output texture;
@@ -315,12 +321,9 @@ export default class ShaderParticleStatus
         //
 
         // bind input textures;
-
         // particle.statusList[0].renderTargetOut.texture.bind(1);
-        // particle.statusList[1].renderTargetOut.texture.bind(2);
-
-        // textures
         // this.shader.uniforms.tex1 = 1;
+        // particle.statusList[1].renderTargetOut.texture.bind(2);
         // this.shader.uniforms.tex2 = 2;
 
         // other params
