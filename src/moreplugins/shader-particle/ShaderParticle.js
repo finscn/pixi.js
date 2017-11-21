@@ -18,8 +18,8 @@ export default class ShaderParticle extends DisplayObject
     /**
      * @param {number} count - The count of particles
      * @param {PIXI.Texture} texture - The texture of particles
-     * @param {number} fboWidth - The fboWidth of particles
-     * @param {number} fboHeight - The fboHeight of particles
+     * @param {number} fboWidth - The fbo width of particles
+     * @param {number} fboHeight - The fbo height of particles
      */
     constructor(count, texture, fboWidth = 1024, fboHeight = 1024)
     {
@@ -39,7 +39,6 @@ export default class ShaderParticle extends DisplayObject
 
         this.blendMode = BLEND_MODES.NORMAL;
 
-        this.data = null;
         this.frames = null;
         this.display = null;
         this.statusList = [];
@@ -138,11 +137,6 @@ export default class ShaderParticle extends DisplayObject
 
         this.statusList.push(status);
         this.useStatus[index] = index;
-    }
-
-    setData(data)
-    {
-        this.data = data;
     }
 
     setFrames(frames)

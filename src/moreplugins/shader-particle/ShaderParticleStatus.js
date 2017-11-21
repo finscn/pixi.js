@@ -11,7 +11,7 @@ const tempDatas = {};
 
 export default class ShaderParticleStatus
 {
-    constructor(vertexSrc, fragmentSrc, fboWidth, fboHeight)
+    constructor(vertexSrc, fragmentSrc, initialData, fboWidth, fboHeight)
     {
         // TODO
         this.id = null;
@@ -19,17 +19,15 @@ export default class ShaderParticleStatus
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
 
+        this.initialData = initialData || null;
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
-        this.initialData = null;
     }
 
     init(gl, particle)
     {
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
-
-        this.initialData = particle.data;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
@@ -185,13 +183,13 @@ export default class ShaderParticleStatus
         return frameBuffer;
     }
 
-    uploadData(data)
+    uploadInitialData(initialData)
     {
-        this.initialData = data;
+        this.initialData = initialData;
 
         if (this.initialTarget)
         {
-            this.initialTarget.texture.uploadData(data, this.fboWidth, this.fboHeight);
+            this.initialTarget.texture.uploadData(initialData, this.fboWidth, this.fboHeight);
         }
     }
 
