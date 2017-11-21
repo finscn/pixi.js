@@ -3,6 +3,7 @@ import Shader from '../../core/Shader';
 import RenderTarget from '../../core/renderers/webgl/utils/RenderTarget';
 import { SCALE_MODES } from '../../core/const';
 // import settings from '../../core/settings';
+import ShaderParticle from './ShaderParticle';
 
 import vertex from './status.vert.js';
 import fragment from './status.frag.js';
@@ -277,7 +278,7 @@ export default class ShaderParticleStatus
         // }
         renderer.bindVao(this.vao);
 
-        particle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
+        ShaderParticle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uTextureIn = 0;
         shader.uniforms.particleCount = particle.count;
         shader.uniforms.fboWidth = this.fboWidth;

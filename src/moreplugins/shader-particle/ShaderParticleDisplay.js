@@ -1,5 +1,6 @@
 import glCore from 'pixi-gl-core';
 import Shader from '../../core/Shader';
+import ShaderParticle from './ShaderParticle';
 // import settings from '../../core/settings';
 
 import vertex from './display.vert.js';
@@ -214,7 +215,7 @@ export default class ShaderParticleDisplay
             {
                 const texture = statusList[statusIndex].renderTargetOut.texture;
 
-                particle.bindTargetTexture(renderer, texture, location);
+                ShaderParticle.bindTargetTexture(renderer, texture, location);
                 shader.uniforms['statusOut' + statusIndex] = location;
                 location++;
             });

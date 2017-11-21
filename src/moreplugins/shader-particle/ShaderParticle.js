@@ -141,120 +141,6 @@ export default class ShaderParticle extends DisplayObject
         this.frames = frames;
     }
 
-    getUvs(x, y, width, height)
-    {
-        const baseTexture = this._texture.baseTexture;
-        const tw = baseTexture.width;
-        const th = baseTexture.height;
-
-        return [
-            x / tw,
-            y / th,
-
-            (x + width) / tw,
-            y / th,
-
-            (x + width) / tw,
-            (y + height) / th,
-
-            x / tw,
-            (y + height) / th,
-        ];
-    }
-
-    bindTargetTexture(renderer, texture, textureLocation)
-    {
-        renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
-
-        texture.bind(textureLocation);
-    }
-
-    // var halfFloatData = new Uint16Array(4);
-    // // will divide by 400 in shader to prove it works.
-    // halfFloatData[0] = toHalfFloat(100);
-    // halfFloatData[1] = toHalfFloat(200);
-    // halfFloatData[2] = toHalfFloat(300);
-    // halfFloatData[3] = toHalfFloat(400);
-
-    toHalfFloat(value)
-    {
-        floatView[0] = value;
-
-        const x = int32View[0];
-        const e = (x >> 23) & 0xff; /* Using int is faster here */
-        let bits = (x >> 16) & 0x8000; /* Get the sign */
-        let m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
-
-        /* If zero, or denormal, or exponent underflows too much for a denormal
-         * half, return signed zero. */
-        if (e < 103)
-        {
-            return bits;
-        }
-
-        /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
-        if (e > 142)
-        {
-            bits |= 0x7c00;
-            /* If exponent was 0xff and one mantissa bit was set, it means NaN,
-                       * not Inf, so make sure we set one mantissa bit too. */
-            bits |= ((e === 255) ? 0 : 1) && (x & 0x007fffff);
-
-            return bits;
-        }
-
-        /* If exponent underflows but not too much, return a denormal */
-        if (e < 113)
-        {
-            m |= 0x0800;
-            /* Extra rounding may overflow and set mantissa to 0 and exponent
-            * to 1, which is OK. */
-            bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
-
-            return bits;
-        }
-
-        bits |= ((e - 112) << 10) | (m >> 1);
-        /* Extra rounding. An overflow will set mantissa to 0 and increment
-         * the exponent, which is OK. */
-        bits += m & 1;
-
-        return bits;
-    }
-
-    /**
-     * @param {number} value - TODO
-     * @param {number} scale - scale to maximize use of dynamic range
-     * @returns {Array} the 2-byte encoding of VALUE
-     */
-    encode(value, scale)
-    {
-        const b = 255;
-
-        value = value * scale + b * b / 2;
-
-        const pair = [
-            Math.floor((value % b) / b * 255),
-            Math.floor(Math.floor(value / b) / b * 255),
-        ];
-
-        return pair;
-    }
-
-    /**
-     * @param {Array} pair - TODO
-     * @param {number} scale - scale to maximize use of dynamic range
-     * @returns {number} the value for the encoded PAIR
-     */
-    decode(pair, scale)
-    {
-        const b = 255;
-
-        return (
-                (pair[0] / 255 * b) + (pair[1] / 255 * b * b) - (b * b / 2)
-            ) / scale;
-    }
-
     setRegion(x, y, width, height)
     {
         this._bounds.minX = x;
@@ -444,5 +330,119 @@ export default class ShaderParticle extends DisplayObject
                 value.once('update', this._onTextureUpdate, this);
             }
         }
+    }
+
+    // Some static functions
+
+    static bindTargetTexture(renderer, texture, textureLocation)
+    {
+        renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
+        texture.bind(textureLocation);
+    }
+
+    // var halfFloatData = new Uint16Array(4);
+    // // will divide by 400 in shader to prove it works.
+    // halfFloatData[0] = toHalfFloat(100);
+    // halfFloatData[1] = toHalfFloat(200);
+    // halfFloatData[2] = toHalfFloat(300);
+    // halfFloatData[3] = toHalfFloat(400);
+
+    static toHalfFloat(value)
+    {
+        floatView[0] = value;
+
+        const x = int32View[0];
+        const e = (x >> 23) & 0xff; /* Using int is faster here */
+        let bits = (x >> 16) & 0x8000; /* Get the sign */
+        let m = (x >> 12) & 0x07ff; /* Keep one extra bit for rounding */
+
+        /* If zero, or denormal, or exponent underflows too much for a denormal
+         * half, return signed zero. */
+        if (e < 103)
+        {
+            return bits;
+        }
+
+        /* If NaN, return NaN. If Inf or exponent overflow, return Inf. */
+        if (e > 142)
+        {
+            bits |= 0x7c00;
+            /* If exponent was 0xff and one mantissa bit was set, it means NaN,
+                       * not Inf, so make sure we set one mantissa bit too. */
+            bits |= ((e === 255) ? 0 : 1) && (x & 0x007fffff);
+
+            return bits;
+        }
+
+        /* If exponent underflows but not too much, return a denormal */
+        if (e < 113)
+        {
+            m |= 0x0800;
+            /* Extra rounding may overflow and set mantissa to 0 and exponent
+            * to 1, which is OK. */
+            bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+
+            return bits;
+        }
+
+        bits |= ((e - 112) << 10) | (m >> 1);
+        /* Extra rounding. An overflow will set mantissa to 0 and increment
+         * the exponent, which is OK. */
+        bits += m & 1;
+
+        return bits;
+    }
+
+    /**
+     * @param {number} value - TODO
+     * @param {number} scale - scale to maximize use of dynamic range
+     * @returns {Array} the 2-byte encoding of VALUE
+     */
+    static encode(value, scale)
+    {
+        const b = 255;
+
+        value = value * scale + b * b / 2;
+
+        const pair = [
+            Math.floor((value % b) / b * 255),
+            Math.floor(Math.floor(value / b) / b * 255),
+        ];
+
+        return pair;
+    }
+
+    /**
+     * @param {Array} pair - TODO
+     * @param {number} scale - scale to maximize use of dynamic range
+     * @returns {number} the value for the encoded PAIR
+     */
+    static decode(pair, scale)
+    {
+        const b = 255;
+
+        return (
+                (pair[0] / 255 * b) + (pair[1] / 255 * b * b) - (b * b / 2)
+            ) / scale;
+    }
+
+    static getUvs(baseTexture, x, y, width, height)
+    {
+        const tw = baseTexture.width;
+        const th = baseTexture.height;
+
+        return [
+            x / tw,
+            y / th,
+
+            (x + width) / tw,
+            y / th,
+
+            (x + width) / tw,
+            (y + height) / th,
+
+            x / tw,
+            (y + height) / th,
+        ];
     }
 }

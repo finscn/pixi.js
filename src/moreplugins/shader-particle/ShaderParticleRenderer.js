@@ -1,5 +1,6 @@
 import glCore from 'pixi-gl-core';
 import * as core from '../../core';
+import ShaderParticle from './ShaderParticle';
 
 import vertex from './default.vert.js';
 import fragment from './default.frag.js';
@@ -154,8 +155,9 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
             this.shader.uniforms.flipY = -1.0;
 
-            particle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
+            ShaderParticle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
             this.shader.uniforms.uSampler = 1;
+
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }
     }
