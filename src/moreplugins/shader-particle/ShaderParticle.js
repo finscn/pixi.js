@@ -1,3 +1,4 @@
+import glCore from 'pixi-gl-core';
 import { Point, ObservablePoint } from '../../core/math';
 import Texture from '../../core/textures/Texture';
 import DisplayObject from '../../core/display/DisplayObject';
@@ -338,6 +339,64 @@ export default class ShaderParticle extends DisplayObject
     {
         renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
         texture.bind(textureLocation);
+    }
+
+    static createRGBAFrameBuffer(gl, width, height, data)
+    {
+        const texture = glCore.GLTexture.fromData(gl, data, width, height);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        // frameBuffer.enableStencil(); // get this back on soon!
+        frameBuffer.unbind();
+
+        return frameBuffer;
+    }
+
+    static createFloatFrameBuffer(gl, width, height, data)
+    {
+        const texture = glCore.GLTexture.fromData(gl, data, width, height);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        frameBuffer.unbind();
+
+        return frameBuffer;
+    }
+
+    static createHalfFloatFrameBuffer(gl, width, height, data, ext)
+    {
+        const texture = new glCore.GLTexture(gl);
+
+        texture.bind();
+        texture.type = ext.HALF_FLOAT_OES;
+        texture.fromat = gl.RGBA;
+        texture.width = width;
+        texture.height = height;
+
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+        gl.texImage2D(gl.TEXTURE_2D, 0, texture.format, width, height, 0, texture.format, texture.type, data || null);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        frameBuffer.unbind();
+
+        return frameBuffer;
     }
 
     // var halfFloatData = new Uint16Array(4);
