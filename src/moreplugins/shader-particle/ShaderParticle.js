@@ -45,8 +45,10 @@ export default class ShaderParticle extends DisplayObject
         this.statusList = [];
 
         this.useStatus = [];
-        this.useHalfFloat = false;
         this.useOffscreen = true;
+
+        // auto
+        this.format = null;
 
         this.pluginName = 'shaderparticle';
 
@@ -227,6 +229,39 @@ export default class ShaderParticle extends DisplayObject
         bits += m & 1;
 
         return bits;
+    }
+
+    /**
+     * @param {number} value - TODO
+     * @param {number} scale - scale to maximize use of dynamic range
+     * @returns {Array} the 2-byte encoding of VALUE
+     */
+    encode(value, scale)
+    {
+        const b = 255;
+
+        value = value * scale + b * b / 2;
+
+        const pair = [
+            Math.floor((value % b) / b * 255),
+            Math.floor(Math.floor(value / b) / b * 255),
+        ];
+
+        return pair;
+    }
+
+    /**
+     * @param {Array} pair - TODO
+     * @param {number} scale - scale to maximize use of dynamic range
+     * @returns {number} the value for the encoded PAIR
+     */
+    decode(pair, scale)
+    {
+        const b = 255;
+
+        return (
+                (pair[0] / 255 * b) + (pair[1] / 255 * b * b) - (b * b / 2)
+            ) / scale;
     }
 
     setRegion(x, y, width, height)

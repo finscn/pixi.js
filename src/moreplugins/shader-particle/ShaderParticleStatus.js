@@ -53,65 +53,136 @@ export default class ShaderParticleStatus
             }
         }
 
-        this.initialTarget = this.createRenderTarget(gl, data);
+        const format = particle.format;
+        const outData = format === 'FLOAT' ? data : null;
+
+        this.initialTarget = this.createRenderTarget(gl, data, format);
+        this.renderTargetOut = this.createRenderTarget(gl, outData, format);
+        this._renderTargetOut = this.createRenderTarget(gl, outData, format);
+
         this.initialTarget.initial = true;
         this.renderTargetIn = this.initialTarget;
-        if (particle.useHalfFloat)
-        {
-            this.renderTargetOut = this.createRenderTarget(gl);
-            this._renderTargetOut = this.createRenderTarget(gl);
-        }
-        else
-        {
-            this.renderTargetOut = this.createRenderTarget(gl, data);
-            this._renderTargetOut = this.createRenderTarget(gl, data);
-        }
 
         this.initVao(gl, particle);
     }
 
-    createRenderTarget(gl, data)
+    createRenderTarget(gl, data, format)
     {
         const fboWidth = this.fboWidth;
         const fboHeight = this.fboHeight;
         const renderTarget = new RenderTarget(gl, fboWidth, fboHeight, SCALE_MODES.NEAREST);
 
-        const ext = gl.getExtension('OES_texture_half_float');
-
-        let frameBuffer;
-
-        if (data || !ext)
-        {
-            frameBuffer = glCore.GLFramebuffer.createFloat32(gl, fboWidth, fboHeight, data);
-        }
-        else
-        {
-            const texture = new glCore.GLTexture(gl);
-
-            texture.bind();
-            texture.type = ext.HALF_FLOAT_OES;
-            texture.fromat = gl.RGBA;
-            texture.width = fboWidth;
-            texture.height = fboHeight;
-
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
-            gl.texImage2D(gl.TEXTURE_2D, 0, texture.format, fboWidth, fboHeight, 0, texture.format, texture.type, null);
-
-            texture.enableNearestScaling();
-            texture.enableWrapClamp();
-
-            // now create the framebuffer object and attach the texture to it.
-            frameBuffer = new glCore.GLFramebuffer(gl, fboWidth, fboHeight);
-            frameBuffer.enableTexture(texture);
-
-            frameBuffer.unbind();
-        }
+        const frameBuffer = this.createFrameBuffer(gl, fboWidth, fboHeight, data, format);
 
         renderTarget.frameBuffer = frameBuffer;
         frameBuffer.texture.enableNearestScaling();
         renderTarget.texture = frameBuffer.texture;
 
         return renderTarget;
+    }
+
+    createFrameBuffer(gl, width, height, data, format)
+    {
+        if (format === 'RGBA')
+        {
+            return this.createRGBAFrameBuffer(gl, width, height, data);
+        }
+
+        const extFloat = gl.getExtension('OES_texture_float');
+
+        if (format === 'FLOAT' && extFloat)
+        {
+            return this.createFloatFrameBuffer(gl, width, height, data);
+        }
+
+        const extHalfFloat = gl.getExtension('OES_texture_half_float');
+
+        if (format === 'HALF_FLOAT' && extHalfFloat)
+        {
+            return this.createHalfFloatFrameBuffer(gl, width, height, data, extHalfFloat);
+        }
+
+        // Auto
+        if (extHalfFloat && extFloat)
+        {
+            if (data)
+            {
+                return this.createFloatFrameBuffer(gl, width, height, data);
+            }
+
+            return this.createHalfFloatFrameBuffer(gl, width, height, data, extHalfFloat);
+        }
+
+        if (extHalfFloat)
+        {
+            return this.createHalfFloatFrameBuffer(gl, width, height, data, extHalfFloat);
+        }
+
+        if (extFloat)
+        {
+            return this.createFloatFrameBuffer(gl, width, height, data);
+        }
+
+        // !extHalfFloat && !extFloat
+        return this.createRGBAFrameBuffer(gl, width, height, data);
+    }
+
+    createRGBAFrameBuffer(gl, width, height, data)
+    {
+        const texture = glCore.GLTexture.fromData(gl, data, width, height);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        // frameBuffer.enableStencil(); // get this back on soon!
+        frameBuffer.unbind();
+
+        return frameBuffer;
+    }
+
+    createFloatFrameBuffer(gl, width, height, data)
+    {
+        const texture = glCore.GLTexture.fromData(gl, data, width, height);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        frameBuffer.unbind();
+
+        return frameBuffer;
+    }
+
+    createHalfFloatFrameBuffer(gl, width, height, data, ext)
+    {
+        const texture = new glCore.GLTexture(gl);
+
+        texture.bind();
+        texture.type = ext.HALF_FLOAT_OES;
+        texture.fromat = gl.RGBA;
+        texture.width = width;
+        texture.height = height;
+
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+        gl.texImage2D(gl.TEXTURE_2D, 0, texture.format, width, height, 0, texture.format, texture.type, data || null);
+
+        texture.enableNearestScaling();
+        texture.enableWrapClamp();
+
+        // now create the framebuffer object and attach the texture to it.
+        const frameBuffer = new glCore.GLFramebuffer(gl, width, height);
+
+        frameBuffer.enableTexture(texture);
+        frameBuffer.unbind();
+
+        return frameBuffer;
     }
 
     uploadData(data)
