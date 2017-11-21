@@ -32,10 +32,7 @@ export default class ShaderParticle extends DisplayObject
         this.colorOffset = new Float32Array([0.0, 0.0, 0.0]);
         this.position = new Point(0, 0);
 
-        this.time = 0.0;
-        this.timeStep = 0.0;
-
-        this.defaultFrame = new Float32Array([0.0, 0.0, 1.0, 1.0]);
+        this.textureFrame = new Float32Array([0.0, 0.0, 1.0, 1.0]);
 
         this.blendMode = BLEND_MODES.NORMAL;
 

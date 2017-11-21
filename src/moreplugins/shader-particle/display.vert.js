@@ -5,7 +5,7 @@ attribute vec2 aVertexPosition;
 attribute vec2 aTextureCoord;
 varying vec2 vTextureCoord;
 
-uniform sampler2D stateTex0;
+uniform sampler2D statusOut0;
 attribute vec2 aParticleIndex;
 // attribute vec4 aParticleFrame;
 
@@ -15,7 +15,7 @@ void main(void){
 
     vec4 state;
 
-    state = texture2D(stateTex0, aParticleIndex);
+    state = texture2D(statusOut0, aParticleIndex);
 
     vec2 position = state.xy;
 

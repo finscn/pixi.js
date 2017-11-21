@@ -113,7 +113,7 @@ export default class ShaderParticleDisplay
             frameView = new Float32Array(this.particleBufferData);
         }
 
-        const defaultFrame = particle.defaultFrame;
+        const textureFrame = particle.textureFrame;
 
         let idx = 0;
         let c = 0;
@@ -126,7 +126,7 @@ export default class ShaderParticleDisplay
 
             if (withFrame)
             {
-                const f = frames ? (frames[i] || defaultFrame) : defaultFrame;
+                const f = frames ? (frames[i] || textureFrame) : textureFrame;
 
                 frameView[idx + 2] = f[0];
                 frameView[idx + 3] = f[1];
@@ -200,9 +200,9 @@ export default class ShaderParticleDisplay
 
         const texture = particle._texture;
 
-        const texLocation = renderer.bindTexture(texture);
+        const samplerLocation = renderer.bindTexture(texture);
 
-        this.shader.uniforms.uTexture = texLocation;
+        this.shader.uniforms.uSampler = samplerLocation;
 
         const statusList = particle.statusList;
 
@@ -215,13 +215,10 @@ export default class ShaderParticleDisplay
                 const texture = statusList[statusIndex].renderTargetOut.texture;
 
                 particle.bindTargetTexture(renderer, texture, location);
-                shader.uniforms['stateTex' + statusIndex] = location;
+                shader.uniforms['statusOut' + statusIndex] = location;
                 location++;
             });
         }
-
-        shader.uniforms.uTime = particle.time;
-        shader.uniforms.uTimeStep = particle.timeStep;
 
         shader.uniforms.uAlpha = particle.alpha;
         shader.uniforms.uColorMultiplier = particle.colorMultiplier;

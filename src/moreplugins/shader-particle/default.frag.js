@@ -2,9 +2,8 @@ export default `
 
 precision mediump float;
 
-varying vec2 vTextureCoord;
-
 uniform sampler2D uSampler;
+varying vec2 vTextureCoord;
 
 void main(void)
 {

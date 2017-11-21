@@ -292,9 +292,6 @@ export default class ShaderParticleStatus
             shader.uniforms.viewSize = viewSize;
         }
 
-        shader.uniforms.uTime = particle.time;
-        shader.uniforms.uTimeStep = particle.timeStep;
-
         for (const key in this.uniforms)
         {
             shader.uniforms[key] = this.uniforms[key];
