@@ -58,15 +58,15 @@ const Animation = ext.Animation;
 const SpriteTrail = ext.SpriteTrail;
 const RenderContext = ext.RenderContext;
 
-import * as morefilters from './morefilters';
-for (const key in morefilters)
+import * as extFilters from './ext-filters';
+for (const key in extFilters)
 {
-    filters[key] = morefilters[key];
+    filters[key] = extFilters[key];
 }
 
-import * as moreplugins from './moreplugins';
+import * as extPlugins from './ext-plugins';
 
-const renderers = moreplugins || {};
+const renderers = extPlugins || {};
 const lights = renderers.lights;
 const DisplayPoint = renderers.DisplayPoint;
 const DisplayPointGroup = renderers.DisplayPointGroup;
