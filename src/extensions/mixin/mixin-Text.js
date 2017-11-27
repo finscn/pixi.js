@@ -70,6 +70,8 @@ Text.prototype.updateTextFast = function (recompute)
 
     if (style.fill)
     {
+        this.context.fillStyle = style.fill;
+
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
 
@@ -109,16 +111,24 @@ Text.prototype.renderWebGL = function (renderer)
     {
         this.resolution = renderer.resolution;
         this.dirty = true;
+        this.dirtyFast = true;
     }
 
-    if (this.dirty)
+    if (this.localStyleID !== this._style.styleID)
     {
-        this.updateText(true);
+        this.dirty = true;
+        this.dirtyFast = true;
+        this.localStyleID = this._style.styleID;
     }
-    else if (this.dirtyFast)
+
+    if (this.dirtyFast)
     {
         this.updateTextFast(this.dirtyFastRecompute);
         this.dirtyFastRecompute = false;
+    }
+    else if (this.dirty)
+    {
+        this.updateText(true);
     }
 
     // super.renderWebGL(renderer);

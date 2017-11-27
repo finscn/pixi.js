@@ -1,5 +1,3 @@
-import './mixin-CanvasRenderer';
-import './mixin-WebGLRenderer';
 import './mixin-TransformStatic';
 import './mixin-Transform';
 import './mixin-Matrix';
