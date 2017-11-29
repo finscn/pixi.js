@@ -48,11 +48,15 @@ export default class ShaderParticleDisplay
         const verts = particle.vertexData;
         const texture = particle._texture;
         const frames = particle.frames;
+        const frameOffsets = particle.frameOffsets;
 
         const attrs = shader.attributes;
 
         this.withFrame = 'aParticleFrame' in attrs;
+        this.withFrameOffset = 'aParticleFrameOffset' in attrs;
+
         const withFrame = this.withFrame;
+        const withFrameOffset = this.withFrameOffset;
 
         this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
 
@@ -99,8 +103,21 @@ export default class ShaderParticleDisplay
         coordView[offset + 2] = uvs.x3;
         coordView[offset + 3] = uvs.y3;
 
-        // aParticleIndex(2) , aFrame(4)
-        const byteCountPer = withFrame ? 6 : 2;
+        // aParticleIndex(2) , aFrame(4)/aFrameOffset(2)
+        let byteCountPer;
+
+        if (withFrame)
+        {
+            byteCountPer = 6;
+        }
+        else if (withFrameOffset)
+        {
+            byteCountPer = 4;
+        }
+        else
+        {
+            byteCountPer = 2;
+        }
 
         this.vertByteSizePer = byteCountPer * vertSize;
 
@@ -108,13 +125,19 @@ export default class ShaderParticleDisplay
 
         const indicesView = new Float32Array(this.particleBufferData);
         let frameView;
+        let frameOffsetView;
 
         if (withFrame)
         {
             frameView = new Float32Array(this.particleBufferData);
         }
+        else if (withFrameOffset)
+        {
+            frameOffsetView = new Float32Array(this.particleBufferData);
+        }
 
         const textureFrame = particle.textureFrame;
+        const defaultFrameOffset = particle.defaultFrameOffset;
 
         let idx = 0;
         let c = 0;
@@ -133,6 +156,13 @@ export default class ShaderParticleDisplay
                 frameView[idx + 3] = f[1];
                 frameView[idx + 4] = f[2];
                 frameView[idx + 5] = f[3];
+            }
+            else if (withFrameOffset)
+            {
+                const f = frameOffsets ? (frameOffsets[i] || defaultFrameOffset) : defaultFrameOffset;
+
+                frameOffsetView[idx + 2] = f[0];
+                frameOffsetView[idx + 3] = f[1];
             }
 
             idx += byteCountPer;
@@ -153,6 +183,7 @@ export default class ShaderParticleDisplay
 
         const attrs = this.shader.attributes;
         const withFrame = this.withFrame;
+        const withFrameOffset = this.withFrameOffset;
 
         const instanceExt = this.instanceExt;
 
@@ -177,6 +208,15 @@ export default class ShaderParticleDisplay
             vao.bind();
             instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
             instanceExt.vertexAttribDivisorANGLE(attrs.aParticleFrame.location, 1);
+        }
+        else if (withFrameOffset)
+        {
+            vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);
+            vao.addAttribute(particleBuffer, attrs.aParticleFrameOffset,
+                                gl.FLOAT, false, this.vertByteSizePer, 2 * vertSize);
+            vao.bind();
+            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
+            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleFrameOffset.location, 1);
         }
         else
         {
@@ -232,6 +272,11 @@ export default class ShaderParticleDisplay
             pos[0] = particle.position.x;
             pos[1] = particle.position.y;
             shader.uniforms.uPosition = pos;
+        }
+
+        if (this.withFrameOffset)
+        {
+            shader.uniforms.uParticleFrameSize = particle.frameSize;
         }
 
         for (const key in this.uniforms)

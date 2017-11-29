@@ -38,6 +38,11 @@ export default class ShaderParticle extends DisplayObject
         this.blendMode = BLEND_MODES.NORMAL;
 
         this.frames = null;
+
+        this.defaultFrameOffset = new Float32Array([0.0, 0.0]);
+        this.frameSize = new Float32Array([1.0, 1.0]);
+        this.frameOffsets = null;
+
         this.display = null;
         this.statusList = [];
 
@@ -140,6 +145,17 @@ export default class ShaderParticle extends DisplayObject
     setFrames(frames)
     {
         this.frames = frames;
+    }
+
+    setFrameOffsets(frameOffsets)
+    {
+        this.frameOffsets = frameOffsets;
+    }
+
+    setFrameSize(width, height)
+    {
+        this.frameSize[0] = width;
+        this.frameSize[1] = height;
     }
 
     setRegion(x, y, width, height)
