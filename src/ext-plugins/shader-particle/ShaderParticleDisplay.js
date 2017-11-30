@@ -201,6 +201,17 @@ export default class ShaderParticleDisplay
         vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
         vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
 
+        // TODO
+        // vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);
+        // this.particleAttributes.forEach(function(a){
+        //     vao.addAttribute(particleBuffer, a.attribute, a.type, a.normalized, a.size, a.offset);
+        // });
+        // vao.bind();
+        // instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
+        // this.particleAttributes.forEach(function(a){
+        //     instanceExt.vertexAttribDivisorANGLE(a.attribute.location, 1);
+        // });
+
         if (withFrame)
         {
             vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);

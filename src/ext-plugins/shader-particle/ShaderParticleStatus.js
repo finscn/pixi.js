@@ -27,6 +27,7 @@ export default class ShaderParticleStatus
 
         this.updateCount = 0;
         this.once = false;
+        this.disabled = false;
     }
 
     init(gl, particle)
@@ -212,7 +213,7 @@ export default class ShaderParticleStatus
 
     update(renderer, particle) // eslint-disable-line no-unused-vars
     {
-        if (this.once && this.updateCount > 0)
+        if (this.once && this.updateCount > 0 || this.disabled)
         {
             return;
         }
