@@ -24,6 +24,9 @@ export default class ShaderParticleStatus
         this.initialData = initialData || null;
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
+
+        this.updateCount = 0;
+        this.once = false;
     }
 
     init(gl, particle)
@@ -209,6 +212,11 @@ export default class ShaderParticleStatus
 
     update(renderer, particle) // eslint-disable-line no-unused-vars
     {
+        if (this.once && this.updateCount > 0)
+        {
+            return;
+        }
+
         const gl = renderer.gl;
         // const instanceExt = this.instanceExt;
         const shader = this.shader;
@@ -250,6 +258,8 @@ export default class ShaderParticleStatus
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
         gl.enable(gl.BLEND);
+
+        this.updateCount++;
     }
 
     updateShader(renderer, particle) // eslint-disable-line no-unused-vars
