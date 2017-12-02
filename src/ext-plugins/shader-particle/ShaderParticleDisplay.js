@@ -16,6 +16,7 @@ export default class ShaderParticleDisplay
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
         this.uniforms = null;
+        this.attributes = null;
 
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
@@ -26,6 +27,7 @@ export default class ShaderParticleDisplay
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
         this.uniforms = this.uniforms || particle.displayUniforms;
+        this.attributes = this.attributes || particle.displayAttributes;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
@@ -33,6 +35,21 @@ export default class ShaderParticleDisplay
         this.vertSize = 4;
 
         this.initVao(gl, particle);
+    }
+
+    initVao(gl, particle)
+    {
+        this.instanceExt = gl.getExtension('ANGLE_instanced_arrays')
+             || gl.getExtension('MOZ_ANGLE_instanced_arrays')
+             || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
+
+        this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
+
+        this.initAttributes(gl, particle);
+        this.initVertexBuffer(gl, particle);
+        this.initParticleBuffer(gl, particle);
+
+        this.createVao(gl);
     }
 
     // name size unsignedByte data share
@@ -54,11 +71,11 @@ export default class ShaderParticleDisplay
 
         const custom = {};
 
-        if (particle.attributes)
+        if (this.attributes)
         {
-            for (let i = 0; i < particle.attributes.length; i++)
+            for (let i = 0; i < this.attributes.length; i++)
             {
-                const info = particle.attributes[i];
+                const info = this.attributes[i];
 
                 if (info.share)
                 {
@@ -116,6 +133,33 @@ export default class ShaderParticleDisplay
         this.vertexOffset += attr.size;
         this.vertexStride += attr.size;
         this.vertexAttributes.push(attr);
+    }
+
+    addParticleAttribute(gl, info)
+    {
+        const a = this.shader.attributes[info.name];
+
+        if (!a)
+        {
+            return;
+        }
+
+        const attr = {
+            name: info.name,
+            unsignedByte: info.unsignedByte,
+            data: info.data,
+            size: info.size || a.size,
+
+            attribute: a,
+            type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
+            normalized: !!info.unsignedByte,
+            offset: this.particleOffset,
+            _dataIndex: 0,
+        };
+
+        this.particleOffset += attr.size;
+        this.particleStride += attr.size;
+        this.particleAttributes.push(attr);
     }
 
     initVertexBuffer(gl, particle) // eslint-disable-line no-unused-vars
@@ -187,48 +231,6 @@ export default class ShaderParticleDisplay
                 }
             }
         }
-    }
-
-    addParticleAttribute(gl, info)
-    {
-        const a = this.shader.attributes[info.name];
-
-        if (!a)
-        {
-            return;
-        }
-
-        const attr = {
-            name: info.name,
-            unsignedByte: info.unsignedByte,
-            data: info.data,
-            size: info.size || a.size,
-
-            attribute: a,
-            type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
-            normalized: !!info.unsignedByte,
-            offset: this.particleOffset,
-            _dataIndex: 0,
-        };
-
-        this.particleOffset += attr.size;
-        this.particleStride += attr.size;
-        this.particleAttributes.push(attr);
-    }
-
-    initVao(gl, particle)
-    {
-        this.instanceExt = gl.getExtension('ANGLE_instanced_arrays')
-             || gl.getExtension('MOZ_ANGLE_instanced_arrays')
-             || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
-
-        this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
-
-        this.initAttributes(gl, particle);
-        this.initVertexBuffer(gl, particle);
-        this.initParticleBuffer(gl, particle);
-
-        this.createVao(gl);
     }
 
     createVao(gl)
