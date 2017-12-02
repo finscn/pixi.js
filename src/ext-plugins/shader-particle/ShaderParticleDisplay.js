@@ -15,7 +15,7 @@ export default class ShaderParticleDisplay
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
-        this.uniforms = {};
+        this.uniforms = null;
 
         this.fboWidth = fboWidth || 0;
         this.fboHeight = fboHeight || 0;
@@ -25,6 +25,7 @@ export default class ShaderParticleDisplay
     {
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
+        this.uniforms = this.uniforms || particle.displayUniforms;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 
@@ -34,207 +35,232 @@ export default class ShaderParticleDisplay
         this.initVao(gl, particle);
     }
 
+    // name size unsignedByte data share
+    initAttributes(gl, particle)
+    {
+        this.vertexAttributes = [];
+        this.vertexOffset = 0;
+        this.vertexStride = 0;
+
+        this.particleAttributes = [];
+        this.particleOffset = 0;
+        this.particleStride = 0;
+
+        this.addParticleAttribute(gl, {
+            name: 'aParticleIndex',
+            size: 2,
+            unsignedByte: false,
+        });
+
+        const custom = {};
+
+        if (particle.attributes)
+        {
+            for (let i = 0; i < particle.attributes.length; i++)
+            {
+                const info = particle.attributes[i];
+
+                if (info.share)
+                {
+                    this.addVertexAttribute(gl, info);
+                }
+                else
+                {
+                    this.addParticleAttribute(gl, info);
+                }
+                custom[info.name] = true;
+            }
+        }
+
+        if (!custom['aVertexPosition'])
+        {
+            this.addVertexAttribute(gl, {
+                name: 'aVertexPosition',
+                unsignedByte: false,
+                data: particle.vertexData,
+            });
+        }
+
+        if (!custom['aTextureCoord'])
+        {
+            this.addVertexAttribute(gl, {
+                name: 'aTextureCoord',
+                unsignedByte: false,
+                data: particle.uvsData,
+            });
+        }
+    }
+
+    addVertexAttribute(gl, info)
+    {
+        const a = this.shader.attributes[info.name];
+
+        if (!a)
+        {
+            return;
+        }
+
+        const attr = {
+            name: info.name,
+            unsignedByte: info.unsignedByte,
+            data: info.data,
+            size: info.size || a.size,
+
+            attribute: a,
+            type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
+            normalized: !!info.unsignedByte,
+            offset: this.vertexOffset,
+            _dataIndex: 0,
+        };
+
+        this.vertexOffset += attr.size;
+        this.vertexStride += attr.size;
+        this.vertexAttributes.push(attr);
+    }
+
+    initVertexBuffer(gl, particle) // eslint-disable-line no-unused-vars
+    {
+        const vertCount = this.vertCount;
+
+        this.vertexBufferData = new ArrayBuffer(vertCount * this.vertexStride * this.vertSize);
+        this.vertexViewFloat32 = new Float32Array(this.vertexBufferData);
+        this.vertexViewUint32 = new Uint32Array(this.vertexBufferData);
+
+        const viewFloat32 = this.vertexViewFloat32;
+        const viewUint32 = this.vertexViewUint32;
+        const attrCount = this.vertexAttributes.length;
+
+        let offset = 0;
+
+        for (let i = 0; i < vertCount; i++)
+        {
+            for (let j = 0; j < attrCount; j++)
+            {
+                const attr = this.vertexAttributes[j];
+                const view = attr.unsignedByte ? viewUint32 : viewFloat32;
+
+                for (let m = 0; m < attr.size; m++)
+                {
+                    view[offset++] = attr.data[attr._dataIndex++];
+                }
+            }
+        }
+    }
+
+    initParticleBuffer(gl, particle)
+    {
+        const particleCount = particle.count;
+
+        this.particleBufferData = new ArrayBuffer(particleCount * this.particleStride * this.vertSize);
+        this.particleViewFloat32 = new Float32Array(this.particleBufferData);
+        this.particleViewUint32 = new Uint32Array(this.particleBufferData);
+
+        const viewFloat32 = this.particleViewFloat32;
+        const viewUint32 = this.particleViewUint32;
+        const attrCount = this.particleAttributes.length;
+
+        const fboWidth = this.fboWidth;
+        const fboHeight = this.fboHeight;
+        let col = 0;
+        let row = 0;
+        let offset = 0;
+
+        for (let i = 0; i < particleCount; i++)
+        {
+            viewFloat32[offset++] = col / fboWidth;
+            viewFloat32[offset++] = row / fboHeight;
+            col++;
+            if (col >= fboWidth)
+            {
+                col = 0;
+                row++;
+            }
+
+            for (let j = 1; j < attrCount; j++)
+            {
+                const attr = this.particleAttributes[j];
+                const view = attr.unsignedByte ? viewUint32 : viewFloat32;
+
+                for (let m = 0; m < attr.size; m++)
+                {
+                    view[offset++] = attr.data[attr._dataIndex++];
+                }
+            }
+        }
+    }
+
+    addParticleAttribute(gl, info)
+    {
+        const a = this.shader.attributes[info.name];
+
+        if (!a)
+        {
+            return;
+        }
+
+        const attr = {
+            name: info.name,
+            unsignedByte: info.unsignedByte,
+            data: info.data,
+            size: info.size || a.size,
+
+            attribute: a,
+            type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
+            normalized: !!info.unsignedByte,
+            offset: this.particleOffset,
+            _dataIndex: 0,
+        };
+
+        this.particleOffset += attr.size;
+        this.particleStride += attr.size;
+        this.particleAttributes.push(attr);
+    }
+
     initVao(gl, particle)
     {
         this.instanceExt = gl.getExtension('ANGLE_instanced_arrays')
              || gl.getExtension('MOZ_ANGLE_instanced_arrays')
              || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
 
-        const shader = this.shader;
-        const fboWidth = this.fboWidth;
-        const fboHeight = this.fboHeight;
-
-        const particleCount = particle.count;
-        const verts = particle.vertexData;
-        const texture = particle._texture;
-        const frames = particle.frames;
-        const frameOffsets = particle.frameOffsets;
-
-        const attrs = shader.attributes;
-
-        this.withFrame = 'aParticleFrame' in attrs;
-        this.withFrameOffset = 'aParticleFrameOffset' in attrs;
-
-        const withFrame = this.withFrame;
-        const withFrameOffset = this.withFrameOffset;
-
         this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
 
-        const vertCount = this.vertCount;
-        const vertSize = this.vertSize;
-
-        // aVertexPosition(2), aTextureCoord(2)
-        const byteCount = 4;
-
-        this.vertByteSize = byteCount * vertSize;
-
-        this.vertexBufferData = new ArrayBuffer(this.vertByteSize * vertCount);
-
-        const posView = new Float32Array(this.vertexBufferData);
-        const coordView = new Float32Array(this.vertexBufferData);
-
-        const uvs = texture._uvs;
-
-        let offset = 0;
-
-        posView[offset + 0] = verts[0];
-        posView[offset + 1] = verts[1];
-        coordView[offset + 2] = uvs.x0;
-        coordView[offset + 3] = uvs.y0;
-
-        offset += byteCount;
-
-        posView[offset + 0] = verts[2];
-        posView[offset + 1] = verts[3];
-        coordView[offset + 2] = uvs.x1;
-        coordView[offset + 3] = uvs.y1;
-
-        offset += byteCount;
-
-        posView[offset + 0] = verts[4];
-        posView[offset + 1] = verts[5];
-        coordView[offset + 2] = uvs.x2;
-        coordView[offset + 3] = uvs.y2;
-
-        offset += byteCount;
-
-        posView[offset + 0] = verts[6];
-        posView[offset + 1] = verts[7];
-        coordView[offset + 2] = uvs.x3;
-        coordView[offset + 3] = uvs.y3;
-
-        // aParticleIndex(2) , aFrame(4)/aFrameOffset(2)
-        let byteCountPer;
-
-        if (withFrame)
-        {
-            byteCountPer = 6;
-        }
-        else if (withFrameOffset)
-        {
-            byteCountPer = 4;
-        }
-        else
-        {
-            byteCountPer = 2;
-        }
-
-        this.vertByteSizePer = byteCountPer * vertSize;
-
-        this.particleBufferData = new ArrayBuffer(this.vertByteSizePer * particleCount);
-
-        const indicesView = new Float32Array(this.particleBufferData);
-        let frameView;
-        let frameOffsetView;
-
-        if (withFrame)
-        {
-            frameView = new Float32Array(this.particleBufferData);
-        }
-        else if (withFrameOffset)
-        {
-            frameOffsetView = new Float32Array(this.particleBufferData);
-        }
-
-        const textureFrame = particle.textureFrame;
-        const defaultFrameOffset = particle.defaultFrameOffset;
-
-        let idx = 0;
-        let c = 0;
-        let r = 0;
-
-        for (let i = 0; i < particleCount; i++)
-        {
-            indicesView[idx + 0] = c / fboWidth;
-            indicesView[idx + 1] = r / fboHeight;
-
-            if (withFrame)
-            {
-                const f = frames ? (frames[i] || textureFrame) : textureFrame;
-
-                frameView[idx + 2] = f[0];
-                frameView[idx + 3] = f[1];
-                frameView[idx + 4] = f[2];
-                frameView[idx + 5] = f[3];
-            }
-            else if (withFrameOffset)
-            {
-                const f = frameOffsets ? (frameOffsets[i] || defaultFrameOffset) : defaultFrameOffset;
-
-                frameOffsetView[idx + 2] = f[0];
-                frameOffsetView[idx + 3] = f[1];
-            }
-
-            idx += byteCountPer;
-            c++;
-            if (c >= fboWidth)
-            {
-                c = 0;
-                r++;
-            }
-        }
+        this.initAttributes(gl, particle);
+        this.initVertexBuffer(gl, particle);
+        this.initParticleBuffer(gl, particle);
 
         this.createVao(gl);
     }
 
     createVao(gl)
     {
-        const vertSize = this.vertSize;
-
-        const attrs = this.shader.attributes;
-        const withFrame = this.withFrame;
-        const withFrameOffset = this.withFrameOffset;
-
         const instanceExt = this.instanceExt;
 
-        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+        const vertSize = this.vertSize;
+        const vertexStrideSize = this.vertexStride * vertSize;
+        const particleStrideSize = this.particleStride * vertSize;
 
-        // create a VertexArrayObject - this will hold all the details for rendering the texture
         const vao = new glCore.VertexArrayObject(gl);
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
-        const particleBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.particleBufferData, gl.STATIC_DRAW);
+
+        const indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+        const vertexBuffer = glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
+        const particleBuffer = glCore.GLBuffer.createVertexBuffer(gl, this.particleBufferData, gl.STATIC_DRAW);
 
         vao.addIndex(indexBuffer);
 
-        // create some buffers to hold our vertex data
-        // the vertex data here does not hold a posiiton of the bunny, but the uv of the pixle in the physics texture
-        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
+        this.vertexAttributes.forEach(function (a)
+        {
+            vao.addAttribute(vertexBuffer, a.attribute, a.type, a.normalized, vertexStrideSize, a.offset * vertSize);
+        });
 
-        // TODO
-        // vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);
-        // this.particleAttributes.forEach(function(a){
-        //     vao.addAttribute(particleBuffer, a.attribute, a.type, a.normalized, a.size, a.offset);
-        // });
-        // vao.bind();
-        // instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
-        // this.particleAttributes.forEach(function(a){
-        //     instanceExt.vertexAttribDivisorANGLE(a.attribute.location, 1);
-        // });
-
-        if (withFrame)
+        this.particleAttributes.forEach(function (a)
         {
-            vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);
-            vao.addAttribute(particleBuffer, attrs.aParticleFrame, gl.FLOAT, false, this.vertByteSizePer, 2 * vertSize);
-            vao.bind();
-            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
-            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleFrame.location, 1);
-        }
-        else if (withFrameOffset)
+            vao.addAttribute(particleBuffer, a.attribute, a.type, a.normalized, particleStrideSize, a.offset * vertSize);
+        });
+        vao.bind();
+        this.particleAttributes.forEach(function (a)
         {
-            vao.addAttribute(particleBuffer, attrs.aParticleIndex, gl.FLOAT, false, this.vertByteSizePer, 0);
-            vao.addAttribute(particleBuffer, attrs.aParticleFrameOffset,
-                                gl.FLOAT, false, this.vertByteSizePer, 2 * vertSize);
-            vao.bind();
-            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
-            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleFrameOffset.location, 1);
-        }
-        else
-        {
-            vao.addAttribute(particleBuffer, attrs.aParticleIndex);
-            vao.bind();
-            instanceExt.vertexAttribDivisorANGLE(attrs.aParticleIndex.location, 1);
-        }
+            instanceExt.vertexAttribDivisorANGLE(a.attribute.location, 1);
+        });
 
         this.vao = vao;
     }

@@ -19,7 +19,7 @@ export default class ShaderParticleStatus
 
         this.vertexSrc = vertexSrc || vertex;
         this.fragmentSrc = fragmentSrc || fragment;
-        this.uniforms = {};
+        this.uniforms = null;
 
         this.initialData = initialData || null;
         this.fboWidth = fboWidth || 0;
@@ -34,6 +34,7 @@ export default class ShaderParticleStatus
     {
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
+        this.uniforms = this.uniforms || particle.statusUniforms;
 
         this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
 

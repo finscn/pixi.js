@@ -37,11 +37,8 @@ export default class ShaderParticle extends DisplayObject
 
         this.blendMode = BLEND_MODES.NORMAL;
 
-        this.frames = null;
-
-        this.defaultFrameOffset = new Float32Array([0.0, 0.0]);
-        this.frameSize = new Float32Array([1.0, 1.0]);
-        this.frameOffsets = null;
+        this.statusUniforms = {};
+        this.displayUniforms = {};
 
         this.display = null;
         this.statusList = [];
@@ -64,6 +61,14 @@ export default class ShaderParticle extends DisplayObject
          * @member {Float32Array}
          */
         this.vertexData = new Float32Array(8);
+
+        /**
+         * this is used to store the uvs data of the sprite (basically a quad)
+         *
+         * @private
+         * @member {Float32Array}
+         */
+        this.uvsData = new Float32Array(8);
 
         /**
          * The anchor sets the origin point of the texture.
@@ -100,6 +105,7 @@ export default class ShaderParticle extends DisplayObject
         {
             status.init(gl, particle);
         });
+
         this.display.init(gl, particle);
 
         this.inited = true;
@@ -140,22 +146,6 @@ export default class ShaderParticle extends DisplayObject
 
         this.statusList.push(status);
         this.useStatus[index] = index;
-    }
-
-    setFrames(frames)
-    {
-        this.frames = frames;
-    }
-
-    setFrameOffsets(frameOffsets)
-    {
-        this.frameOffsets = frameOffsets;
-    }
-
-    setFrameSize(width, height)
-    {
-        this.frameSize[0] = width;
-        this.frameSize[1] = height;
     }
 
     setRegion(x, y, width, height)
@@ -214,6 +204,17 @@ export default class ShaderParticle extends DisplayObject
         this._textureID = -1;
 
         this.calculateVertices(true);
+
+        const uvs = this._texture._uvs;
+
+        this.uvsData[0] = uvs.x0;
+        this.uvsData[1] = uvs.y0;
+        this.uvsData[2] = uvs.x1;
+        this.uvsData[3] = uvs.y1;
+        this.uvsData[4] = uvs.x2;
+        this.uvsData[5] = uvs.y2;
+        this.uvsData[6] = uvs.x3;
+        this.uvsData[7] = uvs.y3;
     }
 
     calculateVertices(force)
