@@ -12,6 +12,20 @@ const Shader = core.Shader;
 const BLEND_MODES = core.BLEND_MODES;
 // const settings = core.settings;
 
+/**
+ *
+ * --== Reserved var-names ==--
+ *
+ * aVertexPosition
+ * aTextureCoord
+ * uFlipY
+ *
+ * uSampler
+ *
+ * vTextureCoord
+ *
+ */
+
 export default class ShaderParticleRenderer extends ObjectRenderer
 {
     constructor(renderer)
@@ -31,7 +45,8 @@ export default class ShaderParticleRenderer extends ObjectRenderer
              || gl.getExtension('MOZ_ANGLE_instanced_arrays')
              || gl.getExtension('WEBKIT_ANGLE_instanced_arrays');
 
-        this.shader = new Shader(gl, vertex, fragment);
+        this.shader = this.createShader(gl);
+
         this.vertCount = 4;
         this.vertSize = 4;
 
@@ -40,6 +55,13 @@ export default class ShaderParticleRenderer extends ObjectRenderer
         this.renderTarget = new RenderTarget(gl, screen.width, screen.height, null, this.renderer.resolution);
 
         this.initVao(gl);
+    }
+
+    createShader(gl)
+    {
+        const shader = new Shader(gl, vertex, fragment);
+
+        return shader;
     }
 
     initVao(gl, particle) // eslint-disable-line no-unused-vars
@@ -153,10 +175,9 @@ export default class ShaderParticleRenderer extends ObjectRenderer
             // }
             renderer.bindVao(this.vao);
 
-            this.shader.uniforms.flipY = -1.0;
-
             ShaderParticle.bindTargetTexture(renderer, this.renderTarget.texture, 1);
             this.shader.uniforms.uSampler = 1;
+            this.shader.uniforms.uFlipY = -1.0;
 
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
         }

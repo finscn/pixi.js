@@ -3,17 +3,38 @@ import Shader from '../../core/Shader';
 import RenderTarget from '../../core/renderers/webgl/utils/RenderTarget';
 import { SCALE_MODES } from '../../core/const';
 // import settings from '../../core/settings';
+
 import ShaderParticle from './ShaderParticle';
+import ShaderParticleProcessor from './ShaderParticleProcessor';
 
 import vertex from './status.vert.js';
 import fragment from './status.frag.js';
 
 const tempDatas = {};
 
-export default class ShaderParticleStatus
+/**
+ *
+ * --== Reserved var-names ==--
+ *
+ * aVertexPosition
+ * aTextureCoord
+ *
+ * uStatusOut + N
+ * uStatusIn
+ * uViewSize
+ * uFboSize
+ * uParticleCount
+ *
+ * vTextureCoord
+ *
+ */
+
+export default class ShaderParticleStatus extends ShaderParticleProcessor
 {
     constructor(vertexSrc, fragmentSrc, initialData, fboWidth, fboHeight)
     {
+        super();
+
         // TODO
         this.id = null;
 
@@ -34,14 +55,16 @@ export default class ShaderParticleStatus
     {
         this.fboWidth = this.fboWidth || particle.fboWidth;
         this.fboHeight = this.fboHeight || particle.fboHeight;
-        this.uniforms = this.uniforms || particle.statusUniforms;
-        // TODO
-        this.attributes = this.attributes || particle.statusAttributes;
+        this.fboSize = new Float32Array([this.fboWidth, this.fboHeight]);
+        this.viewSize = new Float32Array([0.0, 0.0]);
 
-        this.shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
+        this.uniforms = this.uniforms || particle.statusUniforms;
+        this.attributes = this.attributes || particle.statusAttributes;
 
         this.vertCount = 4;
         this.vertSize = 4;
+
+        this.shader = this.createShader(gl);
 
         let data = null;
         const size = this.fboWidth * this.fboHeight;
@@ -71,6 +94,77 @@ export default class ShaderParticleStatus
         this.renderTargetIn = this.initialTarget;
 
         this.initVao(gl, particle);
+    }
+
+    createShader(gl)
+    {
+        const shader = new Shader(gl, this.vertexSrc, this.fragmentSrc);
+
+        return shader;
+    }
+
+    initAttributes(gl, particle) // eslint-disable-line no-unused-vars
+    {
+        // nothing to do
+    }
+
+    initVertexBufferData(gl, particle) // eslint-disable-line no-unused-vars
+    {
+        const vertCount = this.vertCount;
+        const vertSize = this.vertSize;
+
+        // aVertexPosition(2), aTextureCoord(2)
+        const byteCount = 4;
+
+        this.vertByteSize = byteCount * vertSize;
+
+        this.vertexBufferData = new ArrayBuffer(this.vertByteSize * vertCount);
+
+        const posView = new Float32Array(this.vertexBufferData);
+        const coordView = new Float32Array(this.vertexBufferData);
+
+        posView[0] = -1;
+        posView[1] = -1;
+        coordView[2] = 0;
+        coordView[3] = 0;
+
+        posView[4] = -1;
+        posView[5] = 1;
+        coordView[6] = 0;
+        coordView[7] = 1;
+
+        posView[8] = 1;
+        posView[9] = 1;
+        coordView[10] = 1;
+        coordView[11] = 1;
+
+        posView[12] = 1;
+        posView[13] = -1;
+        coordView[14] = 1;
+        coordView[15] = 0;
+    }
+
+    initParticleBufferData(gl, particle) // eslint-disable-line no-unused-vars
+    {
+        // nothing to do
+    }
+
+    createVao(gl)
+    {
+        const vertSize = this.vertSize;
+
+        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+
+        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
+
+        const vao = new glCore.VertexArrayObject(gl);
+        const attrs = this.shader.attributes;
+
+        vao.addIndex(indexBuffer);
+        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
+        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
+
+        this.vao = vao;
     }
 
     createRenderTarget(gl, data, format)
@@ -144,76 +238,6 @@ export default class ShaderParticleStatus
         }
     }
 
-    // the same uvs/frame  --- one array
-    // the same vertices  --- one array
-
-    // the same alpha --- uniform
-    // the same colorMultiplier --- uniform
-    // the same colorOffset --- uniform
-    // ``` color * colorMultiplier + colorOffset ```
-
-    // position
-    // rotation
-    // scaleX , scaleY
-
-    initVao(gl, particle) // eslint-disable-line no-unused-vars
-    {
-        this.indexBufferData = new Uint16Array([0, 1, 2, 0, 3, 2]);
-
-        const vertCount = this.vertCount;
-        const vertSize = this.vertSize;
-
-        // aVertexPosition(2), aTextureCoord(2)
-        const byteCount = 4;
-
-        this.vertByteSize = byteCount * vertSize;
-
-        this.vertexBufferData = new ArrayBuffer(this.vertByteSize * vertCount);
-
-        const posView = new Float32Array(this.vertexBufferData);
-        const coordView = new Float32Array(this.vertexBufferData);
-
-        posView[0] = -1;
-        posView[1] = -1;
-        coordView[2] = 0;
-        coordView[3] = 0;
-
-        posView[4] = -1;
-        posView[5] = 1;
-        coordView[6] = 0;
-        coordView[7] = 1;
-
-        posView[8] = 1;
-        posView[9] = 1;
-        coordView[10] = 1;
-        coordView[11] = 1;
-
-        posView[12] = 1;
-        posView[13] = -1;
-        coordView[14] = 1;
-        coordView[15] = 0;
-
-        this.createVao(gl);
-    }
-
-    createVao(gl)
-    {
-        const vertSize = this.vertSize;
-
-        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
-
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
-
-        const vao = new glCore.VertexArrayObject(gl);
-        const attrs = this.shader.attributes;
-
-        vao.addIndex(indexBuffer);
-        vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
-
-        this.vao = vao;
-    }
-
     update(renderer, particle) // eslint-disable-line no-unused-vars
     {
         if (this.once && this.updateCount > 0 || this.disabled)
@@ -233,25 +257,9 @@ export default class ShaderParticleStatus
         renderer.bindVao(this.vao);
 
         ShaderParticle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
-        shader.uniforms.uTextureIn = 0;
-        shader.uniforms.particleCount = particle.count;
-        shader.uniforms.fboWidth = this.fboWidth;
-        shader.uniforms.fboHeight = this.fboHeight;
+        shader.uniforms.uStatusIn = 0;
 
-        const viewSize = shader.uniforms.viewSize;
-
-        if (viewSize)
-        {
-            viewSize[0] = renderer.width;
-            viewSize[1] = renderer.height;
-            shader.uniforms.viewSize = viewSize;
-        }
-
-        for (const key in this.uniforms)
-        {
-            shader.uniforms[key] = this.uniforms[key];
-        }
-
+        this.updateShaderCommonUniforms(renderer, particle);
         this.updateShader(renderer, particle);
 
         // bind output texture;
@@ -264,31 +272,6 @@ export default class ShaderParticleStatus
         gl.enable(gl.BLEND);
 
         this.updateCount++;
-    }
-
-    updateShader(renderer, particle) // eslint-disable-line no-unused-vars
-    {
-        // ==========================================
-        //
-        //
-        //
-        //
-
-        // bind input textures;
-        // particle.statusList[0].renderTargetOut.texture.bind(1);
-        // this.shader.uniforms.tex1 = 1;
-        // particle.statusList[1].renderTargetOut.texture.bind(2);
-        // this.shader.uniforms.tex2 = 2;
-
-        // other params
-        // this.shader.uniforms.foo = foo;
-        // this.shader.uniforms.bar = bar;
-
-        //
-        //
-        //
-        //
-        // ==========================================
     }
 
     swapRenderTarget()
@@ -305,24 +288,18 @@ export default class ShaderParticleStatus
      */
     destroy()
     {
+        super.destroy();
+
         this.initialTarget.destroy();
         this.renderTargetIn.destroy();
         this.renderTargetOut.destroy();
-        this.shader.destroy();
-        this.vao.destroy();
 
         this.initialTarget = null;
         this.renderTargetIn = null;
         this.renderTargetOut = null;
         this._renderTargetOut = null;
-        this.shader = null;
-        this.vao = null;
 
         this.initialData = null;
-        this.instanceExt = null;
-        this.indexBufferData = null;
-        this.vertexBufferData = null;
-        this.particleBufferData = null;
         // TODO
     }
 }

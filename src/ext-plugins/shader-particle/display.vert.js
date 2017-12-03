@@ -5,21 +5,22 @@ attribute vec2 aVertexPosition;
 attribute vec2 aTextureCoord;
 varying vec2 vTextureCoord;
 
-uniform sampler2D statusOut0;
+uniform sampler2D uStatusOut0;
 attribute vec2 aParticleIndex;
+
+uniform vec2 uPosition;
+
 
 // attribute vec4 aParticleFrame;
 
 // uniform vec2 uParticleFrameSize;
 // attribute vec2 aParticleFrameOffset;
 
-uniform vec2 uPosition;
-
 void main(void){
 
     vec4 state;
 
-    state = texture2D(statusOut0, aParticleIndex);
+    state = texture2D(uStatusOut0, aParticleIndex);
 
     vec2 position = state.xy;
 
@@ -30,9 +31,7 @@ void main(void){
     vTextureCoord = aTextureCoord;
 
     // vTextureCoord = aParticleFrame.xy + aTextureCoord * aParticleFrame.zw;
-
-    // vec2 frameZW = aParticleFrameOffset.xy + uParticleFrameSize.xy;
-    // vTextureCoord = aParticleFrameOffset.xy + aTextureCoord * frameZW;
+    // vTextureCoord = aParticleFrameOffset.xy + aTextureCoord * uParticleFrameSize.xy;
 }
 
 `;

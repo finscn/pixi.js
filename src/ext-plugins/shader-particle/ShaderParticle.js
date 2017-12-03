@@ -9,25 +9,6 @@ const floatView = new Float32Array(1);
 const int32View = new Int32Array(floatView.buffer);
 
 /**
- * Reserved var-names :
- *
- * projectionMatrix
- * aVertexPosition
- * aTextureCoord
- * aParticleIndex
- *
- * statusOut + N
- *
- * uSampler
- * uPosition
- * uAlpha
- * uColorMultiplier
- * uColorOffset
- * flipY
- *
- */
-
-/**
  *
  * @class
  * @extends PIXI.DisplayObject

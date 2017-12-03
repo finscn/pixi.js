@@ -3,8 +3,8 @@ export default `
 precision mediump float;
 
 varying vec2 vTextureCoord;
-uniform sampler2D uTextureIn;
-uniform vec2 viewSize;
+uniform sampler2D uStatusIn;
+uniform vec2 uViewSize;
 
 const float gravity = 0.75;
 
@@ -20,13 +20,13 @@ float rand(vec2 co)
 
 void main(void)
 {
-    vec4 position = texture2D(uTextureIn, vTextureCoord);
+    vec4 position = texture2D(uStatusIn, vTextureCoord);
     position.xy += position.zw;
     position.w += gravity;
 
-    if(position.y > viewSize.y)
+    if(position.y > uViewSize.y)
     {
-        position.y = viewSize.y;
+        position.y = uViewSize.y;
         position.w *= -0.85;
 
         if(position.w > -20.0)
@@ -35,9 +35,9 @@ void main(void)
         }
     }
 
-    if(position.x > viewSize.x)
+    if(position.x > uViewSize.x)
     {
-        position.x = viewSize.x;
+        position.x = uViewSize.x;
         position.z *= -1.0;
     }
 
