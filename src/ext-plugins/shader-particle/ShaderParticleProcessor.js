@@ -138,11 +138,9 @@ export default class ShaderParticleProcessor
         const vertCount = this.vertCount;
 
         this.vertexBufferData = new ArrayBuffer(vertCount * this.vertexStride * this.vertSize);
-        this.vertexViewFloat32 = new Float32Array(this.vertexBufferData);
-        this.vertexViewUint32 = new Uint32Array(this.vertexBufferData);
+        const viewFloat32 = new Float32Array(this.vertexBufferData);
+        const viewUint32 = new Uint32Array(this.vertexBufferData);
 
-        const viewFloat32 = this.vertexViewFloat32;
-        const viewUint32 = this.vertexViewUint32;
         const attrCount = this.vertexAttributes.length;
 
         let offset = 0;
@@ -167,11 +165,9 @@ export default class ShaderParticleProcessor
         const particleCount = particle.count;
 
         this.particleBufferData = new ArrayBuffer(particleCount * this.particleStride * this.vertSize);
-        this.particleViewFloat32 = new Float32Array(this.particleBufferData);
-        this.particleViewUint32 = new Uint32Array(this.particleBufferData);
+        const viewFloat32 = new Float32Array(this.particleBufferData);
+        const viewUint32 = new Uint32Array(this.particleBufferData);
 
-        const viewFloat32 = this.particleViewFloat32;
-        const viewUint32 = this.particleViewUint32;
         const attrCount = this.particleAttributes.length;
 
         const fboWidth = this.fboWidth;
@@ -266,11 +262,6 @@ export default class ShaderParticleProcessor
         this.indexBufferData = null;
 
         this.vertexBufferData = null;
-        this.vertexViewFloat32 = null;
-        this.vertexViewUint32 = null;
-
         this.particleBufferData = null;
-        this.particleViewFloat32 = null;
-        this.particleViewUint32 = null;
     }
 }

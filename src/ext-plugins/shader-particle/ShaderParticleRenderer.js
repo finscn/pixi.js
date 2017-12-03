@@ -1,5 +1,6 @@
 import glCore from 'pixi-gl-core';
 import * as core from '../../core';
+
 import ShaderParticle from './ShaderParticle';
 
 import vertex from './render.vert.js';
@@ -9,7 +10,6 @@ const ObjectRenderer = core.ObjectRenderer;
 const WebGLRenderer = core.WebGLRenderer;
 const RenderTarget = core.RenderTarget;
 const Shader = core.Shader;
-const BLEND_MODES = core.BLEND_MODES;
 // const settings = core.settings;
 
 /**
@@ -32,7 +32,6 @@ export default class ShaderParticleRenderer extends ObjectRenderer
     {
         super(renderer);
 
-        this.blendMode = BLEND_MODES.NORMAL;
         this.renderer.on('prerender', this.onPrerender, this);
     }
 
