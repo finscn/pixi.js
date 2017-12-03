@@ -300,10 +300,6 @@ export default class ShaderParticleDisplay
             });
         }
 
-        shader.uniforms.uAlpha = particle.alpha;
-        shader.uniforms.uColorMultiplier = particle.colorMultiplier;
-        shader.uniforms.uColorOffset = particle.colorOffset;
-
         const pos = shader.uniforms.uPosition;
 
         if (pos)
@@ -313,10 +309,9 @@ export default class ShaderParticleDisplay
             shader.uniforms.uPosition = pos;
         }
 
-        if (this.withFrameOffset)
-        {
-            shader.uniforms.uParticleFrameSize = particle.frameSize;
-        }
+        shader.uniforms.uAlpha = particle.alpha;
+        shader.uniforms.uColorMultiplier = particle.colorMultiplier;
+        shader.uniforms.uColorOffset = particle.colorOffset;
 
         for (const key in this.uniforms)
         {

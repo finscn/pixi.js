@@ -2,8 +2,8 @@ import glCore from 'pixi-gl-core';
 import * as core from '../../core';
 import ShaderParticle from './ShaderParticle';
 
-import vertex from './default.vert.js';
-import fragment from './default.frag.js';
+import vertex from './render.vert.js';
+import fragment from './render.frag.js';
 
 const ObjectRenderer = core.ObjectRenderer;
 const WebGLRenderer = core.WebGLRenderer;
