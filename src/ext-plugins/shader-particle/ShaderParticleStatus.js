@@ -153,9 +153,8 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
     {
         const vertSize = this.vertSize;
 
-        const indexBuffer = new glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
-
-        const vertexBuffer = new glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
+        const indexBuffer = glCore.GLBuffer.createIndexBuffer(gl, this.indexBufferData, gl.STATIC_DRAW);
+        const vertexBuffer = glCore.GLBuffer.createVertexBuffer(gl, this.vertexBufferData, gl.STATIC_DRAW);
 
         const vao = new glCore.VertexArrayObject(gl);
         const attrs = this.shader.attributes;
