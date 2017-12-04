@@ -81,56 +81,56 @@ export default class ShaderParticleProcessor
 
     addVertexAttribute(gl, info)
     {
-        const a = this.shader.attributes[info.name];
+        const attr = this.shader.attributes[info.name];
 
-        if (!a)
+        if (!attr)
         {
             return;
         }
 
-        const attr = {
+        const attrInfo = {
             name: info.name,
             unsignedByte: info.unsignedByte,
             data: info.data,
-            size: info.size || a.size,
+            size: info.size || attr.size,
 
-            attribute: a,
+            attribute: attr,
             type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
             normalized: !!info.unsignedByte,
             offset: this.vertexOffset,
             _dataIndex: 0,
         };
 
-        this.vertexOffset += attr.size;
-        this.vertexStride += attr.size;
-        this.vertexAttributes.push(attr);
+        this.vertexOffset += attrInfo.size;
+        this.vertexStride += attrInfo.size;
+        this.vertexAttributes.push(attrInfo);
     }
 
     addParticleAttribute(gl, info)
     {
-        const a = this.shader.attributes[info.name];
+        const attr = this.shader.attributes[info.name];
 
-        if (!a)
+        if (!attr)
         {
             return;
         }
 
-        const attr = {
+        const attrInfo = {
             name: info.name,
             unsignedByte: info.unsignedByte,
             data: info.data,
-            size: info.size || a.size,
+            size: info.size || attr.size,
 
-            attribute: a,
+            attribute: attr,
             type: info.unsignedByte ? gl.UNSIGNED_BYTE : gl.FLOAT,
             normalized: !!info.unsignedByte,
             offset: this.particleOffset,
             _dataIndex: 0,
         };
 
-        this.particleOffset += attr.size;
-        this.particleStride += attr.size;
-        this.particleAttributes.push(attr);
+        this.particleOffset += attrInfo.size;
+        this.particleStride += attrInfo.size;
+        this.particleAttributes.push(attrInfo);
     }
 
     initVertexBufferData(gl, particle) // eslint-disable-line no-unused-vars

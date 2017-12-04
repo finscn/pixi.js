@@ -356,6 +356,8 @@ export default class ShaderParticle extends DisplayObject
     {
         renderer.boundTextures[textureLocation] = renderer.emptyTextures[textureLocation];
         texture.bind(textureLocation);
+
+        return textureLocation;
     }
 
     static createRGBAFrameBuffer(gl, width, height, data)

@@ -161,7 +161,10 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
 
         vao.addIndex(indexBuffer);
         vao.addAttribute(vertexBuffer, attrs.aVertexPosition, gl.FLOAT, false, this.vertByteSize, 0);
-        vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
+        if (attrs.aTextureCoord)
+        {
+            vao.addAttribute(vertexBuffer, attrs.aTextureCoord, gl.FLOAT, false, this.vertByteSize, 2 * vertSize);
+        }
 
         this.vao = vao;
     }
@@ -255,6 +258,8 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
         // }
         renderer.bindVao(this.vao);
 
+        const tex = renderer.boundTextures[0];
+
         ShaderParticle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uStatusIn = 0;
 
@@ -269,6 +274,9 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
         gl.enable(gl.BLEND);
+
+        renderer.boundTextures[0] = tex;
+        gl.bindTexture(gl.TEXTURE_2D, tex._glTextures[renderer.CONTEXT_UID].texture);
 
         this.updateCount++;
     }

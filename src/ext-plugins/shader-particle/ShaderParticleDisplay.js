@@ -117,7 +117,7 @@ export default class ShaderParticleDisplay extends ShaderParticleProcessor
 
         const texture = particle._texture;
 
-        const samplerLocation = renderer.bindTexture(texture);
+        const samplerLocation = renderer.bindTexture(texture, 1, true);
 
         this.shader.uniforms.uSampler = samplerLocation;
 
@@ -125,15 +125,23 @@ export default class ShaderParticleDisplay extends ShaderParticleProcessor
 
         if (statusList)
         {
-            let location = 1;
+            let outLocation = 2;
 
             particle.useStatus.forEach(function (statusIndex)
             {
+                const name = 'uStatusOut' + statusIndex;
+
+                if (!(name in shader.uniforms))
+                {
+                    return;
+                }
+
                 const texture = statusList[statusIndex].renderTargetOut.texture;
 
-                ShaderParticle.bindTargetTexture(renderer, texture, location);
-                shader.uniforms['uStatusOut' + statusIndex] = location;
-                location++;
+                ShaderParticle.bindTargetTexture(renderer, texture, outLocation);
+                shader.uniforms[name] = outLocation;
+
+                outLocation++;
             });
         }
 
