@@ -4,6 +4,7 @@ import AmbientLight from './lights/ambientLight/AmbientLight';
 import DirectionalLight from './lights/directionalLight/DirectionalLight';
 import PointLight from './lights/pointLight/PointLight';
 import LightSpriteRenderer from './LightSpriteRenderer';
+import LightTarget from './LightTarget';
 
 export default {
     Light,
@@ -12,4 +13,5 @@ export default {
     DirectionalLight,
     PointLight,
     LightSpriteRenderer,
+    LightTarget,
 };
