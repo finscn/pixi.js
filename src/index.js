@@ -66,15 +66,16 @@ for (const key in extFilters)
 
 import * as extPlugins from './ext-plugins';
 
-const renderers = extPlugins || {};
-const lights = renderers.lights;
-const DisplayPoint = renderers.DisplayPoint;
-const DisplayPointGroup = renderers.DisplayPointGroup;
+const plugins = extPlugins || {};
 
-const ShaderParticle = renderers.ShaderParticle;
-const ShaderParticleDisplay = renderers.ShaderParticleDisplay;
-const ShaderParticleStatus = renderers.ShaderParticleStatus;
-const ShaderParticleRenderer = renderers.ShaderParticleRenderer;
+const lights = plugins.lighting;
+
+const DisplayPoint = plugins.DisplayPoint;
+const DisplayPointGroup = plugins.DisplayPointGroup;
+
+const ShaderParticle = plugins.ShaderParticle;
+const ShaderParticleDisplay = plugins.ShaderParticleDisplay;
+const ShaderParticleStatus = plugins.ShaderParticleStatus;
 
 export {
     extensions,
@@ -86,7 +87,6 @@ export {
     SpriteTrail,
     RenderContext,
 
-    renderers,
     lights,
     DisplayPoint,
     DisplayPointGroup,
@@ -94,7 +94,6 @@ export {
     ShaderParticle,
     ShaderParticleDisplay,
     ShaderParticleStatus,
-    ShaderParticleRenderer,
 };
 
 // Always export PixiJS globally.
