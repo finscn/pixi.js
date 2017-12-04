@@ -258,7 +258,7 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
         // }
         renderer.bindVao(this.vao);
 
-        const tex = renderer.boundTextures[0];
+        // const tex = renderer.boundTextures[0];
 
         ShaderParticle.bindTargetTexture(renderer, this.renderTargetIn.texture, 0);
         shader.uniforms.uStatusIn = 0;
@@ -275,8 +275,8 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
 
         gl.enable(gl.BLEND);
 
-        renderer.boundTextures[0] = tex;
-        gl.bindTexture(gl.TEXTURE_2D, tex._glTextures[renderer.CONTEXT_UID].texture);
+        // renderer.boundTextures[0] = tex;
+        // gl.bindTexture(gl.TEXTURE_2D, tex._glTextures[renderer.CONTEXT_UID].texture);
 
         this.updateCount++;
     }

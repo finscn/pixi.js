@@ -149,10 +149,16 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         const prevRenderTarget = renderer._activeRenderTarget;
 
+        particle.updateStatus(renderer);
+
         if (particle.useOffscreen && prevRenderTarget.root)
         {
             renderer.bindRenderTarget(this.renderTarget);
             this.renderTarget.clear();
+        }
+        else
+        {
+            renderer.bindRenderTarget(prevRenderTarget);
         }
 
         // re-enable blending so our bunnies look good
