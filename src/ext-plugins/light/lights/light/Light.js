@@ -119,7 +119,7 @@ export default class Light
         if (!shader)
         {
             Light.shaderCache[id] = shader;
-            shader = new Shader(gl, vertexSrc, fragmentSrc, this.precision, Light.locationMapping);
+            shader = new Shader(gl, vertexSrc, fragmentSrc, Light.locationMapping, this.precision);
         }
 
         return shader;
