@@ -69,13 +69,20 @@ import * as extPlugins from './ext-plugins';
 const plugins = extPlugins || {};
 
 const lights = plugins.lighting;
+const LightSpriteRenderer = lights.LightSpriteRenderer;
 
 const DisplayPoint = plugins.DisplayPoint;
 const DisplayPointGroup = plugins.DisplayPointGroup;
+const PointGroupRenderer = plugins.PointGroupRenderer;
+
+const PerspectiveRenderer = plugins.PerspectiveRenderer;
+
+const TrailRenderer = plugins.TrailRenderer;
 
 const ShaderParticle = plugins.ShaderParticle;
 const ShaderParticleDisplay = plugins.ShaderParticleDisplay;
 const ShaderParticleStatus = plugins.ShaderParticleStatus;
+const ShaderParticleRenderer = plugins.ShaderParticleRenderer;
 
 export {
     extensions,
@@ -88,12 +95,20 @@ export {
     RenderContext,
 
     lights,
+    LightSpriteRenderer,
+
     DisplayPoint,
     DisplayPointGroup,
+    PointGroupRenderer,
+
+    PerspectiveRenderer,
+
+    TrailRenderer,
 
     ShaderParticle,
     ShaderParticleDisplay,
     ShaderParticleStatus,
+    ShaderParticleRenderer,
 };
 
 // Always export PixiJS globally.
