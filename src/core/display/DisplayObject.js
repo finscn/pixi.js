@@ -624,12 +624,12 @@ export default class DisplayObject extends EventEmitter
      */
     get filters()
     {
-        return this._filters && this._filters.slice();
+        return this._filters; // && this._filters.slice();
     }
 
     set filters(value) // eslint-disable-line require-jsdoc
     {
-        this._filters = value && value.slice();
+        this._filters = value; // && value.slice();
     }
 }
 
