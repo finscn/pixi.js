@@ -146,19 +146,16 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         const display = particle.display;
         const particleCount = particle.count;
-
         const prevRenderTarget = renderer._activeRenderTarget;
+        const useFramebuffer = particle.useFramebuffer === true
+                            || (particle.useFramebuffer !== false && prevRenderTarget.root);
 
         particle.updateStatus(renderer);
 
-        if (particle.useOffscreen && prevRenderTarget.root)
+        if (useFramebuffer)
         {
             renderer.bindRenderTarget(this.renderTarget);
             this.renderTarget.clear();
-        }
-        else
-        {
-            renderer.bindRenderTarget(prevRenderTarget);
         }
 
         // re-enable blending so our bunnies look good
@@ -168,7 +165,7 @@ export default class ShaderParticleRenderer extends ObjectRenderer
 
         instanceExt.drawElementsInstancedANGLE(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0, particleCount);
 
-        if (particle.useOffscreen && prevRenderTarget.root)
+        if (useFramebuffer)
         {
             renderer.bindRenderTarget(prevRenderTarget);
 

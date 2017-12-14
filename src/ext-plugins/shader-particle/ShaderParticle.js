@@ -44,7 +44,9 @@ export default class ShaderParticle extends DisplayObject
         this.statusList = [];
 
         this.useStatus = [];
-        this.useOffscreen = true;
+
+        // if it's not `true` or `false`, it means `auto`.
+        this.useFramebuffer = null;
 
         // auto
         this.format = null;
