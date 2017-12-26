@@ -77,8 +77,6 @@ const PointGroupRenderer = plugins.PointGroupRenderer;
 
 const PerspectiveRenderer = plugins.PerspectiveRenderer;
 
-const TrailRenderer = plugins.TrailRenderer;
-
 const ShaderParticle = plugins.ShaderParticle;
 const ShaderParticleDisplay = plugins.ShaderParticleDisplay;
 const ShaderParticleStatus = plugins.ShaderParticleStatus;
@@ -102,8 +100,6 @@ export {
     PointGroupRenderer,
 
     PerspectiveRenderer,
-
-    TrailRenderer,
 
     ShaderParticle,
     ShaderParticleDisplay,
