@@ -191,7 +191,9 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
             return ShaderParticle.createRGBAFrameBuffer(gl, width, height, data);
         }
 
-        const extFloat = gl.getExtension('OES_texture_float');
+        const extFloat = gl.getExtension('OES_texture_float')
+                        || gl.getExtension('MOZ_OES_texture_float')
+                        || gl.getExtension('WEBKIT_OES_texture_float');
 
         if (format === 'FLOAT' && extFloat)
         {
@@ -199,6 +201,8 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
         }
 
         const extHalfFloat = gl.getExtension('OES_texture_half_float');
+                        || gl.getExtension('MOZ_OES_texture_half_float')
+                        || gl.getExtension('WEBKIT_OES_texture_half_float');
 
         if (format === 'HALF_FLOAT' && extHalfFloat)
         {
