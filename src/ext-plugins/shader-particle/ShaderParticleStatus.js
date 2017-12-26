@@ -200,7 +200,7 @@ export default class ShaderParticleStatus extends ShaderParticleProcessor
             return ShaderParticle.createFloatFrameBuffer(gl, width, height, data);
         }
 
-        const extHalfFloat = gl.getExtension('OES_texture_half_float');
+        const extHalfFloat = gl.getExtension('OES_texture_half_float')
                         || gl.getExtension('MOZ_OES_texture_half_float')
                         || gl.getExtension('WEBKIT_OES_texture_half_float');
 
