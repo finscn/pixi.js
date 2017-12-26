@@ -157,6 +157,10 @@ export default class ShaderParticleRenderer extends ObjectRenderer
             renderer.bindRenderTarget(this.renderTarget);
             this.renderTarget.clear();
         }
+        else if (prevRenderTarget !== renderer._activeRenderTarget)
+        {
+            renderer.bindRenderTarget(prevRenderTarget);
+        }
 
         // re-enable blending so our bunnies look good
         renderer.state.setBlendMode(particle.blendMode);
