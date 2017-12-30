@@ -380,12 +380,12 @@ export default class Animation
             this._target.transform.pivot.set(pivot[0], pivot[1]);
         }
 
-        this.updateTexture();
-
         if (this.onFrameChange)
         {
             this.onFrameChange(frameIndex, frame);
         }
+
+        this.updateTarget();
     }
 
     /**
@@ -407,7 +407,7 @@ export default class Animation
      *
      * @private
      */
-    updateTexture()
+    updateTarget()
     {
         this._target._texture = this.currentTexture;
         this._target._textureID = -1;
@@ -574,7 +574,7 @@ export default class Animation
             'updateByTime',
             'changeFrame',
             'getNextFrame',
-            'updateTexture',
+            'updateTarget',
             'getTarget',
             'getFrames',
             'setFrames',
