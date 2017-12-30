@@ -452,9 +452,9 @@ export default class Animation
         {
             this.frameCount = 0;
             this.completeIndex = 0;
-            this.firstTexure = null;
             this._minIndex = -1;
             this._maxIndex = -1;
+            this.firstTexture = null;
 
             return;
         }
@@ -503,7 +503,8 @@ export default class Animation
             this.duration = endTime;
         }
 
-        this.firstTexure = this._frames[0].texture;
+        //TODO
+        this.firstTexture = this._frames[0].texture;
     }
 
     /**
