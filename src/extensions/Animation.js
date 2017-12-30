@@ -503,7 +503,7 @@ export default class Animation
             this.duration = endTime;
         }
 
-        //TODO
+        // TODO
         this.firstTexture = this._frames[0].texture;
     }
 
