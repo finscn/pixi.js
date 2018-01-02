@@ -34,7 +34,7 @@ Container.prototype.removeAllChildren = function (options)
 /**
  * Updates the transform of this container.
  *
- * @param {boolean} [includeChildren] - Should we update the transforms of children ?
+ * @param {boolean} [includeChildren=true] - Should we update the transforms of children ?
  */
 Container.prototype.updateTransformWithParent = function (includeChildren)
 {
@@ -52,7 +52,7 @@ Container.prototype.updateTransformWithParent = function (includeChildren)
         this.worldAlpha = this.alpha;
     }
 
-    if (includeChildren === true)
+    if (includeChildren !== false)
     {
         for (let i = 0, j = this.children.length; i < j; ++i)
         {
@@ -60,7 +60,7 @@ Container.prototype.updateTransformWithParent = function (includeChildren)
 
             if (child.visible)
             {
-                child.updateTransformWithParent(true);
+                child.updateTransformWithParent();
             }
         }
     }

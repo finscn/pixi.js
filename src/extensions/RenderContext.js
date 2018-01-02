@@ -244,7 +244,7 @@ export default class RenderContext
 
         if (!skipUpdateTransform)
         {
-            displayObject.updateTransformWithParent(true);
+            displayObject.updateTransformWithParent();
         }
 
         // const batched = renderer.currentRenderer.size > 1;
@@ -358,7 +358,7 @@ export default class RenderContext
 
         if (!skipUpdateTransform)
         {
-            displayObject.updateTransformWithParent(true);
+            displayObject.updateTransformWithParent();
         }
 
         context.setTransform(1, 0, 0, 1, 0, 0);
@@ -474,12 +474,12 @@ export default class RenderContext
         ct.rotation = t.rotation;
         this.globalContainer.alpha = t.alpha;
         // this.globalContainer.blendMode = t.blend || BLEND_MODES.NORMAL;
-        this.globalContainer.updateTransformWithParent();
+        this.globalContainer.updateTransformWithParent(false);
     }
 
     updateRootContainer()
     {
-        this.root.updateTransformWithParent();
+        this.root.updateTransformWithParent(false);
         this._transformSN++;
     }
 
