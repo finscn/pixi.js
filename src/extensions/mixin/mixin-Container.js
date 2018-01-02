@@ -52,7 +52,7 @@ Container.prototype.updateTransformWithParent = function (includeChildren)
         this.worldAlpha = this.alpha;
     }
 
-    if (includeChildren !== false)
+    if (includeChildren === true)
     {
         for (let i = 0, j = this.children.length; i < j; ++i)
         {

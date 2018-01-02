@@ -358,7 +358,7 @@ export default class RenderContext
 
         if (!skipUpdateTransform)
         {
-            displayObject.updateTransformWithParent();
+            displayObject.updateTransformWithParent(true);
         }
 
         context.setTransform(1, 0, 0, 1, 0, 0);
