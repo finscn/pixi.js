@@ -7,10 +7,10 @@ const TextMetrics = core.TextMetrics;
 /**
  * Renders simple text and updates it without some computations
  *
- * @param {boolean} recompute - Whether recompute line position
+ * @param {boolean} refreshPosition - Whether refresh text's line position
  * @private
  **/
-Text.prototype.updateTextFast = function (recompute)
+Text.prototype.updateTextSimple = function (refreshPosition)
 {
     const style = this._style;
     const text = this._text;
@@ -20,7 +20,7 @@ Text.prototype.updateTextFast = function (recompute)
     let linePositionX;
     let linePositionY;
 
-    if (!this._linePositionX || recompute)
+    if (!this._linePositionX || refreshPosition)
     {
         // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
         const maxLineWidth = this.canvas.width;
@@ -50,7 +50,7 @@ Text.prototype.updateTextFast = function (recompute)
         linePositionX = this._linePositionX;
     }
 
-    if (!this._linePositionY || recompute)
+    if (!this._linePositionY || refreshPosition)
     {
         // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         const fontProperties = TextMetrics.measureFont(this._font);
@@ -78,26 +78,7 @@ Text.prototype.updateTextFast = function (recompute)
     this._onTextureUpdate();
     this._texture.baseTexture.emit('update', this._texture.baseTexture);
 
-    this.dirtyFast = false;
-};
-
-/**
- * Sets the text & do updateTextFast.
- *
- * @param {string} text - The value to set to
- * @param {boolean} recompute - Whether recompute line position
- */
-Text.prototype.setTextFast = function (text, recompute)
-{
-    text = String(text || ' ');
-
-    if (this._text === text)
-    {
-        return;
-    }
-    this._text = text;
-    this.dirtyFast = true;
-    this.dirtyFastRecompute = recompute;
+    this.dirty = false;
 };
 
 /**
@@ -111,26 +92,29 @@ Text.prototype.renderWebGL = function (renderer)
     {
         this.resolution = renderer.resolution;
         this.dirty = true;
-        this.dirtyFast = true;
     }
 
     if (this.localStyleID !== this._style.styleID)
     {
-        this.dirty = true;
-        this.dirtyFast = true;
         this.localStyleID = this._style.styleID;
+        this.dirty = true;
     }
 
-    if (this.dirtyFast)
+    if (this.dirty)
     {
-        this.updateTextFast(this.dirtyFastRecompute);
-        this.dirtyFastRecompute = false;
-    }
-    else if (this.dirty)
-    {
-        this.updateText(true);
+        if (this.simpleMode)
+        {
+            this.updateTextSimple(this.refreshPosition);
+        }
+        else
+        {
+            this.updateText(true);
+        }
     }
 
     // super.renderWebGL(renderer);
     Sprite.prototype.renderWebGL.call(this, renderer);
 };
+
+Text.prototype.simpleMode = false;
+Text.prototype.refreshPosition = false;

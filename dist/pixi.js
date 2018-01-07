@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Fri, 05 Jan 2018 10:09:42 UTC
+ * Compiled Sun, 07 Jan 2018 16:42:18 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35240,10 +35240,10 @@ var TextMetrics = core.TextMetrics;
 /**
  * Renders simple text and updates it without some computations
  *
- * @param {boolean} recompute - Whether recompute line position
+ * @param {boolean} refreshPosition - Whether refresh text's line position
  * @private
  **/
-Text.prototype.updateTextFast = function (recompute) {
+Text.prototype.updateTextSimple = function (refreshPosition) {
     var style = this._style;
     var text = this._text;
 
@@ -35252,7 +35252,7 @@ Text.prototype.updateTextFast = function (recompute) {
     var linePositionX = void 0;
     var linePositionY = void 0;
 
-    if (!this._linePositionX || recompute) {
+    if (!this._linePositionX || refreshPosition) {
         // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
         var maxLineWidth = this.canvas.width;
         var lineWidth = this.context.measureText(text).width + style.letterSpacing * (text.length - 1);
@@ -35275,7 +35275,7 @@ Text.prototype.updateTextFast = function (recompute) {
         linePositionX = this._linePositionX;
     }
 
-    if (!this._linePositionY || recompute) {
+    if (!this._linePositionY || refreshPosition) {
         // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         var fontProperties = TextMetrics.measureFont(this._font);
 
@@ -35298,24 +35298,7 @@ Text.prototype.updateTextFast = function (recompute) {
     this._onTextureUpdate();
     this._texture.baseTexture.emit('update', this._texture.baseTexture);
 
-    this.dirtyFast = false;
-};
-
-/**
- * Sets the text & do updateTextFast.
- *
- * @param {string} text - The value to set to
- * @param {boolean} recompute - Whether recompute line position
- */
-Text.prototype.setTextFast = function (text, recompute) {
-    text = String(text || ' ');
-
-    if (this._text === text) {
-        return;
-    }
-    this._text = text;
-    this.dirtyFast = true;
-    this.dirtyFastRecompute = recompute;
+    this.dirty = false;
 };
 
 /**
@@ -35327,25 +35310,27 @@ Text.prototype.renderWebGL = function (renderer) {
     if (this.resolution !== renderer.resolution) {
         this.resolution = renderer.resolution;
         this.dirty = true;
-        this.dirtyFast = true;
     }
 
     if (this.localStyleID !== this._style.styleID) {
-        this.dirty = true;
-        this.dirtyFast = true;
         this.localStyleID = this._style.styleID;
+        this.dirty = true;
     }
 
-    if (this.dirtyFast) {
-        this.updateTextFast(this.dirtyFastRecompute);
-        this.dirtyFastRecompute = false;
-    } else if (this.dirty) {
-        this.updateText(true);
+    if (this.dirty) {
+        if (this.simpleMode) {
+            this.updateTextSimple(this.refreshPosition);
+        } else {
+            this.updateText(true);
+        }
     }
 
     // super.renderWebGL(renderer);
     Sprite.prototype.renderWebGL.call(this, renderer);
 };
+
+Text.prototype.simpleMode = false;
+Text.prototype.refreshPosition = false;
 
 },{"../../core":62}],191:[function(require,module,exports){
 'use strict';
@@ -35780,12 +35765,14 @@ var WebGLExtract = function () {
         var frame = void 0;
         var flipY = false;
         var renderTexture = void 0;
+        var generated = false;
 
         if (target) {
             if (target instanceof core.RenderTexture) {
                 renderTexture = target;
             } else {
                 renderTexture = this.renderer.generateTexture(target);
+                generated = true;
             }
         }
 
@@ -35835,7 +35822,11 @@ var WebGLExtract = function () {
             }
         }
 
+        if (generated) {
+            renderTexture.destroy(true);
+        }
         // send the canvas back..
+
         return canvasBuffer.canvas;
     };
 
@@ -35855,12 +35846,14 @@ var WebGLExtract = function () {
         var resolution = void 0;
         var frame = void 0;
         var renderTexture = void 0;
+        var generated = false;
 
         if (target) {
             if (target instanceof core.RenderTexture) {
                 renderTexture = target;
             } else {
                 renderTexture = this.renderer.generateTexture(target);
+                generated = true;
             }
         }
 
@@ -35889,6 +35882,10 @@ var WebGLExtract = function () {
             var gl = renderer.gl;
 
             gl.readPixels(frame.x * resolution, frame.y * resolution, width, height, gl.RGBA, gl.UNSIGNED_BYTE, webglPixels);
+        }
+
+        if (generated) {
+            renderTexture.destroy(true);
         }
 
         return webglPixels;
