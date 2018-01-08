@@ -179,8 +179,8 @@ export default class Text extends Sprite
                 context.shadowColor = style.dropShadowColor;
             }
 
-            const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
-            const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
+            const xShadowOffset = style._dropShadowOffsetX;
+            const yShadowOffset = style._dropShadowOffsetY;
 
             for (let i = 0; i < lines.length; i++)
             {

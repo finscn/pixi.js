@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Mon, 08 Jan 2018 15:46:57 UTC
+ * Compiled Mon, 08 Jan 2018 17:08:45 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -22132,8 +22132,8 @@ var Text = function (_Sprite) {
                 context.shadowColor = style.dropShadowColor;
             }
 
-            var xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
-            var yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
+            var xShadowOffset = style._dropShadowOffsetX;
+            var yShadowOffset = style._dropShadowOffsetY;
 
             for (var i = 0; i < lines.length; i++) {
                 linePositionX = style.strokeThickness / 2;
@@ -23021,6 +23021,11 @@ var TextStyle = function () {
         deepCopyProperties(this, defaultStyle, defaultStyle);
     };
 
+    TextStyle.prototype._updateDropShadowOffset = function _updateDropShadowOffset() {
+        this._dropShadowOffsetX = Math.cos(this._dropShadowAngle || 0) * (this._dropShadowDistance || 0);
+        this._dropShadowOffsetY = Math.sin(this._dropShadowAngle || 0) * (this._dropShadowDistance || 0);
+    };
+
     /**
      * Alignment for multiline text ('left', 'center' or 'right'), does not affect single line text
      *
@@ -23145,6 +23150,7 @@ var TextStyle = function () {
             if (this._dropShadowAngle !== dropShadowAngle) {
                 this._dropShadowAngle = dropShadowAngle;
                 this.styleID++;
+                this._updateDropShadowOffset();
             }
         }
 
@@ -23203,6 +23209,7 @@ var TextStyle = function () {
             if (this._dropShadowDistance !== dropShadowDistance) {
                 this._dropShadowDistance = dropShadowDistance;
                 this.styleID++;
+                this._updateDropShadowOffset();
             }
         }
 
@@ -35249,7 +35256,10 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
     var canvas = this.canvas;
     var context = this.context;
 
-    if (!this._canvasInited) {
+    if (!this._textInited) {
+        this._font = this._style.toFontString();
+        this._fontProperties = TextMetrics.measureFont(this._font);
+
         if (!this.canvasWidth) {
             var measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
             var width = measured.width;
@@ -35271,7 +35281,7 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         context.lineJoin = style.lineJoin;
         context.miterLimit = style.miterLimit;
 
-        this._canvasInited = true;
+        this._textInited = true;
     } else {
         context.clearRect(0, 0, canvas.width, canvas.height);
     }
@@ -35304,7 +35314,7 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
 
     if (!this._linePositionY || refreshPosition) {
         // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
-        var fontProperties = TextMetrics.measureFont(this._font);
+        var fontProperties = this._fontProperties;
 
         linePositionY = style.strokeThickness / 2 + fontProperties.ascent + style.padding;
         this._linePositionY = linePositionY;
@@ -35312,8 +35322,20 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         linePositionY = this._linePositionY;
     }
 
+    if (style.dropShadow) {
+        context.shadowBlur = style._dropShadowBlur;
+        context.shadowColor = style._dropShadowColor;
+
+        context.shadowOffsetX = style._dropShadowOffsetX;
+        context.shadowOffsetY = style._dropShadowOffsetY;
+    }
+
     if (style.stroke && style.strokeThickness) {
         this.drawLetterSpacing(text, linePositionX, linePositionY, true);
+
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
     }
 
     if (style.fill) {
@@ -35322,10 +35344,7 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
 
-    this._onTextureUpdate();
-    this._texture.baseTexture.emit('update', this._texture.baseTexture);
-
-    this.dirty = false;
+    this.updateTexture();
 };
 
 /**
@@ -35354,6 +35373,12 @@ Text.prototype.renderWebGL = function (renderer) {
 
     // super.renderWebGL(renderer);
     Sprite.prototype.renderWebGL.call(this, renderer);
+};
+
+Text.prototype.refresh = function () {
+    this._textInited = false;
+    this._linePositionX = 0;
+    this._linePositionY = 0;
 };
 
 Text.prototype.simpleMode = false;

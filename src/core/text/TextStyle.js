@@ -122,6 +122,12 @@ export default class TextStyle
         deepCopyProperties(this, defaultStyle, defaultStyle);
     }
 
+    _updateDropShadowOffset()
+    {
+        this._dropShadowOffsetX = Math.cos(this._dropShadowAngle || 0) * (this._dropShadowDistance || 0);
+        this._dropShadowOffsetY = Math.sin(this._dropShadowAngle || 0) * (this._dropShadowDistance || 0);
+    }
+
     /**
      * Alignment for multiline text ('left', 'center' or 'right'), does not affect single line text
      *
@@ -209,6 +215,7 @@ export default class TextStyle
         {
             this._dropShadowAngle = dropShadowAngle;
             this.styleID++;
+            this._updateDropShadowOffset();
         }
     }
 
@@ -264,6 +271,7 @@ export default class TextStyle
         {
             this._dropShadowDistance = dropShadowDistance;
             this.styleID++;
+            this._updateDropShadowOffset();
         }
     }
 

@@ -17,8 +17,11 @@ Text.prototype.updateTextSimple = function (refreshPosition)
     const canvas = this.canvas;
     const context = this.context;
 
-    if (!this._canvasInited)
+    if (!this._textInited)
     {
+        this._font = this._style.toFontString();
+        this._fontProperties = TextMetrics.measureFont(this._font);
+
         if (!this.canvasWidth)
         {
             const measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
@@ -41,7 +44,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         context.lineJoin = style.lineJoin;
         context.miterLimit = style.miterLimit;
 
-        this._canvasInited = true;
+        this._textInited = true;
     }
     else
     {
@@ -84,7 +87,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
     if (!this._linePositionY || refreshPosition)
     {
         // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
-        const fontProperties = TextMetrics.measureFont(this._font);
+        const fontProperties = this._fontProperties;
 
         linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding;
         this._linePositionY = linePositionY;
@@ -94,9 +97,22 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         linePositionY = this._linePositionY;
     }
 
+    if (style.dropShadow)
+    {
+        context.shadowBlur = style._dropShadowBlur;
+        context.shadowColor = style._dropShadowColor;
+
+        context.shadowOffsetX = style._dropShadowOffsetX;
+        context.shadowOffsetY = style._dropShadowOffsetY;
+    }
+
     if (style.stroke && style.strokeThickness)
     {
         this.drawLetterSpacing(text, linePositionX, linePositionY, true);
+
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
     }
 
     if (style.fill)
@@ -106,10 +122,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
 
-    this._onTextureUpdate();
-    this._texture.baseTexture.emit('update', this._texture.baseTexture);
-
-    this.dirty = false;
+    this.updateTexture();
 };
 
 /**
@@ -145,6 +158,13 @@ Text.prototype.renderWebGL = function (renderer)
 
     // super.renderWebGL(renderer);
     Sprite.prototype.renderWebGL.call(this, renderer);
+};
+
+Text.prototype.refresh = function ()
+{
+    this._textInited = false;
+    this._linePositionX = 0;
+    this._linePositionY = 0;
 };
 
 Text.prototype.simpleMode = false;
