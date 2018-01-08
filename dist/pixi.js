@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Sun, 07 Jan 2018 16:42:18 UTC
+ * Compiled Mon, 08 Jan 2018 15:46:57 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -22099,15 +22099,15 @@ var Text = function (_Sprite) {
         var maxLineWidth = measured.maxLineWidth;
         var fontProperties = measured.fontProperties;
 
-        var prevTextWidth = this.textWidth;
-        var prevTextHeight = this.textHeight;
+        var prevCanvasWidth = this.canvasWidth;
+        var prevCanvasHeight = this.canvasHeight;
 
-        this.textWidth = Math.ceil(width + style.padding * 2);
-        this.textHeight = Math.ceil(height + style.padding * 2);
-        this._sizeChanged = this.textWidth !== prevTextWidth || this.textHeight !== prevTextHeight;
+        this.canvasWidth = Math.ceil(width + style.padding * 2);
+        this.canvasHeight = Math.ceil(height + style.padding * 2);
+        this._sizeChanged = this.canvasWidth !== prevCanvasWidth || this.canvasHeight !== prevCanvasHeight;
 
-        this.canvas.width = this.textWidth * this.resolution;
-        this.canvas.height = this.textHeight * this.resolution;
+        this.canvas.width = this.canvasWidth * this.resolution;
+        this.canvas.height = this.canvasHeight * this.resolution;
 
         context.scale(this.resolution, this.resolution);
 
@@ -22383,8 +22383,8 @@ var Text = function (_Sprite) {
         var currentIteration = void 0;
         var stop = void 0;
 
-        var width = this.textWidth;
-        var height = this.textHeight;
+        var width = this.canvasWidth;
+        var height = this.canvasHeight;
 
         // make a copy of the style settings, so we can manipulate them later
         var fill = style.fill.slice();
@@ -35246,16 +35246,43 @@ var TextMetrics = core.TextMetrics;
 Text.prototype.updateTextSimple = function (refreshPosition) {
     var style = this._style;
     var text = this._text;
+    var canvas = this.canvas;
+    var context = this.context;
 
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (!this._canvasInited) {
+        if (!this.canvasWidth) {
+            var measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
+            var width = measured.width;
+            var height = measured.height;
+
+            this.canvasWidth = Math.ceil(width + style.padding * 2);
+            this.canvasHeight = Math.ceil(height + style.padding * 2);
+        }
+
+        canvas.width = this.canvasWidth * this.resolution;
+        canvas.height = this.canvasHeight * this.resolution;
+
+        context.scale(this.resolution, this.resolution);
+
+        context.font = this._font;
+        context.strokeStyle = style.stroke;
+        context.lineWidth = style.strokeThickness;
+        context.textBaseline = style.textBaseline;
+        context.lineJoin = style.lineJoin;
+        context.miterLimit = style.miterLimit;
+
+        this._canvasInited = true;
+    } else {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     var linePositionX = void 0;
     var linePositionY = void 0;
 
     if (!this._linePositionX || refreshPosition) {
         // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
-        var maxLineWidth = this.canvas.width;
-        var lineWidth = this.context.measureText(text).width + style.letterSpacing * (text.length - 1);
+        var maxLineWidth = this.canvasWidth;
+        var lineWidth = context.measureText(text).width + style.letterSpacing * (text.length - 1);
 
         lineWidth += style.padding * 2 + style.strokeThickness;
 
@@ -35290,7 +35317,7 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
     }
 
     if (style.fill) {
-        this.context.fillStyle = style.fill;
+        context.fillStyle = style.fill;
 
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }

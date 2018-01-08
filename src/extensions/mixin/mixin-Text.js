@@ -14,8 +14,39 @@ Text.prototype.updateTextSimple = function (refreshPosition)
 {
     const style = this._style;
     const text = this._text;
+    const canvas = this.canvas;
+    const context = this.context;
 
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (!this._canvasInited)
+    {
+        if (!this.canvasWidth)
+        {
+            const measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
+            const width = measured.width;
+            const height = measured.height;
+
+            this.canvasWidth = Math.ceil(width + (style.padding * 2));
+            this.canvasHeight = Math.ceil(height + (style.padding * 2));
+        }
+
+        canvas.width = this.canvasWidth * this.resolution;
+        canvas.height = this.canvasHeight * this.resolution;
+
+        context.scale(this.resolution, this.resolution);
+
+        context.font = this._font;
+        context.strokeStyle = style.stroke;
+        context.lineWidth = style.strokeThickness;
+        context.textBaseline = style.textBaseline;
+        context.lineJoin = style.lineJoin;
+        context.miterLimit = style.miterLimit;
+
+        this._canvasInited = true;
+    }
+    else
+    {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     let linePositionX;
     let linePositionY;
@@ -23,8 +54,8 @@ Text.prototype.updateTextSimple = function (refreshPosition)
     if (!this._linePositionX || refreshPosition)
     {
         // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
-        const maxLineWidth = this.canvas.width;
-        let lineWidth = this.context.measureText(text).width + (style.letterSpacing * (text.length - 1));
+        const maxLineWidth = this.canvasWidth;
+        let lineWidth = context.measureText(text).width + (style.letterSpacing * (text.length - 1));
 
         lineWidth += style.padding * 2 + style.strokeThickness;
 
@@ -70,7 +101,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
 
     if (style.fill)
     {
-        this.context.fillStyle = style.fill;
+        context.fillStyle = style.fill;
 
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
