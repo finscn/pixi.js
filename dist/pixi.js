@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Mon, 08 Jan 2018 17:08:45 UTC
+ * Compiled Mon, 08 Jan 2018 17:15:51 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35257,16 +35257,16 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
     var context = this.context;
 
     if (!this._textInited) {
-        this._font = this._style.toFontString();
+        this._font = style.toFontString();
         this._fontProperties = TextMetrics.measureFont(this._font);
 
         if (!this.canvasWidth) {
-            var measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
+            var measured = TextMetrics.measureText(text, style, style._wordWrap, canvas);
             var width = measured.width;
             var height = measured.height;
 
-            this.canvasWidth = Math.ceil(width + style.padding * 2);
-            this.canvasHeight = Math.ceil(height + style.padding * 2);
+            this.canvasWidth = Math.ceil(width + style._padding * 2);
+            this.canvasHeight = Math.ceil(height + style._padding * 2);
         }
 
         canvas.width = this.canvasWidth * this.resolution;
@@ -35275,11 +35275,11 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         context.scale(this.resolution, this.resolution);
 
         context.font = this._font;
-        context.strokeStyle = style.stroke;
-        context.lineWidth = style.strokeThickness;
-        context.textBaseline = style.textBaseline;
-        context.lineJoin = style.lineJoin;
-        context.miterLimit = style.miterLimit;
+        context.strokeStyle = style._stroke;
+        context.lineWidth = style._strokeThickness;
+        context.textBaseline = style._textBaseline;
+        context.lineJoin = style._lineJoin;
+        context.miterLimit = style._miterLimit;
 
         this._textInited = true;
     } else {
@@ -35290,21 +35290,20 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
     var linePositionY = void 0;
 
     if (!this._linePositionX || refreshPosition) {
-        // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
         var maxLineWidth = this.canvasWidth;
-        var lineWidth = context.measureText(text).width + style.letterSpacing * (text.length - 1);
+        var lineWidth = context.measureText(text).width + style._letterSpacing * (text.length - 1);
 
-        lineWidth += style.padding * 2 + style.strokeThickness;
+        lineWidth += style._padding * 2 + style._strokeThickness;
 
-        if (style.dropShadow) {
-            lineWidth += style.dropShadowDistance;
+        if (style._dropShadow) {
+            lineWidth += style._dropShadowDistance;
         }
 
-        linePositionX = style.strokeThickness / 2 + style.padding;
+        linePositionX = style._strokeThickness / 2 + style._padding;
 
-        if (style.align === 'right') {
+        if (style._align === 'right') {
             linePositionX += maxLineWidth - lineWidth;
-        } else if (style.align === 'center') {
+        } else if (style._align === 'center') {
             linePositionX += (maxLineWidth - lineWidth) / 2;
         }
         this._linePositionX = linePositionX;
@@ -35313,16 +35312,15 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
     }
 
     if (!this._linePositionY || refreshPosition) {
-        // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         var fontProperties = this._fontProperties;
 
-        linePositionY = style.strokeThickness / 2 + fontProperties.ascent + style.padding;
+        linePositionY = style._strokeThickness / 2 + fontProperties.ascent + style._padding;
         this._linePositionY = linePositionY;
     } else {
         linePositionY = this._linePositionY;
     }
 
-    if (style.dropShadow) {
+    if (style._dropShadow) {
         context.shadowBlur = style._dropShadowBlur;
         context.shadowColor = style._dropShadowColor;
 
@@ -35330,7 +35328,7 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         context.shadowOffsetY = style._dropShadowOffsetY;
     }
 
-    if (style.stroke && style.strokeThickness) {
+    if (style._stroke && style._strokeThickness) {
         this.drawLetterSpacing(text, linePositionX, linePositionY, true);
 
         context.shadowBlur = 0;
@@ -35338,8 +35336,8 @@ Text.prototype.updateTextSimple = function (refreshPosition) {
         context.shadowOffsetY = 0;
     }
 
-    if (style.fill) {
-        context.fillStyle = style.fill;
+    if (style._fill) {
+        context.fillStyle = style._fill;
 
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }

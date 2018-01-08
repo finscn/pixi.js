@@ -19,17 +19,17 @@ Text.prototype.updateTextSimple = function (refreshPosition)
 
     if (!this._textInited)
     {
-        this._font = this._style.toFontString();
+        this._font = style.toFontString();
         this._fontProperties = TextMetrics.measureFont(this._font);
 
         if (!this.canvasWidth)
         {
-            const measured = TextMetrics.measureText(text, style, style.wordWrap, canvas);
+            const measured = TextMetrics.measureText(text, style, style._wordWrap, canvas);
             const width = measured.width;
             const height = measured.height;
 
-            this.canvasWidth = Math.ceil(width + (style.padding * 2));
-            this.canvasHeight = Math.ceil(height + (style.padding * 2));
+            this.canvasWidth = Math.ceil(width + (style._padding * 2));
+            this.canvasHeight = Math.ceil(height + (style._padding * 2));
         }
 
         canvas.width = this.canvasWidth * this.resolution;
@@ -38,11 +38,11 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         context.scale(this.resolution, this.resolution);
 
         context.font = this._font;
-        context.strokeStyle = style.stroke;
-        context.lineWidth = style.strokeThickness;
-        context.textBaseline = style.textBaseline;
-        context.lineJoin = style.lineJoin;
-        context.miterLimit = style.miterLimit;
+        context.strokeStyle = style._stroke;
+        context.lineWidth = style._strokeThickness;
+        context.textBaseline = style._textBaseline;
+        context.lineJoin = style._lineJoin;
+        context.miterLimit = style._miterLimit;
 
         this._textInited = true;
     }
@@ -56,24 +56,23 @@ Text.prototype.updateTextSimple = function (refreshPosition)
 
     if (!this._linePositionX || refreshPosition)
     {
-        // const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
         const maxLineWidth = this.canvasWidth;
-        let lineWidth = context.measureText(text).width + (style.letterSpacing * (text.length - 1));
+        let lineWidth = context.measureText(text).width + (style._letterSpacing * (text.length - 1));
 
-        lineWidth += style.padding * 2 + style.strokeThickness;
+        lineWidth += style._padding * 2 + style._strokeThickness;
 
-        if (style.dropShadow)
+        if (style._dropShadow)
         {
-            lineWidth += style.dropShadowDistance;
+            lineWidth += style._dropShadowDistance;
         }
 
-        linePositionX = style.strokeThickness / 2 + style.padding;
+        linePositionX = style._strokeThickness / 2 + style._padding;
 
-        if (style.align === 'right')
+        if (style._align === 'right')
         {
             linePositionX += maxLineWidth - lineWidth;
         }
-        else if (style.align === 'center')
+        else if (style._align === 'center')
         {
             linePositionX += (maxLineWidth - lineWidth) / 2;
         }
@@ -86,10 +85,9 @@ Text.prototype.updateTextSimple = function (refreshPosition)
 
     if (!this._linePositionY || refreshPosition)
     {
-        // const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         const fontProperties = this._fontProperties;
 
-        linePositionY = (style.strokeThickness / 2) + fontProperties.ascent + style.padding;
+        linePositionY = (style._strokeThickness / 2) + fontProperties.ascent + style._padding;
         this._linePositionY = linePositionY;
     }
     else
@@ -97,7 +95,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         linePositionY = this._linePositionY;
     }
 
-    if (style.dropShadow)
+    if (style._dropShadow)
     {
         context.shadowBlur = style._dropShadowBlur;
         context.shadowColor = style._dropShadowColor;
@@ -106,7 +104,7 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         context.shadowOffsetY = style._dropShadowOffsetY;
     }
 
-    if (style.stroke && style.strokeThickness)
+    if (style._stroke && style._strokeThickness)
     {
         this.drawLetterSpacing(text, linePositionX, linePositionY, true);
 
@@ -115,9 +113,9 @@ Text.prototype.updateTextSimple = function (refreshPosition)
         context.shadowOffsetY = 0;
     }
 
-    if (style.fill)
+    if (style._fill)
     {
-        context.fillStyle = style.fill;
+        context.fillStyle = style._fill;
 
         this.drawLetterSpacing(text, linePositionX, linePositionY);
     }
