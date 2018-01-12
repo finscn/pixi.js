@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Tue, 09 Jan 2018 21:14:22 UTC
+ * Compiled Fri, 12 Jan 2018 15:48:08 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -40105,6 +40105,12 @@ exports.default = function () {
 
         // load the image for this sheet
         this.add(imageResourceName, resourcePath, loadOptions, function onImageLoad(res) {
+            if (res.error) {
+                next(res.error);
+
+                return;
+            }
+
             var spritesheet = new _core.Spritesheet(res.texture.baseTexture, resource.data, resource.url);
 
             spritesheet.parse(function () {
@@ -40769,6 +40775,7 @@ var NineSlicePlane = function (_Plane) {
         var context = renderer.context;
 
         context.globalAlpha = this.worldAlpha;
+        renderer.setBlendMode(this.blendMode);
 
         var transform = this.worldTransform;
         var res = renderer.resolution;
