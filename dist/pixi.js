@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.6.2
- * Compiled Fri, 12 Jan 2018 15:48:08 UTC
+ * Compiled Mon, 15 Jan 2018 02:58:01 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -9609,12 +9609,14 @@ var DisplayObject = function (_EventEmitter) {
         {
             if (this._mask) {
                 this._mask.renderable = true;
+                this._mask.isMask = false;
             }
 
             this._mask = value;
 
             if (this._mask) {
                 this._mask.renderable = false;
+                this._mask.isMask = true;
             }
         }
 
