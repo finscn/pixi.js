@@ -9,3 +9,4 @@ export { default as SpriteTrail } from './SpriteTrail';
 
 import './mixin';
 import './patch';
+import './animation-static.js';

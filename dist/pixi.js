@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Thu, 18 Jan 2018 03:59:51 UTC
+ * Compiled Fri, 19 Jan 2018 13:53:07 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -32234,23 +32234,13 @@ exports.default = "\n\nprecision mediump float;\n\nattribute vec2 aVertexPositio
 
 exports.__esModule = true;
 
-var _core = require('../core');
+var _Texture = require('../core/textures/Texture');
 
-var core = _interopRequireWildcard(_core);
+var _Texture2 = _interopRequireDefault(_Texture);
 
-var _mesh = require('../mesh');
-
-var mesh = _interopRequireWildcard(_mesh);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Texture = core.Texture;
-
-var Sprite = core.Sprite;
-var Rope = mesh.Rope;
-var Plane = mesh.Plane;
 
 /**
  * @typedef FrameObject
@@ -32270,10 +32260,8 @@ var Plane = mesh.Plane;
  * An Animation is a simple way to display an animation depicted by a list of frames
  *
  * @class
- * @extends PIXI.Sprite
  * @memberof PIXI.extensions
  */
-
 var Animation = function () {
     /**
      * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
@@ -32283,6 +32271,12 @@ var Animation = function () {
      */
     function Animation(frames, duration) {
         _classCallCheck(this, Animation);
+
+        this._target = null;
+        this._bindName = null;
+        this._frames = null;
+
+        this.firstTexture = null;
 
         this.initAnimation(frames, duration);
     }
@@ -32337,7 +32331,7 @@ var Animation = function () {
         this.onFrameChange = null;
 
         /**
-        * Function to call when 'loop' is true, and an AnimatedSprite is played and loops around to start again
+        * Function to call when 'loop' is true, and an Animation Object is played and loops around to start again
         *
         * @member {Function}
         */
@@ -32612,18 +32606,11 @@ var Animation = function () {
         this.currentFrame = frame;
         this.currentTexture = frame.texture;
 
-        // TODO
-        if (frame.pivot) {
-            var pivot = frame.pivot;
-
-            this._target.transform.pivot.set(pivot[0], pivot[1]);
-        }
+        this.updateTarget();
 
         if (this.onFrameChange) {
             this.onFrameChange(frameIndex, frame);
         }
-
-        this.updateTarget();
     };
 
     /**
@@ -32653,6 +32640,13 @@ var Animation = function () {
         this._target._texture = this.currentTexture;
         this._target._textureID = -1;
         this._target.cachedTint = 0xFFFFFF;
+
+        // TODO: Shall we need `pivot` ?
+        var pivot = this.currentFrame.pivot;
+
+        if (pivot) {
+            this._target.transform.pivot.set(pivot[0], pivot[1]);
+        }
 
         // // TODO: `refresh` is hard code , not good enough.
         // if (this._target.refresh)
@@ -32708,7 +32702,7 @@ var Animation = function () {
         this.completeIndex = this._maxIndex;
 
         var preDuration = this.duration / len;
-        var useTexture = frames[0] instanceof Texture;
+        var useTexture = frames[0] instanceof _Texture2.default;
 
         var startTime = 0;
         var endTime = 0;
@@ -32725,9 +32719,11 @@ var Animation = function () {
             this._frames.push(frame);
 
             frame.duration = frame.duration || preDuration;
+
+            // TODO:
             frame.pivot = frame.pivot || null;
 
-            // TODO
+            // TODO:
             frame.offset = frame.offset || null;
 
             frame._startTime = startTime;
@@ -32740,7 +32736,7 @@ var Animation = function () {
             this.duration = endTime;
         }
 
-        // TODO
+        // TODO: Shall we need `firstTexture` ?
         this.firstTexture = this._frames[0].texture;
     };
 
@@ -32756,29 +32752,33 @@ var Animation = function () {
     };
 
     /**
-     * Add the animation to a display object.
+     * Bind the target of Animation.
      *
-     * @param {PIXI.DisplayObject} target - The target of Animation
-     * @param {string} [bindName='anim'] - The property name of target for binding
+     * @param {PIXI.DisplayObject} target - A display object with Texture.
+     * @param {string} [bindName] - The property name of target for binding
      */
 
 
     Animation.prototype.bind = function bind(target, bindName) {
         this.unbind();
         this._target = target;
-        this._bindName = bindName || 'anim';
-        this._target[this._bindName] = this;
+        if (bindName) {
+            this._bindName = bindName;
+            this._target[this._bindName] = this;
+        }
         this.changeFrame(this._minIndex, null);
     };
 
     /**
-     * Remove the animation from the display object binded.
+     * Unbind the target of Animation.
      */
 
 
     Animation.prototype.unbind = function unbind() {
         if (this._target) {
-            delete this._target[this._bindName];
+            if (this._bindName) {
+                delete this._target[this._bindName];
+            }
             this._target = null;
         }
     };
@@ -32793,100 +32793,6 @@ var Animation = function () {
         this.unbind();
         this.setFrames(null);
         this._frames = null;
-        Function.prototype.destroy.call(this);
-    };
-
-    /**
-     * Mixin properties of Animation to a display object , let it become a animation object
-     *
-     *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
-     */
-
-
-    Animation.applyTo = function applyTo(displayObject) {
-        var properties = [
-        // 'initAnimation',
-        'play', 'pause', 'resume', 'stop', 'gotoAndPlay', 'gotoAndStop', 'update', 'updateByTime', 'changeFrame', 'getNextFrame', 'updateTarget', 'getTarget', 'getFrames', 'setFrames', 'onFrameChange', 'onComplete'];
-
-        properties.forEach(function (p) {
-            displayObject[p] = Animation.prototype[p];
-        });
-        displayObject._initAnimation = Animation.prototype.initAnimation;
-        displayObject.initAnimation = function (frames, duration) {
-            this._initAnimation(frames, duration);
-            this._target = this;
-            this._bindName = '_anim';
-            this.changeFrame(this._minIndex, null);
-        };
-    };
-
-    /**
-     * Create a Sprite with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     *
-     * @return {PIXI.Sprite} a sprite with animation
-     */
-
-
-    Animation.createSprite = function createSprite(frames, duration) {
-        var sprite = new Sprite(Texture.EMPTY);
-
-        Animation.applyTo(sprite);
-        sprite.initAnimation(frames, duration);
-
-        return sprite;
-    };
-
-    /**
-     * Create a Rope Mesh with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {number} [verticesX=2] - How many vertices on diameter of the rope
-     * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
-     * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
-     *
-     * @return {PIXI.mesh.Rope} a mesh rope with animation
-     */
-
-
-    Animation.createRopeMesh = function createRopeMesh(frames, duration, verticesX, verticesY, direction) {
-        var rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
-
-        Animation.applyTo(rope);
-        rope.initAnimation(frames, duration);
-
-        return rope;
-    };
-
-    /**
-     * Create a Plane Mesh with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {number} [verticesX=2] - The number of vertices in the x-axis
-     * @param {number} [verticesY=2] - The number of vertices in the y-axis
-     * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
-     *
-     * @return {PIXI.mesh.Plane} a mesh plane with animation
-     */
-
-
-    Animation.createPlaneMesh = function createPlaneMesh(frames, duration, verticesX, verticesY, direction) {
-        var plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
-
-        Animation.applyTo(plane);
-        plane.initAnimation(frames, duration);
-
-        return plane;
     };
 
     return Animation;
@@ -32894,7 +32800,7 @@ var Animation = function () {
 
 exports.default = Animation;
 
-},{"../core":62,"../mesh":229}],177:[function(require,module,exports){
+},{"../core/textures/Texture":112}],177:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34461,7 +34367,7 @@ var RenderContext = function () {
 
 exports.default = RenderContext;
 
-},{"../core":62,"../core/const":43,"../core/renderers/canvas/utils/CanvasRenderTarget":76,"../mesh":229,"../particles":232}],180:[function(require,module,exports){
+},{"../core":62,"../core/const":43,"../core/renderers/canvas/utils/CanvasRenderTarget":76,"../mesh":230,"../particles":233}],180:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34743,7 +34649,7 @@ var ParticleContainer = function (_particles$ParticleCo) {
 
 exports.default = ParticleContainer;
 
-},{"../particles":232}],182:[function(require,module,exports){
+},{"../particles":233}],182:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34868,6 +34774,115 @@ exports.default = SpriteTrail;
 },{"../core":62}],183:[function(require,module,exports){
 'use strict';
 
+var _core = require('../core');
+
+var core = _interopRequireWildcard(_core);
+
+var _mesh = require('../mesh');
+
+var mesh = _interopRequireWildcard(_mesh);
+
+var _Animation = require('./Animation.js');
+
+var _Animation2 = _interopRequireDefault(_Animation);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var Texture = core.Texture;
+var Sprite = core.Sprite;
+var Rope = mesh.Rope;
+var Plane = mesh.Plane;
+
+/**
+ * Mixin properties of Animation to a display object , let it become a animation object
+ *
+ *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
+ */
+_Animation2.default.applyTo = function (displayObject) {
+    var properties = [
+    // 'initAnimation',
+    'play', 'pause', 'resume', 'stop', 'gotoAndPlay', 'gotoAndStop', 'update', 'updateByTime', 'changeFrame', 'getNextFrame', 'updateTarget', 'getTarget', 'getFrames', 'setFrames', 'onFrameChange', 'onComplete'];
+
+    properties.forEach(function (p) {
+        displayObject[p] = _Animation2.default.prototype[p];
+    });
+    displayObject._initAnimation = _Animation2.default.prototype.initAnimation;
+    displayObject.initAnimation = function (frames, duration) {
+        this._initAnimation(frames, duration);
+        this._target = this;
+        this._bindName = '_anim';
+        this.changeFrame(this._minIndex, null);
+    };
+};
+
+/**
+ * Create a Sprite with animation
+ *
+ * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+ *  objects that make up the animation
+ * @param {number} [duration=0] - The total duration of animation in ms
+ *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ *
+ * @return {PIXI.Sprite} a sprite with animation
+ */
+_Animation2.default.createSprite = function (frames, duration) {
+    var sprite = new Sprite(Texture.EMPTY);
+
+    _Animation2.default.applyTo(sprite);
+    sprite.initAnimation(frames, duration);
+
+    return sprite;
+};
+
+/**
+ * Create a Rope Mesh with animation
+ *
+ * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+ *  objects that make up the animation
+ * @param {number} [duration=0] - The total duration of animation in ms
+ *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ * @param {number} [verticesX=2] - How many vertices on diameter of the rope
+ * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
+ * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
+ *
+ * @return {PIXI.mesh.Rope} a mesh rope with animation
+ */
+_Animation2.default.createRopeMesh = function (frames, duration, verticesX, verticesY, direction) {
+    var rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
+
+    _Animation2.default.applyTo(rope);
+    rope.initAnimation(frames, duration);
+
+    return rope;
+};
+
+/**
+ * Create a Plane Mesh with animation
+ *
+ * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
+ *  objects that make up the animation
+ * @param {number} [duration=0] - The total duration of animation in ms
+ *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ * @param {number} [verticesX=2] - The number of vertices in the x-axis
+ * @param {number} [verticesY=2] - The number of vertices in the y-axis
+ * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
+ *
+ * @return {PIXI.mesh.Plane} a mesh plane with animation
+ */
+_Animation2.default.createPlaneMesh = function (frames, duration, verticesX, verticesY, direction) {
+    var plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
+
+    _Animation2.default.applyTo(plane);
+    plane.initAnimation(frames, duration);
+
+    return plane;
+};
+
+},{"../core":62,"../mesh":230,"./Animation.js":176}],184:[function(require,module,exports){
+'use strict';
+
 exports.__esModule = true;
 exports.SpriteTrail = exports.Animation = exports.RenderContext = exports.SimpleParticleContainer = exports.SimpleContainer = exports.LeafSprite = exports.Matrix3 = undefined;
 
@@ -34938,9 +34953,11 @@ require('./mixin');
 
 require('./patch');
 
+require('./animation-static.js');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./Animation":176,"./LeafSprite":177,"./Matrix3":178,"./RenderContext":179,"./SimpleContainer":180,"./SimpleParticleContainer":181,"./SpriteTrail":182,"./mixin":184,"./patch":194}],184:[function(require,module,exports){
+},{"./Animation":176,"./LeafSprite":177,"./Matrix3":178,"./RenderContext":179,"./SimpleContainer":180,"./SimpleParticleContainer":181,"./SpriteTrail":182,"./animation-static.js":183,"./mixin":185,"./patch":195}],185:[function(require,module,exports){
 'use strict';
 
 require('./mixin-TransformStatic');
@@ -34961,7 +34978,7 @@ require('./mixin-Text');
 
 require('./mixin-utils');
 
-},{"./mixin-Container":185,"./mixin-DisplayObject":186,"./mixin-Matrix":187,"./mixin-Mesh":188,"./mixin-Sprite":189,"./mixin-Text":190,"./mixin-Transform":191,"./mixin-TransformStatic":192,"./mixin-utils":193}],185:[function(require,module,exports){
+},{"./mixin-Container":186,"./mixin-DisplayObject":187,"./mixin-Matrix":188,"./mixin-Mesh":189,"./mixin-Sprite":190,"./mixin-Text":191,"./mixin-Transform":192,"./mixin-TransformStatic":193,"./mixin-utils":194}],186:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35069,7 +35086,7 @@ Container.prototype.renderChildrenCanvas = function (renderer) {
     }
 };
 
-},{"../../core":62}],186:[function(require,module,exports){
+},{"../../core":62}],187:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35106,7 +35123,7 @@ DisplayObject.prototype.remove = function () {
     }
 };
 
-},{"../../core":62}],187:[function(require,module,exports){
+},{"../../core":62}],188:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35167,7 +35184,7 @@ Matrix.prototype.toArray16 = function (transpose, array) {
     return array;
 };
 
-},{"../../core":62}],188:[function(require,module,exports){
+},{"../../core":62}],189:[function(require,module,exports){
 'use strict';
 
 var _mesh = require('../../mesh');
@@ -35187,7 +35204,7 @@ if (Mesh) {
     };
 }
 
-},{"../../mesh":229}],189:[function(require,module,exports){
+},{"../../mesh":230}],190:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35279,7 +35296,7 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 //     }
 // };
 
-},{"../../core":62}],190:[function(require,module,exports){
+},{"../../core":62}],191:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35430,7 +35447,7 @@ Text.prototype.refresh = function () {
 Text.prototype.simpleMode = false;
 Text.prototype.refreshPosition = false;
 
-},{"../../core":62}],191:[function(require,module,exports){
+},{"../../core":62}],192:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35467,7 +35484,7 @@ Transform.prototype.updateTransformAsOrphan = function () {
     this._worldID++;
 };
 
-},{"../../core":62}],192:[function(require,module,exports){
+},{"../../core":62}],193:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35509,7 +35526,7 @@ TransformStatic.prototype.updateTransformAsOrphan = function () {
     this._worldID++;
 };
 
-},{"../../core":62}],193:[function(require,module,exports){
+},{"../../core":62}],194:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -35564,11 +35581,11 @@ utils.createAnimation = function (textures, totalDuration, loop) {
     return sprite;
 };
 
-},{"../../core":62}],194:[function(require,module,exports){
+},{"../../core":62}],195:[function(require,module,exports){
 // TODO
 "use strict";
 
-},{}],195:[function(require,module,exports){
+},{}],196:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -35748,7 +35765,7 @@ exports.default = CanvasExtract;
 
 core.CanvasRenderer.registerPlugin('extract', CanvasExtract);
 
-},{"../../core":62}],196:[function(require,module,exports){
+},{"../../core":62}],197:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -35773,7 +35790,7 @@ Object.defineProperty(exports, 'canvas', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./canvas/CanvasExtract":195,"./webgl/WebGLExtract":197}],197:[function(require,module,exports){
+},{"./canvas/CanvasExtract":196,"./webgl/WebGLExtract":198}],198:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -36008,7 +36025,7 @@ exports.default = WebGLExtract;
 
 core.WebGLRenderer.registerPlugin('extract', WebGLExtract);
 
-},{"../../core":62}],198:[function(require,module,exports){
+},{"../../core":62}],199:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -36417,7 +36434,7 @@ var AnimatedSprite = function (_core$Sprite) {
 
 exports.default = AnimatedSprite;
 
-},{"../core":62}],199:[function(require,module,exports){
+},{"../core":62}],200:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37008,7 +37025,7 @@ exports.default = BitmapText;
 
 BitmapText.fonts = {};
 
-},{"../core":62,"../core/math/ObservablePoint":65,"../core/settings":98,"../core/utils":122}],200:[function(require,module,exports){
+},{"../core":62,"../core/math/ObservablePoint":65,"../core/settings":98,"../core/utils":122}],201:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37454,7 +37471,7 @@ var TilingSprite = function (_core$Sprite) {
 
 exports.default = TilingSprite;
 
-},{"../core":62,"../core/sprites/canvas/CanvasTinter":101}],201:[function(require,module,exports){
+},{"../core":62,"../core/sprites/canvas/CanvasTinter":101}],202:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -37858,7 +37875,7 @@ DisplayObject.prototype._cacheAsBitmapDestroy = function _cacheAsBitmapDestroy(o
     this.destroy(options);
 };
 
-},{"../core":62,"../core/textures/BaseTexture":109,"../core/textures/Texture":112,"../core/utils":122}],202:[function(require,module,exports){
+},{"../core":62,"../core/textures/BaseTexture":109,"../core/textures/Texture":112,"../core/utils":122}],203:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -37893,7 +37910,7 @@ core.Container.prototype.getChildByName = function getChildByName(name) {
     return null;
 };
 
-},{"../core":62}],203:[function(require,module,exports){
+},{"../core":62}],204:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -37927,7 +37944,7 @@ core.DisplayObject.prototype.getGlobalPosition = function getGlobalPosition() {
     return point;
 };
 
-},{"../core":62}],204:[function(require,module,exports){
+},{"../core":62}],205:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37979,7 +37996,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // imported for side effect of extending the prototype only, contains no exports
 
-},{"./AnimatedSprite":198,"./BitmapText":199,"./TilingSprite":200,"./cacheAsBitmap":201,"./getChildByName":202,"./getGlobalPosition":203,"./webgl/TilingSpriteRenderer":205}],205:[function(require,module,exports){
+},{"./AnimatedSprite":199,"./BitmapText":200,"./TilingSprite":201,"./cacheAsBitmap":202,"./getChildByName":203,"./getGlobalPosition":204,"./webgl/TilingSpriteRenderer":206}],206:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38141,7 +38158,7 @@ exports.default = TilingSpriteRenderer;
 
 core.WebGLRenderer.registerPlugin('tilingSprite', TilingSpriteRenderer);
 
-},{"../../core":62,"../../core/const":43,"path":8}],206:[function(require,module,exports){
+},{"../../core":62,"../../core/const":43,"path":8}],207:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38225,7 +38242,7 @@ var AlphaFilter = function (_core$Filter) {
 
 exports.default = AlphaFilter;
 
-},{"../../core":62,"path":8}],207:[function(require,module,exports){
+},{"../../core":62,"path":8}],208:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38399,7 +38416,7 @@ var BlurFilter = function (_core$Filter) {
 
 exports.default = BlurFilter;
 
-},{"../../core":62,"./BlurXFilter":208,"./BlurYFilter":209}],208:[function(require,module,exports){
+},{"../../core":62,"./BlurXFilter":209,"./BlurYFilter":210}],209:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38565,7 +38582,7 @@ var BlurXFilter = function (_core$Filter) {
 
 exports.default = BlurXFilter;
 
-},{"../../core":62,"./generateBlurFragSource":210,"./generateBlurVertSource":211,"./getMaxBlurKernelSize":212}],209:[function(require,module,exports){
+},{"../../core":62,"./generateBlurFragSource":211,"./generateBlurVertSource":212,"./getMaxBlurKernelSize":213}],210:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38730,7 +38747,7 @@ var BlurYFilter = function (_core$Filter) {
 
 exports.default = BlurYFilter;
 
-},{"../../core":62,"./generateBlurFragSource":210,"./generateBlurVertSource":211,"./getMaxBlurKernelSize":212}],210:[function(require,module,exports){
+},{"../../core":62,"./generateBlurFragSource":211,"./generateBlurVertSource":212,"./getMaxBlurKernelSize":213}],211:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38777,7 +38794,7 @@ function generateFragBlurSource(kernelSize) {
     return fragSource;
 }
 
-},{}],211:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38821,7 +38838,7 @@ function generateVertBlurSource(kernelSize, x) {
     return vertSource;
 }
 
-},{}],212:[function(require,module,exports){
+},{}],213:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -38837,7 +38854,7 @@ function getMaxKernelSize(gl) {
     return kernelSize;
 }
 
-},{}],213:[function(require,module,exports){
+},{}],214:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39388,7 +39405,7 @@ var ColorMatrixFilter = function (_core$Filter) {
 exports.default = ColorMatrixFilter;
 ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 
-},{"../../core":62,"path":8}],214:[function(require,module,exports){
+},{"../../core":62,"path":8}],215:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39496,7 +39513,7 @@ var DisplacementFilter = function (_core$Filter) {
 
 exports.default = DisplacementFilter;
 
-},{"../../core":62,"path":8}],215:[function(require,module,exports){
+},{"../../core":62,"path":8}],216:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39550,7 +39567,7 @@ var FXAAFilter = function (_core$Filter) {
 
 exports.default = FXAAFilter;
 
-},{"../../core":62,"path":8}],216:[function(require,module,exports){
+},{"../../core":62,"path":8}],217:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39629,7 +39646,7 @@ Object.defineProperty(exports, 'AlphaFilter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./alpha/AlphaFilter":206,"./blur/BlurFilter":207,"./blur/BlurXFilter":208,"./blur/BlurYFilter":209,"./colormatrix/ColorMatrixFilter":213,"./displacement/DisplacementFilter":214,"./fxaa/FXAAFilter":215,"./noise/NoiseFilter":217}],217:[function(require,module,exports){
+},{"./alpha/AlphaFilter":207,"./blur/BlurFilter":208,"./blur/BlurXFilter":209,"./blur/BlurYFilter":210,"./colormatrix/ColorMatrixFilter":214,"./displacement/DisplacementFilter":215,"./fxaa/FXAAFilter":216,"./noise/NoiseFilter":218}],218:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39726,7 +39743,7 @@ var NoiseFilter = function (_core$Filter) {
 
 exports.default = NoiseFilter;
 
-},{"../../core":62,"path":8}],218:[function(require,module,exports){
+},{"../../core":62,"path":8}],219:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39818,7 +39835,7 @@ function parse(resource, texture) {
     resource.bitmapFont = _extras.BitmapText.registerFont(resource.data, texture);
 }
 
-},{"../core":62,"../extras":204,"path":8,"resource-loader":36}],219:[function(require,module,exports){
+},{"../core":62,"../extras":205,"path":8,"resource-loader":36}],220:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39946,7 +39963,7 @@ AppPrototype.destroy = function destroy(removeView) {
     this._parentDestroy(removeView);
 };
 
-},{"../core/Application":40,"./bitmapFontParser":218,"./loader":220,"./spritesheetParser":221,"./textureParser":222,"resource-loader":36}],220:[function(require,module,exports){
+},{"../core/Application":40,"./bitmapFontParser":219,"./loader":221,"./spritesheetParser":222,"./textureParser":223,"resource-loader":36}],221:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40117,7 +40134,7 @@ var Resource = _resourceLoader2.default.Resource;
 
 Resource.setExtensionXhrType('fnt', Resource.XHR_RESPONSE_TYPE.DOCUMENT);
 
-},{"./bitmapFontParser":218,"./spritesheetParser":221,"./textureParser":222,"eventemitter3":4,"resource-loader":36,"resource-loader/lib/middlewares/parsing/blob":37}],221:[function(require,module,exports){
+},{"./bitmapFontParser":219,"./spritesheetParser":222,"./textureParser":223,"eventemitter3":4,"resource-loader":36,"resource-loader/lib/middlewares/parsing/blob":37}],222:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40181,7 +40198,7 @@ function getResourcePath(resource, baseUrl) {
     return _url2.default.resolve(resource.url.replace(baseUrl, ''), resource.data.meta.image);
 }
 
-},{"../core":62,"resource-loader":36,"url":38}],222:[function(require,module,exports){
+},{"../core":62,"resource-loader":36,"url":38}],223:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40204,7 +40221,7 @@ var _Texture2 = _interopRequireDefault(_Texture);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"../core/textures/Texture":112,"resource-loader":36}],223:[function(require,module,exports){
+},{"../core/textures/Texture":112,"resource-loader":36}],224:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40595,7 +40612,7 @@ Mesh.DRAW_MODES = {
   TRIANGLES: 1
 };
 
-},{"../core":62,"../core/textures/Texture":112}],224:[function(require,module,exports){
+},{"../core":62,"../core/textures/Texture":112}],225:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40969,7 +40986,7 @@ var NineSlicePlane = function (_Plane) {
 
 exports.default = NineSlicePlane;
 
-},{"./Plane":225}],225:[function(require,module,exports){
+},{"./Plane":226}],226:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41465,7 +41482,7 @@ var Plane = function (_Mesh) {
 
 exports.default = Plane;
 
-},{"../core":62,"./Mesh":223}],226:[function(require,module,exports){
+},{"../core":62,"./Mesh":224}],227:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41775,7 +41792,7 @@ var Rope = function (_Plane) {
 
 exports.default = Rope;
 
-},{"../core":62,"./Plane":225,"./RopePoint":227}],227:[function(require,module,exports){
+},{"../core":62,"./Plane":226,"./RopePoint":228}],228:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41875,7 +41892,7 @@ var RopePoint = function (_Point) {
 
 exports.default = RopePoint;
 
-},{"../core/math/Point":66}],228:[function(require,module,exports){
+},{"../core/math/Point":66}],229:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42161,7 +42178,7 @@ exports.default = MeshSpriteRenderer;
 
 core.CanvasRenderer.registerPlugin('mesh', MeshSpriteRenderer);
 
-},{"../../core":62,"../Mesh":223}],229:[function(require,module,exports){
+},{"../../core":62,"../Mesh":224}],230:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42231,7 +42248,7 @@ Object.defineProperty(exports, 'RopePoint', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./Mesh":223,"./NineSlicePlane":224,"./Plane":225,"./Rope":226,"./RopePoint":227,"./canvas/CanvasMeshRenderer":228,"./webgl/MeshRenderer":230}],230:[function(require,module,exports){
+},{"./Mesh":224,"./NineSlicePlane":225,"./Plane":226,"./Rope":227,"./RopePoint":228,"./canvas/CanvasMeshRenderer":229,"./webgl/MeshRenderer":231}],231:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42388,7 +42405,7 @@ exports.default = MeshRenderer;
 
 core.WebGLRenderer.registerPlugin('mesh', MeshRenderer);
 
-},{"../../core":62,"../Mesh":223,"path":8,"pixi-gl-core":15}],231:[function(require,module,exports){
+},{"../../core":62,"../Mesh":224,"path":8,"pixi-gl-core":15}],232:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42778,7 +42795,7 @@ var ParticleContainer = function (_core$Container) {
 
 exports.default = ParticleContainer;
 
-},{"../core":62,"../core/utils":122}],232:[function(require,module,exports){
+},{"../core":62,"../core/utils":122}],233:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42803,7 +42820,7 @@ Object.defineProperty(exports, 'ParticleRenderer', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./ParticleContainer":231,"./webgl/ParticleRenderer":234}],233:[function(require,module,exports){
+},{"./ParticleContainer":232,"./webgl/ParticleRenderer":235}],234:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -43050,7 +43067,7 @@ var ParticleBuffer = function () {
 
 exports.default = ParticleBuffer;
 
-},{"../../core/utils/createIndicesForQuads":120,"pixi-gl-core":15}],234:[function(require,module,exports){
+},{"../../core/utils/createIndicesForQuads":120,"pixi-gl-core":15}],235:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -43557,7 +43574,7 @@ exports.default = ParticleRenderer;
 
 core.WebGLRenderer.registerPlugin('particle', ParticleRenderer);
 
-},{"../../core":62,"../../core/utils":122,"./ParticleBuffer":233,"./ParticleShader":235}],235:[function(require,module,exports){
+},{"../../core":62,"../../core/utils":122,"./ParticleBuffer":234,"./ParticleShader":236}],236:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -43600,7 +43617,7 @@ var ParticleShader = function (_Shader) {
 
 exports.default = ParticleShader;
 
-},{"../../core/Shader":41}],236:[function(require,module,exports){
+},{"../../core/Shader":41}],237:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44088,7 +44105,7 @@ function findTextStyle(item, queue) {
     return false;
 }
 
-},{"../core":62,"./limiters/CountLimiter":239}],237:[function(require,module,exports){
+},{"../core":62,"./limiters/CountLimiter":240}],238:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44208,7 +44225,7 @@ function uploadBaseTextures(prepare, item) {
 
 core.CanvasRenderer.registerPlugin('prepare', CanvasPrepare);
 
-},{"../../core":62,"../BasePrepare":236}],238:[function(require,module,exports){
+},{"../../core":62,"../BasePrepare":237}],239:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44260,7 +44277,7 @@ Object.defineProperty(exports, 'TimeLimiter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./BasePrepare":236,"./canvas/CanvasPrepare":237,"./limiters/CountLimiter":239,"./limiters/TimeLimiter":240,"./webgl/WebGLPrepare":241}],239:[function(require,module,exports){
+},{"./BasePrepare":237,"./canvas/CanvasPrepare":238,"./limiters/CountLimiter":240,"./limiters/TimeLimiter":241,"./webgl/WebGLPrepare":242}],240:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -44318,7 +44335,7 @@ var CountLimiter = function () {
 
 exports.default = CountLimiter;
 
-},{}],240:[function(require,module,exports){
+},{}],241:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -44376,7 +44393,7 @@ var TimeLimiter = function () {
 
 exports.default = TimeLimiter;
 
-},{}],241:[function(require,module,exports){
+},{}],242:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44498,7 +44515,7 @@ function findGraphics(item, queue) {
 
 core.WebGLRenderer.registerPlugin('prepare', WebGLPrepare);
 
-},{"../../core":62,"../BasePrepare":236}],242:[function(require,module,exports){
+},{"../../core":62,"../BasePrepare":237}],243:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -44676,7 +44693,7 @@ global.PIXI = exports; // eslint-disable-line
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./accessibility":2,"./core":62,"./deprecation":2,"./ext-filters":128,"./ext-plugins":136,"./extensions":183,"./extract":196,"./extras":204,"./filters":216,"./interaction":2,"./loaders":219,"./mesh":229,"./particles":232,"./polyfill":2,"./prepare":238}]},{},[242])(242)
+},{"./accessibility":2,"./core":62,"./deprecation":2,"./ext-filters":128,"./ext-plugins":136,"./extensions":184,"./extract":197,"./extras":205,"./filters":217,"./interaction":2,"./loaders":220,"./mesh":230,"./particles":233,"./polyfill":2,"./prepare":239}]},{},[243])(243)
 });
 
 

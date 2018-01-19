@@ -1,11 +1,4 @@
-import * as core from '../core';
-import * as mesh from '../mesh';
-
-const Texture = core.Texture;
-
-const Sprite = core.Sprite;
-const Rope = mesh.Rope;
-const Plane = mesh.Plane;
+import Texture from '../core/textures/Texture';
 
 /**
  * @typedef FrameObject
@@ -25,7 +18,6 @@ const Plane = mesh.Plane;
  * An Animation is a simple way to display an animation depicted by a list of frames
  *
  * @class
- * @extends PIXI.Sprite
  * @memberof PIXI.extensions
  */
 export default class Animation
@@ -38,6 +30,12 @@ export default class Animation
      */
     constructor(frames, duration)
     {
+        this._target = null;
+        this._bindName = null;
+        this._frames = null;
+
+        this.firstTexture = null;
+
         this.initAnimation(frames, duration);
     }
 
@@ -90,7 +88,7 @@ export default class Animation
         this.onFrameChange = null;
 
          /**
-         * Function to call when 'loop' is true, and an AnimatedSprite is played and loops around to start again
+         * Function to call when 'loop' is true, and an Animation Object is played and loops around to start again
          *
          * @member {Function}
          */
@@ -372,20 +370,12 @@ export default class Animation
         this.currentFrame = frame;
         this.currentTexture = frame.texture;
 
-        // TODO
-        if (frame.pivot)
-        {
-            const pivot = frame.pivot;
-
-            this._target.transform.pivot.set(pivot[0], pivot[1]);
-        }
+        this.updateTarget();
 
         if (this.onFrameChange)
         {
             this.onFrameChange(frameIndex, frame);
         }
-
-        this.updateTarget();
     }
 
     /**
@@ -412,6 +402,14 @@ export default class Animation
         this._target._texture = this.currentTexture;
         this._target._textureID = -1;
         this._target.cachedTint = 0xFFFFFF;
+
+        // TODO: Shall we need `pivot` ?
+        const pivot = this.currentFrame.pivot;
+
+        if (pivot)
+        {
+            this._target.transform.pivot.set(pivot[0], pivot[1]);
+        }
 
         // // TODO: `refresh` is hard code , not good enough.
         // if (this._target.refresh)
@@ -487,9 +485,11 @@ export default class Animation
             this._frames.push(frame);
 
             frame.duration = frame.duration || preDuration;
+
+            // TODO:
             frame.pivot = frame.pivot || null;
 
-            // TODO
+            // TODO:
             frame.offset = frame.offset || null;
 
             frame._startTime = startTime;
@@ -503,7 +503,7 @@ export default class Animation
             this.duration = endTime;
         }
 
-        // TODO
+        // TODO: Shall we need `firstTexture` ?
         this.firstTexture = this._frames[0].texture;
     }
 
@@ -518,28 +518,34 @@ export default class Animation
     }
 
     /**
-     * Add the animation to a display object.
+     * Bind the target of Animation.
      *
-     * @param {PIXI.DisplayObject} target - The target of Animation
-     * @param {string} [bindName='anim'] - The property name of target for binding
+     * @param {PIXI.DisplayObject} target - A display object with Texture.
+     * @param {string} [bindName] - The property name of target for binding
      */
     bind(target, bindName)
     {
         this.unbind();
         this._target = target;
-        this._bindName = bindName || 'anim';
-        this._target[this._bindName] = this;
+        if (bindName)
+        {
+            this._bindName = bindName;
+            this._target[this._bindName] = this;
+        }
         this.changeFrame(this._minIndex, null);
     }
 
     /**
-     * Remove the animation from the display object binded.
+     * Unbind the target of Animation.
      */
     unbind()
     {
         if (this._target)
         {
-            delete this._target[this._bindName];
+            if (this._bindName)
+            {
+                delete this._target[this._bindName];
+            }
             this._target = null;
         }
     }
@@ -553,114 +559,5 @@ export default class Animation
         this.unbind();
         this.setFrames(null);
         this._frames = null;
-        super.destroy();
     }
-
-    /**
-     * Mixin properties of Animation to a display object , let it become a animation object
-     *
-     *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
-     */
-    static applyTo(displayObject)
-    {
-        const properties = [
-            // 'initAnimation',
-            'play',
-            'pause',
-            'resume',
-            'stop',
-            'gotoAndPlay',
-            'gotoAndStop',
-            'update',
-            'updateByTime',
-            'changeFrame',
-            'getNextFrame',
-            'updateTarget',
-            'getTarget',
-            'getFrames',
-            'setFrames',
-            'onFrameChange',
-            'onComplete',
-        ];
-
-        properties.forEach(function (p)
-        {
-            displayObject[p] = Animation.prototype[p];
-        });
-        displayObject._initAnimation = Animation.prototype.initAnimation;
-        displayObject.initAnimation = function (frames, duration)
-        {
-            this._initAnimation(frames, duration);
-            this._target = this;
-            this._bindName = '_anim';
-            this.changeFrame(this._minIndex, null);
-        };
-    }
-
-    /**
-     * Create a Sprite with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     *
-     * @return {PIXI.Sprite} a sprite with animation
-     */
-    static createSprite(frames, duration)
-    {
-        const sprite = new Sprite(Texture.EMPTY);
-
-        Animation.applyTo(sprite);
-        sprite.initAnimation(frames, duration);
-
-        return sprite;
-    }
-
-    /**
-     * Create a Rope Mesh with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {number} [verticesX=2] - How many vertices on diameter of the rope
-     * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
-     * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
-     *
-     * @return {PIXI.mesh.Rope} a mesh rope with animation
-     */
-    static createRopeMesh(frames, duration, verticesX, verticesY, direction)
-    {
-        const rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
-
-        Animation.applyTo(rope);
-        rope.initAnimation(frames, duration);
-
-        return rope;
-    }
-
-    /**
-     * Create a Plane Mesh with animation
-     *
-     * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
-     *  objects that make up the animation
-     * @param {number} [duration=0] - The total duration of animation in ms
-     *     If no `duration`, the duration will equal the sum of all `frame.duration`
-     * @param {number} [verticesX=2] - The number of vertices in the x-axis
-     * @param {number} [verticesY=2] - The number of vertices in the y-axis
-     * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
-     *
-     * @return {PIXI.mesh.Plane} a mesh plane with animation
-     */
-    static createPlaneMesh(frames, duration, verticesX, verticesY, direction)
-    {
-        const plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
-
-        Animation.applyTo(plane);
-        plane.initAnimation(frames, duration);
-
-        return plane;
-    }
-
 }
