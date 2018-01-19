@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Fri, 19 Jan 2018 13:53:07 UTC
+ * Compiled Fri, 19 Jan 2018 15:04:50 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -32241,6 +32241,21 @@ var _Texture2 = _interopRequireDefault(_Texture);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * example:
+ *
+ * ```
+ * // create an Animation , and bind with a sprite.
+ * var anim = new PIXI.Animation(frames);
+ * anim.bind(sprite);
+ * ```
+ *
+ * in game tick:
+ * ```
+ * anim.update(deltaTime);
+ * ```
+ */
 
 /**
  * @typedef FrameObject

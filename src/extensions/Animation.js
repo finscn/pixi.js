@@ -1,6 +1,21 @@
 import Texture from '../core/textures/Texture';
 
 /**
+ * example:
+ *
+ * ```
+ * // create an Animation , and bind with a sprite.
+ * var anim = new PIXI.Animation(frames);
+ * anim.bind(sprite);
+ * ```
+ *
+ * in game tick:
+ * ```
+ * anim.update(deltaTime);
+ * ```
+ */
+
+/**
  * @typedef FrameObject
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
