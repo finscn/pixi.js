@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Mon, 29 Jan 2018 18:02:35 UTC
+ * Compiled Mon, 29 Jan 2018 23:02:21 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -2169,11 +2169,53 @@ Framebuffer.createRGBA = function(gl, width, height, data)
 Framebuffer.createFloat32 = function(gl, width, height, data)
 {
     // create a new texture..
-    var texture = new Texture.fromData(gl, data, width, height);
+    var texture = Texture.fromData(gl, data, width, height);
     texture.enableNearestScaling();
     texture.enableWrapClamp();
 
     //now create the framebuffer object and attach the texture to it.
+    var fbo = new Framebuffer(gl, width, height);
+    fbo.enableTexture(texture);
+
+    fbo.unbind();
+
+    return fbo;
+};
+
+/**
+ * Creates a frame buffer with a texture containing the given data
+ * @static
+ * @param gl {WebGLRenderingContext} The current WebGL rendering context
+ * @param width {Number} the width of the drawing area of the frame buffer
+ * @param height {Number} the height of the drawing area of the frame buffer
+ * @param data {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} an array of data
+ */
+Framebuffer.createHalfFloat = function(gl, width, height, data)
+{
+    var ext = gl.getExtension('OES_texture_half_float');
+
+    if (!ext)
+    {
+        throw new Error('half floating point textures not available');
+    }
+
+    // create a new texture..
+    var texture = new Texture(gl);
+
+    texture.bind();
+
+    texture.type = ext.HALF_FLOAT_OES;
+    texture.fromat = gl.RGBA;
+    texture.width = width;
+    texture.height = height;
+
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+    gl.texImage2D(gl.TEXTURE_2D, 0, texture.format, width, height, 0, texture.format, texture.type, data || null);
+
+    texture.enableNearestScaling();
+    texture.enableWrapClamp();
+
+    // now create the framebuffer object and attach the texture to it.
     var fbo = new Framebuffer(gl, width, height);
     fbo.enableTexture(texture);
 
@@ -3179,12 +3221,15 @@ var extractAttributes = function(gl, program)
     for (var i = 0; i < totalAttributes; i++)
     {
         var attribData = gl.getActiveAttrib(program, i);
+        var name = attribData.name.replace(/\[.*?\]/, "");
         var type = mapType(gl, attribData.type);
+        var array = attribData.name.indexOf('[') > 0;
 
-        attributes[attribData.name] = {
-            type:type,
-            size:mapSize(type),
-            location:gl.getAttribLocation(program, attribData.name),
+        attributes[name] = {
+            type: type,
+            size: mapSize(type),
+            array: array,
+            location: gl.getAttribLocation(program, name),
             //TODO - make an attribute object
             pointer: pointer
         };
@@ -3223,12 +3268,14 @@ var extractUniforms = function(gl, program)
     	var uniformData = gl.getActiveUniform(program, i);
     	var name = uniformData.name.replace(/\[.*?\]/, "");
         var type = mapType(gl, uniformData.type );
+        var array = uniformData.name.indexOf('[') > 0;
 
     	uniforms[name] = {
-    		type:type,
-    		size:uniformData.size,
-    		location:gl.getUniformLocation(program, name),
-    		value:defaultValue(type, uniformData.size)
+    		type: type,
+    		size: uniformData.size,
+    		array: array,
+    		location: gl.getUniformLocation(program, name),
+    		value: defaultValue(type, uniformData.size)
     	};
     }
 
@@ -3331,14 +3378,14 @@ function generateSetter(name, uniform)
     return function(value) {
         this.data[name].value = value;
         var location = this.data[name].location;
-        if (uniform.size === 1)
-        {
-            GLSL_SINGLE_SETTERS[uniform.type](this.gl, location, value);
-        }
-        else
+        if (uniform.array)
         {
             // glslSetArray(gl, location, type, value) {
             GLSL_ARRAY_SETTERS[uniform.type](this.gl, location, value);
+        }
+        else
+        {
+            GLSL_SINGLE_SETTERS[uniform.type](this.gl, location, value);
         }
     };
 }
@@ -17401,6 +17448,7 @@ var WebGLRenderer = function (_SystemRenderer) {
      *  with older / less advanced devices. If you experiance unexplained flickering try setting this to true.
      * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
      *  for devices with dual graphics card
+     * @param {Boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension.
      */
     function WebGLRenderer(options, arg2, arg3) {
         _classCallCheck(this, WebGLRenderer);
@@ -17408,8 +17456,9 @@ var WebGLRenderer = function (_SystemRenderer) {
         var _this = _possibleConstructorReturn(this, _SystemRenderer.call(this, 'WebGL', options, arg2, arg3));
 
         _this.legacy = _this.options.legacy;
+        _this.forceNative = _this.options.forceNative;
 
-        if (_this.legacy) {
+        if (_this.legacy || _this.forceNative) {
             _pixiGlCore2.default.VertexArrayObject.FORCE_NATIVE = true;
         }
 
@@ -17507,7 +17556,7 @@ var WebGLRenderer = function (_SystemRenderer) {
          *
          * @member {PIXI.WebGLState}
          */
-        _this.state = new _WebGLState2.default(_this.gl);
+        _this.state = new _WebGLState2.default(_this.gl, _this.forceNative);
 
         _this.renderingToScreen = true;
 
@@ -18134,9 +18183,14 @@ var BLEND_FUNC = 4;
 var WebGLState = function () {
     /**
      * @param {WebGLRenderingContext} gl - The current WebGL rendering context
+     * @param {Boolean} [forceNative=false] - Whether use the native methods or the WebGL extension.
      */
     function WebGLState(gl) {
+        var forceNative = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
         _classCallCheck(this, WebGLState);
+
+        this.forceNative = forceNative;
 
         /**
          * The current active state
@@ -18188,7 +18242,7 @@ var WebGLState = function () {
         this.blendModes = (0, _mapWebGLBlendModesToPixi2.default)(gl);
 
         // check we have vao..
-        this.nativeVaoExtension = gl.getExtension('OES_vertex_array_object') || gl.getExtension('MOZ_OES_vertex_array_object') || gl.getExtension('WEBKIT_OES_vertex_array_object');
+        this.nativeVaoExtension = this.forceNative ? null : gl.getExtension('OES_vertex_array_object') || gl.getExtension('MOZ_OES_vertex_array_object') || gl.getExtension('WEBKIT_OES_vertex_array_object');
     }
 
     /**
