@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Mon, 29 Jan 2018 23:02:21 UTC
+ * Compiled Tue, 30 Jan 2018 09:02:45 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -3221,15 +3221,12 @@ var extractAttributes = function(gl, program)
     for (var i = 0; i < totalAttributes; i++)
     {
         var attribData = gl.getActiveAttrib(program, i);
-        var name = attribData.name.replace(/\[.*?\]/, "");
         var type = mapType(gl, attribData.type);
-        var array = attribData.name.indexOf('[') > 0;
 
-        attributes[name] = {
-            type: type,
-            size: mapSize(type),
-            array: array,
-            location: gl.getAttribLocation(program, name),
+        attributes[attribData.name] = {
+            type:type,
+            size:mapSize(type),
+            location:gl.getAttribLocation(program, attribData.name),
             //TODO - make an attribute object
             pointer: pointer
         };
@@ -8057,6 +8054,7 @@ var Application = function () {
      *  for devices with dual graphics card **webgl only**
      * @param {boolean} [options.sharedTicker=false] - `true` to use PIXI.ticker.shared, `false` to create new ticker.
      * @param {boolean} [options.sharedLoader=false] - `true` to use PIXI.loaders.shared, `false` to create new Loader.
+     * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
      */
     function Application(options, arg2, arg3, arg4, arg5) {
         _classCallCheck(this, Application);
@@ -8326,6 +8324,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  *  If you experience unexplained flickering try setting this to true. **webgl only**
  * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
  *  for devices with dual graphics card **webgl only**
+ * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
  * @return {PIXI.WebGLRenderer|PIXI.CanvasRenderer} Returns WebGL renderer if available, otherwise CanvasRenderer
  */
 function autoDetectRenderer(options, arg1, arg2, arg3) {
@@ -17448,7 +17447,7 @@ var WebGLRenderer = function (_SystemRenderer) {
      *  with older / less advanced devices. If you experiance unexplained flickering try setting this to true.
      * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
      *  for devices with dual graphics card
-     * @param {Boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension.
+     * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
      */
     function WebGLRenderer(options, arg2, arg3) {
         _classCallCheck(this, WebGLRenderer);
@@ -18183,7 +18182,7 @@ var BLEND_FUNC = 4;
 var WebGLState = function () {
     /**
      * @param {WebGLRenderingContext} gl - The current WebGL rendering context
-     * @param {Boolean} [forceNative=false] - Whether use the native methods or the WebGL extension.
+     * @param {boolean} [forceNative=false] - Whether use the native methods or the WebGL extension.
      */
     function WebGLState(gl) {
         var forceNative = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
