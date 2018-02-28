@@ -147,8 +147,8 @@ export default class Text extends Sprite
         const prevCanvasWidth = this.canvasWidth;
         const prevCanvasHeight = this.canvasHeight;
 
-        this.canvasWidth = Math.ceil(width + (style.padding * 2));
-        this.canvasHeight = Math.ceil(height + (style.padding * 2));
+        this.canvasWidth = Math.ceil(Math.max(1, width) + (style.padding * 2));
+        this.canvasHeight = Math.ceil(Math.max(1, height) + (style.padding * 2));
         this._sizeChanged = this.canvasWidth !== prevCanvasWidth || this.canvasHeight !== prevCanvasHeight;
 
         this.canvas.width = this.canvasWidth * this.resolution;
