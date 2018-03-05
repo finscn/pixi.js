@@ -53,7 +53,6 @@ export default class Application
      *  for devices with dual graphics card **webgl only**
      * @param {boolean} [options.sharedTicker=false] - `true` to use PIXI.ticker.shared, `false` to create new ticker.
      * @param {boolean} [options.sharedLoader=false] - `true` to use PIXI.loaders.shared, `false` to create new Loader.
-     * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
      */
     constructor(options, arg2, arg3, arg4, arg5)
     {
@@ -180,11 +179,13 @@ export default class Application
      */
     destroy(removeView)
     {
-        const oldTicker = this._ticker;
+        if (this._ticker)
+        {
+            const oldTicker = this._ticker;
 
-        this.ticker = null;
-
-        oldTicker.destroy();
+            this.ticker = null;
+            oldTicker.destroy();
+        }
 
         this.stage.destroy();
         this.stage = null;
