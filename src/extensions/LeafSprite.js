@@ -25,7 +25,7 @@ export default class LeafSprite extends core.Sprite
         }
 
         // do a quick check to see if this element has a mask or a filter.
-        if (this._mask || this._filters)
+        if (this._mask || this.filters)
         {
             this.renderAdvancedWebGL(renderer);
         }
@@ -39,7 +39,7 @@ export default class LeafSprite extends core.Sprite
     {
         renderer.flush();
 
-        const filters = this._filters;
+        const filters = this.filters;
         const mask = this._mask;
 
         // push filter first as we need to ensure the stencil buffer is correct for any masking
