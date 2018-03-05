@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Thu, 01 Mar 2018 08:31:02 UTC
+ * Compiled Mon, 05 Mar 2018 20:04:28 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -8053,7 +8053,6 @@ var Application = function () {
      *  for devices with dual graphics card **webgl only**
      * @param {boolean} [options.sharedTicker=false] - `true` to use PIXI.ticker.shared, `false` to create new ticker.
      * @param {boolean} [options.sharedLoader=false] - `true` to use PIXI.loaders.shared, `false` to create new Loader.
-     * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
      */
     function Application(options, arg2, arg3, arg4, arg5) {
         _classCallCheck(this, Application);
@@ -8149,11 +8148,12 @@ var Application = function () {
      * @param {Boolean} [removeView=false] Automatically remove canvas from DOM.
      */
     Application.prototype.destroy = function destroy(removeView) {
-        var oldTicker = this._ticker;
+        if (this._ticker) {
+            var oldTicker = this._ticker;
 
-        this.ticker = null;
-
-        oldTicker.destroy();
+            this.ticker = null;
+            oldTicker.destroy();
+        }
 
         this.stage.destroy();
         this.stage = null;
@@ -8323,7 +8323,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  *  If you experience unexplained flickering try setting this to true. **webgl only**
  * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
  *  for devices with dual graphics card **webgl only**
- * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
  * @return {PIXI.WebGLRenderer|PIXI.CanvasRenderer} Returns WebGL renderer if available, otherwise CanvasRenderer
  */
 function autoDetectRenderer(options, arg1, arg2, arg3) {
@@ -9436,7 +9435,7 @@ var Container = function (_DisplayObject) {
         }
 
         // do a quick check to see if this element has a mask or a filter.
-        if (this._mask || this._filters) {
+        if (this._mask || this.filters) {
             this.renderAdvancedWebGL(renderer);
         } else {
             this._renderWebGL(renderer);
@@ -9456,7 +9455,7 @@ var Container = function (_DisplayObject) {
     Container.prototype.renderAdvancedWebGL = function renderAdvancedWebGL(renderer) {
         renderer.flush();
 
-        var filters = this._filters;
+        var filters = this.filters;
         var mask = this._mask;
 
         // push filter first as we need to ensure the stencil buffer is correct for any masking
@@ -9792,7 +9791,15 @@ var DisplayObject = function (_EventEmitter) {
          */
         _this.filterArea = null;
 
-        _this._filters = null;
+        /**
+         * Sets the filters for the displayObject.
+         * * IMPORTANT: This is a webGL only feature and will be ignored by the canvas renderer.
+         * To remove filters simply set this property to 'null'
+         *
+         * @member {PIXI.Filter[]}
+         */
+        _this.filters = null;
+
         _this._enabledFilters = null;
 
         /**
@@ -10330,24 +10337,6 @@ var DisplayObject = function (_EventEmitter) {
                 this._mask.renderable = false;
                 this._mask.isMask = true;
             }
-        }
-
-        /**
-         * Sets the filters for the displayObject.
-         * * IMPORTANT: This is a webGL only feature and will be ignored by the canvas renderer.
-         * To remove filters simply set this property to 'null'
-         *
-         * @member {PIXI.Filter[]}
-         */
-
-    }, {
-        key: 'filters',
-        get: function get() {
-            return this._filters; // && this._filters.slice();
-        },
-        set: function set(value) // eslint-disable-line require-jsdoc
-        {
-            this._filters = value; // && value.slice();
         }
     }]);
 
@@ -17437,7 +17426,6 @@ var WebGLRenderer = function (_SystemRenderer) {
      *  with older / less advanced devices. If you experiance unexplained flickering try setting this to true.
      * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
      *  for devices with dual graphics card
-     * @param {boolean} [options.forceNative=false] - Whether use the native methods or the WebGL extension. **webgl only**
      */
     function WebGLRenderer(options, arg2, arg3) {
         _classCallCheck(this, WebGLRenderer);
@@ -17445,9 +17433,8 @@ var WebGLRenderer = function (_SystemRenderer) {
         var _this = _possibleConstructorReturn(this, _SystemRenderer.call(this, 'WebGL', options, arg2, arg3));
 
         _this.legacy = _this.options.legacy;
-        _this.forceNative = _this.options.forceNative;
 
-        if (_this.legacy || _this.forceNative) {
+        if (_this.legacy) {
             _pixiGlCore2.default.VertexArrayObject.FORCE_NATIVE = true;
         }
 
@@ -17545,7 +17532,7 @@ var WebGLRenderer = function (_SystemRenderer) {
          *
          * @member {PIXI.WebGLState}
          */
-        _this.state = new _WebGLState2.default(_this.gl, _this.forceNative);
+        _this.state = new _WebGLState2.default(_this.gl);
 
         _this.renderingToScreen = true;
 
@@ -18172,14 +18159,9 @@ var BLEND_FUNC = 4;
 var WebGLState = function () {
     /**
      * @param {WebGLRenderingContext} gl - The current WebGL rendering context
-     * @param {boolean} [forceNative=false] - Whether use the native methods or the WebGL extension.
      */
     function WebGLState(gl) {
-        var forceNative = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
         _classCallCheck(this, WebGLState);
-
-        this.forceNative = forceNative;
 
         /**
          * The current active state
@@ -18231,7 +18213,7 @@ var WebGLState = function () {
         this.blendModes = (0, _mapWebGLBlendModesToPixi2.default)(gl);
 
         // check we have vao..
-        this.nativeVaoExtension = this.forceNative ? null : gl.getExtension('OES_vertex_array_object') || gl.getExtension('MOZ_OES_vertex_array_object') || gl.getExtension('WEBKIT_OES_vertex_array_object');
+        this.nativeVaoExtension = gl.getExtension('OES_vertex_array_object') || gl.getExtension('MOZ_OES_vertex_array_object') || gl.getExtension('WEBKIT_OES_vertex_array_object');
     }
 
     /**
@@ -34764,7 +34746,7 @@ var LeafSprite = function (_core$Sprite) {
         }
 
         // do a quick check to see if this element has a mask or a filter.
-        if (this._mask || this._filters) {
+        if (this._mask || this.filters) {
             this.renderAdvancedWebGL(renderer);
         } else {
             this._renderWebGL(renderer);
@@ -34774,7 +34756,7 @@ var LeafSprite = function (_core$Sprite) {
     LeafSprite.prototype.renderAdvancedWebGL = function renderAdvancedWebGL(renderer) {
         renderer.flush();
 
-        var filters = this._filters;
+        var filters = this.filters;
         var mask = this._mask;
 
         // push filter first as we need to ensure the stencil buffer is correct for any masking
@@ -39570,8 +39552,8 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     var bounds = this.getLocalBounds().clone();
 
     // add some padding!
-    if (this._filters) {
-        var padding = this._filters[0].padding;
+    if (this.filters) {
+        var padding = this.filters[0].padding;
 
         bounds.pad(padding);
     }
