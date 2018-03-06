@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Mon, 05 Mar 2018 20:04:28 UTC
+ * Compiled Tue, 06 Mar 2018 13:53:13 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -19355,8 +19355,8 @@ var FilterManager = function (_WebGLManager) {
 
         if (minWidth !== this._screenWidth || minHeight !== this._screenHeight) {
             // TODO you could return a bigger texture if there is not one in the pool?
-            minWidth = _bitTwiddle2.default.nextPow2(minWidth * resolution);
-            minHeight = _bitTwiddle2.default.nextPow2(minHeight * resolution);
+            minWidth = _bitTwiddle2.default.nextPow2(minWidth);
+            minHeight = _bitTwiddle2.default.nextPow2(minHeight);
             key = (minWidth & 0xFFFF) << 16 | minHeight & 0xFFFF;
         }
 
@@ -41818,11 +41818,10 @@ var InteractionData = function () {
    * Copies properties from normalized event data.
    *
    * @param {Touch|MouseEvent|PointerEvent} event The normalized event data
-   * @private
    */
 
 
-  InteractionData.prototype._copyEvent = function _copyEvent(event) {
+  InteractionData.prototype.copyEvent = function copyEvent(event) {
     // isPrimary should only change on touchstart/pointerdown, so we don't want to overwrite
     // it with "false" on later events when our shim for it on touch events might not be
     // accurate
@@ -41830,7 +41829,9 @@ var InteractionData = function () {
       this.isPrimary = true;
     }
     this.button = event.button;
-    this.buttons = event.buttons;
+    // event.buttons is not available in all browsers (ie. Safari), but it does have a non-standard
+    // event.which property instead, which conveys the same information.
+    this.buttons = Number.isInteger(event.buttons) ? event.buttons : event.which;
     this.width = event.width;
     this.height = event.height;
     this.tiltX = event.tiltX;
@@ -41844,12 +41845,10 @@ var InteractionData = function () {
 
   /**
    * Resets the data for pooling.
-   *
-   * @private
    */
 
 
-  InteractionData.prototype._reset = function _reset() {
+  InteractionData.prototype.reset = function reset() {
     // isPrimary is the only property that we really need to reset - everything else is
     // guaranteed to be overwritten
     this.isPrimary = false;
@@ -41936,12 +41935,10 @@ var InteractionEvent = function () {
 
   /**
    * Resets the event.
-   *
-   * @private
    */
 
 
-  InteractionEvent.prototype._reset = function _reset() {
+  InteractionEvent.prototype.reset = function reset() {
     this.stopped = false;
     this.currentTarget = null;
     this.target = null;
@@ -43547,7 +43544,7 @@ var InteractionManager = function (_EventEmitter) {
         }
         // copy properties from the event, so that we can make sure that touch/pointer specific
         // data is available
-        interactionData._copyEvent(event);
+        interactionData.copyEvent(event);
 
         return interactionData;
     };
@@ -43565,7 +43562,7 @@ var InteractionManager = function (_EventEmitter) {
 
         if (interactionData) {
             delete this.activeInteractionData[pointerId];
-            interactionData._reset();
+            interactionData.reset();
             this.interactionDataPool.push(interactionData);
         }
     };
@@ -43602,7 +43599,7 @@ var InteractionManager = function (_EventEmitter) {
         }
 
         interactionData.originalEvent = pointerEvent;
-        interactionEvent._reset();
+        interactionEvent.reset();
 
         return interactionEvent;
     };
