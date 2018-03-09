@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.0
- * Compiled Tue, 06 Mar 2018 13:53:13 UTC
+ * Compiled Fri, 09 Mar 2018 05:12:16 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -18511,7 +18511,7 @@ var Filter = function () {
      *
      * @member {number}
      */
-    this.resolution = _settings2.default.RESOLUTION;
+    this.resolution = _settings2.default.FILTER_RESOLUTION;
 
     /**
      * If enabled is true the filter is applied, if false it will not.
@@ -23376,6 +23376,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 /**
  * The TextMetrics object represents the measurement of a block of text with a specified style.
  *
+ * ```js
+ * let style = new PIXI.TextStyle({fontFamily : 'Arial', fontSize: 24, fill : 0xff1010, align : 'center'})
+ * let textMetrics = PIXI.TextMetrics.measureText('Your text', style)
+ * ```
+ *
  * @class
  * @memberOf PIXI
  */
@@ -23470,70 +23475,142 @@ var TextMetrics = function () {
 
         var context = canvas.getContext('2d');
 
-        // Greedy wrapping algorithm that will wrap words as the line grows longer
-        // than its horizontal bounds.
-        var result = '';
-        var firstChar = text.charAt(0);
-        var lines = text.split('\n');
-        var wordWrapWidth = style.wordWrapWidth;
-        var characterCache = {};
+        var line = '';
+        var width = 0;
+        var lines = '';
+        var cache = {};
+        var ls = style.letterSpacing;
 
-        for (var i = 0; i < lines.length; i++) {
-            var spaceLeft = wordWrapWidth;
-            var words = lines[i].split(' ');
+        // ideally there is letterSpacing after every char except the last one
+        // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!
+        // so for convenience the above needs to be compared to width + 1 extra space
+        // t_h_i_s_' '_i_s_' '_a_n_' '_e_x_a_m_p_l_e_' '_!_
+        // ________________________________________________
+        // And then the final space is simply no appended to each line
+        var wordWrapWidth = style.wordWrapWidth + style.letterSpacing;
 
-            for (var j = 0; j < words.length; j++) {
-                var wordWidth = context.measureText(words[j]).width;
+        // get the width of a space and add it to cache
+        var spaceWidth = TextMetrics.getFromCache(' ', ls, cache, context);
 
-                if (style.breakWords && wordWidth > wordWrapWidth) {
-                    // Word should be split in the middle
-                    var characters = words[j].split('');
+        // break text into words
+        var words = text.split(' ');
 
-                    for (var c = 0; c < characters.length; c++) {
-                        var character = characters[c];
-                        var characterWidth = characterCache[character];
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
 
-                        if (characterWidth === undefined) {
-                            characterWidth = context.measureText(character).width;
-                            characterCache[character] = characterWidth;
+            // get word width from cache if possible
+            var wordWidth = TextMetrics.getFromCache(word, ls, cache, context);
+
+            // word is longer than desired bounds
+            if (wordWidth > wordWrapWidth) {
+                // break large word over multiple lines
+                if (style.breakWords) {
+                    // add a space to the start of the word unless its at the beginning of the line
+                    var tmpWord = line.length > 0 ? ' ' + word : word;
+
+                    // break word into characters
+                    var characters = tmpWord.split('');
+
+                    // loop the characters
+                    for (var j = 0; j < characters.length; j++) {
+                        var character = characters[j];
+                        var characterWidth = TextMetrics.getFromCache(character, ls, cache, context);
+
+                        if (characterWidth + width > wordWrapWidth) {
+                            lines += TextMetrics.addLine(line);
+                            line = '';
+                            width = 0;
                         }
 
-                        if (characterWidth > spaceLeft) {
-                            result += '\n' + character;
-                            spaceLeft = wordWrapWidth - characterWidth;
-                        } else {
-                            if (c === 0 && (j > 0 || firstChar === ' ')) {
-                                result += ' ';
-                            }
-
-                            result += character;
-                            spaceLeft -= characterWidth;
-                        }
-                    }
-                } else {
-                    var wordWidthWithSpace = wordWidth + context.measureText(' ').width;
-
-                    if (j === 0 || wordWidthWithSpace > spaceLeft) {
-                        // Skip printing the newline if it's the first word of the line that is
-                        // greater than the word wrap width.
-                        if (j > 0) {
-                            result += '\n';
-                        }
-                        result += words[j];
-                        spaceLeft = wordWrapWidth - wordWidth;
-                    } else {
-                        spaceLeft -= wordWidthWithSpace;
-                        result += ' ' + words[j];
+                        line += character;
+                        width += characterWidth;
                     }
                 }
+
+                // run word out of the bounds
+                else {
+                        // if there are words in this line already
+                        // finish that line and start a new one
+                        if (line.length > 0) {
+                            lines += TextMetrics.addLine(line);
+                            line = '';
+                            width = 0;
+                        }
+
+                        // give it its own line
+                        lines += TextMetrics.addLine(word);
+                        line = '';
+                        width = 0;
+                    }
             }
 
-            if (i < lines.length - 1) {
-                result += '\n';
-            }
+            // word could fit
+            else {
+                    // word won't fit, start a new line
+                    if (wordWidth + width > wordWrapWidth) {
+                        lines += TextMetrics.addLine(line);
+                        line = '';
+                        width = 0;
+                    }
+
+                    // add the word to the current line
+                    if (line.length > 0) {
+                        // add a space if it is not the beginning
+                        line += ' ' + word;
+                    } else {
+                        // add without a space if it is the beginning
+                        line += word;
+                    }
+
+                    width += wordWidth + spaceWidth;
+                }
         }
 
-        return result;
+        lines += TextMetrics.addLine(line, false);
+
+        return lines;
+    };
+
+    /**
+     *  Convienience function for logging each line added
+     *  during the wordWrap method
+     *
+     * @param  {string}   line    - The line of text to add
+     * @param  {boolean}  newLine - Add new line character to end
+     * @return {string}   A formatted line
+     */
+
+
+    TextMetrics.addLine = function addLine(line) {
+        var newLine = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        line = newLine ? line + '\n' : line;
+
+        return line;
+    };
+
+    /**
+     * Gets & sets the widths of calculated characters in a cache object
+     *
+     * @param  {string}                    key            The key
+     * @param  {number}                    letterSpacing  The letter spacing
+     * @param  {object}                    cache          The cache
+     * @param  {CanvasRenderingContext2D}  context        The canvas context
+     * @return {number}                    The from cache.
+     */
+
+
+    TextMetrics.getFromCache = function getFromCache(key, letterSpacing, cache, context) {
+        var width = cache[key];
+
+        if (width === undefined) {
+            var spacing = key.length * letterSpacing;
+
+            width = context.measureText(key).width + spacing;
+            cache[key] = width;
+        }
+
+        return width;
     };
 
     /**
