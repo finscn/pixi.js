@@ -1,7 +1,7 @@
 PixiJS — The HTML5 Creation Engine
 =============
 
-![pixi.js logo](https://pixijs.download/pixijs-banner.png)
+![pixi.js logo](https://pixijs.download/pixijs-banner-v5.png)
 
 The aim of this project is to provide a fast lightweight 2D library that works
 across all devices. The PixiJS renderer allows everyone to enjoy the power of
@@ -18,9 +18,13 @@ PixiJS can be installed with [npm](https://docs.npmjs.com/getting-started/what-i
 #### Install
 
 ```
-$> npm install pixi.js-legacy
+npm install pixi.js-legacy
 ```
+There is no default export. The correct way to import PixiJS is:
 
+```js
+import * as PIXI from 'pixi.js-legacy'
+```
 ### Basic Usage Example
 
 ```js

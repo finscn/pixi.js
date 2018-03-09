@@ -46,8 +46,6 @@ export default class Application
      *  stopping pixel interpolation.
      * @param {boolean} [options.forceFXAA=false] - forces FXAA antialiasing to be used over native.
      *  FXAA is faster, but may not always look as great **webgl only**
-     * @param {boolean} [options.legacy=false] - `true` to ensure compatibility with older / less advanced devices.
-     *  If you experience unexplained flickering try setting this to true. **webgl only**
      * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
      *  for devices with dual graphics card **webgl only**
      * @param {boolean} [options.sharedTicker=false] - `true` to use PIXI.Ticker.shared, `false` to create new ticker.
@@ -189,11 +187,13 @@ export default class Application
      */
     destroy(removeView)
     {
-        const oldTicker = this._ticker;
+        if (this._ticker)
+        {
+            const oldTicker = this._ticker;
 
-        this.ticker = null;
-
-        oldTicker.destroy();
+            this.ticker = null;
+            oldTicker.destroy();
+        }
 
         this.stage.destroy();
         this.stage = null;

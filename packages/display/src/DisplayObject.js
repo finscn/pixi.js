@@ -84,7 +84,14 @@ export default class DisplayObject extends EventEmitter
          */
         this.filterArea = null;
 
-        this._filters = null;
+        /**
+         * Sets the filters for the displayObject.
+         * * IMPORTANT: This is a webGL only feature and will be ignored by the canvas renderer.
+         * To remove filters simply set this property to 'null'
+         *
+         * @member {PIXI.Filter[]}
+         */
+        this.filters = null;
         this._enabledFilters = null;
 
         /**
@@ -575,6 +582,8 @@ export default class DisplayObject extends EventEmitter
      * PIXI.Graphics or a PIXI.Sprite object. This allows for much faster masking in canvas as it
      * utilises shape clipping. To remove a mask, set this property to null.
      *
+     * For sprite mask both alpha and red channel are used. Black mask is the same as transparent mask.
+     *
      * @todo For the moment, PIXI.CanvasRenderer doesn't support PIXI.Sprite as mask.
      *
      * @member {PIXI.Graphics|PIXI.Sprite}
@@ -599,23 +608,6 @@ export default class DisplayObject extends EventEmitter
             this._mask.renderable = false;
             this._mask.isMask = true;
         }
-    }
-
-    /**
-     * Sets the filters for the displayObject.
-     * * IMPORTANT: This is a webGL only feature and will be ignored by the canvas renderer.
-     * To remove filters simply set this property to 'null'
-     *
-     * @member {PIXI.Filter[]}
-     */
-    get filters()
-    {
-        return this._filters && this._filters.slice();
-    }
-
-    set filters(value) // eslint-disable-line require-jsdoc
-    {
-        this._filters = value && value.slice();
     }
 }
 

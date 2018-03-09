@@ -1,18 +1,35 @@
-const vertTemplate = [
-    'attribute vec2 aVertexPosition;',
-    'attribute vec2 aTextureCoord;',
+const vertTemplate = `
+    attribute vec2 aVertexPosition;
 
-    'uniform float strength;',
-    'uniform mat3 projectionMatrix;',
+    uniform mat3 projectionMatrix;
 
-    'varying vec2 vBlurTexCoords[%size%];',
+    uniform float strength;
 
-    'void main(void)',
-    '{',
-    'gl_Position = vec4((projectionMatrix * vec3((aVertexPosition), 1.0)).xy, 0.0, 1.0);',
-    '%blur%',
-    '}',
-].join('\n');
+    varying vec2 vBlurTexCoords[%size%];
+
+    uniform vec4 inputSize;
+    uniform vec4 inputClamp;
+    uniform vec4 outputFrame;
+    
+    vec4 filterVertexPosition( void )
+    {
+        vec2 position = aVertexPosition * max(outputFrame.zw, vec2(0.)) + outputFrame.xy;
+    
+        return vec4((projectionMatrix * vec3(position, 1.0)).xy, 0.0, 1.0);
+    }
+    
+    vec2 filterTextureCoord( void )
+    {
+        return aVertexPosition * (outputFrame.zw * inputSize.zw);
+    }
+
+    void main(void)
+    {
+        gl_Position = filterVertexPosition();
+
+        vec2 textureCoord = filterTextureCoord();
+        %blur%
+    }`;
 
 export default function generateVertBlurSource(kernelSize, x)
 {
@@ -26,11 +43,11 @@ export default function generateVertBlurSource(kernelSize, x)
 
     if (x)
     {
-        template = 'vBlurTexCoords[%index%] = aTextureCoord + vec2(%sampleIndex% * strength, 0.0);';
+        template = 'vBlurTexCoords[%index%] =  min( textureCoord + vec2(%sampleIndex% * strength, 0.0), inputClamp.zw);';
     }
     else
     {
-        template = 'vBlurTexCoords[%index%] = aTextureCoord + vec2(0.0, %sampleIndex% * strength);';
+        template = 'vBlurTexCoords[%index%] =  min( textureCoord + vec2(0.0, %sampleIndex% * strength), inputClamp.zw);';
     }
 
     for (let i = 0; i < kernelSize; i++)

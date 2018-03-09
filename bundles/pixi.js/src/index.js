@@ -21,7 +21,7 @@ import * as ticker from '@pixi/ticker';
 import * as utils from '@pixi/utils';
 import { settings } from '@pixi/settings';
 import { AlphaFilter } from '@pixi/filter-alpha';
-import { BlurFilter, BlurXFilter, BlurYFilter } from '@pixi/filter-blur';
+import { BlurFilter, BlurFilterPass } from '@pixi/filter-blur';
 import { ColorMatrixFilter } from '@pixi/filter-color-matrix';
 import { DisplacementFilter } from '@pixi/filter-displacement';
 import { FXAAFilter } from '@pixi/filter-fxaa';
@@ -68,6 +68,13 @@ const PIXI = { VERSION };
 /**
  * This namespace contains WebGL-only display filters that can be applied
  * to DisplayObjects using the {@link PIXI.DisplayObject#filters filters} property.
+ *
+ * Since PixiJS only had a handful of built-in filters, additional filters
+ * can be downloaded {@link https://github.com/pixijs/pixi-filters here} from the
+ * PixiJS Filters repository.
+ *
+ * All filters must extend {@link PIXI.Filter}.
+ *
  * @example
  * // Create a new application
  * const app = new PIXI.Application();
@@ -88,8 +95,7 @@ const PIXI = { VERSION };
 const filters = {
     AlphaFilter,
     BlurFilter,
-    BlurXFilter,
-    BlurYFilter,
+    BlurFilterPass,
     ColorMatrixFilter,
     DisplacementFilter,
     FXAAFilter,
