@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.7.0
- * Compiled Fri, 09 Mar 2018 05:12:16 UTC
+ * pixi.js - v4.7.1
+ * Compiled Thu, 15 Mar 2018 16:34:06 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -8353,7 +8353,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.7.0';
+var VERSION = exports.VERSION = '4.7.1';
 
 /**
  * Two Pi.
@@ -8504,7 +8504,7 @@ var SCALE_MODES = exports.SCALE_MODES = {
 /**
  * The wrap modes that are supported by pixi.
  *
- * The {@link PIXI.settings.WRAP_MODE} wrap mode affects the default wraping mode of future operations.
+ * The {@link PIXI.settings.WRAP_MODE} wrap mode affects the default wrapping mode of future operations.
  * It can be re-assigned to either CLAMP or REPEAT, depending upon suitability.
  * If the texture is non power of two then clamp will be used regardless as webGL can
  * only use REPEAT if the texture is po2.
@@ -46918,10 +46918,18 @@ var ParticleContainer = function (_core$Container) {
         _this._glBuffers = {};
 
         /**
-         * @member {number}
+         * for every batch stores _updateID corresponding to the last change in that batch
+         * @member {number[]}
          * @private
          */
-        _this._bufferToUpdate = 0;
+        _this._bufferUpdateIDs = [];
+
+        /**
+         * when child inserted, removed or changes position this number goes up
+         * @member {number[]}
+         * @private
+         */
+        _this._updateID = 0;
 
         /**
          * @member {boolean}
@@ -47064,9 +47072,10 @@ var ParticleContainer = function (_core$Container) {
     ParticleContainer.prototype.onChildrenChange = function onChildrenChange(smallestChildIndex) {
         var bufferIndex = Math.floor(smallestChildIndex / this._batchSize);
 
-        if (bufferIndex < this._bufferToUpdate) {
-            this._bufferToUpdate = bufferIndex;
+        while (this._bufferUpdateIDs.length < bufferIndex) {
+            this._bufferUpdateIDs.push(0);
         }
+        this._bufferUpdateIDs[bufferIndex] = ++this._updateID;
     };
 
     /**
@@ -47175,6 +47184,7 @@ var ParticleContainer = function (_core$Container) {
 
         this._properties = null;
         this._buffers = null;
+        this._bufferUpdateIDs = null;
     };
 
     _createClass(ParticleContainer, [{
@@ -47322,6 +47332,8 @@ var ParticleBuffer = function () {
         this.dynamicBuffer = null;
         this.dynamicData = null;
         this.dynamicDataUint32 = null;
+
+        this._updateID = 0;
 
         this.initBuffers();
     }
@@ -47662,6 +47674,8 @@ var ParticleRenderer = function (_core$ObjectRenderer) {
         // make sure the texture is bound..
         this.shader.uniforms.uSampler = renderer.bindTexture(baseTexture);
 
+        var updateStatic = false;
+
         // now lets upload and render the buffers..
         for (var i = 0, j = 0; i < totalChildren; i += batchSize, j += 1) {
             var amount = totalChildren - i;
@@ -47682,10 +47696,13 @@ var ParticleRenderer = function (_core$ObjectRenderer) {
             // we always upload the dynamic
             buffer.uploadDynamic(children, i, amount);
 
+            var bid = container._bufferUpdateIDs[i] || 0;
+
+            updateStatic = updateStatic || buffer._updateID < bid;
             // we only upload the static content when we have to!
-            if (container._bufferToUpdate === j) {
+            if (updateStatic) {
+                buffer._updateID = container._updateID;
                 buffer.uploadStatic(children, i, amount);
-                container._bufferToUpdate = j + 1;
             }
 
             // bind the buffer
