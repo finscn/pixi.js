@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.1
- * Compiled Thu, 15 Mar 2018 16:34:06 UTC
+ * Compiled Tue, 20 Mar 2018 22:06:38 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -28874,7 +28874,19 @@ exports.default = deprecation;
 // provide method to give a stack track for warnings
 // useful for tracking-down where deprecated methods/properties/classes
 // are being used within the code
+
+// A map of warning messages already fired
+var warnings = {};
+
+// provide method to give a stack track for warnings
+// useful for tracking-down where deprecated methods/properties/classes
+// are being used within the code
 function warn(msg) {
+    // Ignore duplicat
+    if (warnings[msg]) {
+        return;
+    }
+
     /* eslint-disable no-console */
     var stack = new Error().stack;
 
@@ -28895,6 +28907,8 @@ function warn(msg) {
         }
     }
     /* eslint-enable no-console */
+
+    warnings[msg] = true;
 }
 
 function deprecation(core) {
