@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.1
- * Compiled Tue, 20 Mar 2018 22:06:38 UTC
+ * Compiled Thu, 22 Mar 2018 08:34:04 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -48068,6 +48068,18 @@ if (!Math.sign) {
 },{}],248:[function(require,module,exports){
 'use strict';
 
+// References:
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger
+
+if (!Number.isInteger) {
+    Number.isInteger = function numberIsInteger(value) {
+        return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+    };
+}
+
+},{}],249:[function(require,module,exports){
+'use strict';
+
 var _objectAssign = require('object-assign');
 
 var _objectAssign2 = _interopRequireDefault(_objectAssign);
@@ -48080,7 +48092,7 @@ if (!Object.assign) {
 // https://github.com/sindresorhus/object-assign
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 
-},{"object-assign":6}],249:[function(require,module,exports){
+},{"object-assign":6}],250:[function(require,module,exports){
 'use strict';
 
 require('./Object.assign');
@@ -48088,6 +48100,8 @@ require('./Object.assign');
 require('./requestAnimationFrame');
 
 require('./Math.sign');
+
+require('./Number.isInteger');
 
 if (!window.ArrayBuffer) {
     window.ArrayBuffer = Array;
@@ -48105,7 +48119,7 @@ if (!window.Uint16Array) {
     window.Uint16Array = Array;
 }
 
-},{"./Math.sign":247,"./Object.assign":248,"./requestAnimationFrame":250}],250:[function(require,module,exports){
+},{"./Math.sign":247,"./Number.isInteger":248,"./Object.assign":249,"./requestAnimationFrame":251}],251:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -48183,7 +48197,7 @@ if (!global.cancelAnimationFrame) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],251:[function(require,module,exports){
+},{}],252:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48671,7 +48685,7 @@ function findTextStyle(item, queue) {
     return false;
 }
 
-},{"../core":65,"./limiters/CountLimiter":254}],252:[function(require,module,exports){
+},{"../core":65,"./limiters/CountLimiter":255}],253:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48791,7 +48805,7 @@ function uploadBaseTextures(prepare, item) {
 
 core.CanvasRenderer.registerPlugin('prepare', CanvasPrepare);
 
-},{"../../core":65,"../BasePrepare":251}],253:[function(require,module,exports){
+},{"../../core":65,"../BasePrepare":252}],254:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48843,7 +48857,7 @@ Object.defineProperty(exports, 'TimeLimiter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./BasePrepare":251,"./canvas/CanvasPrepare":252,"./limiters/CountLimiter":254,"./limiters/TimeLimiter":255,"./webgl/WebGLPrepare":256}],254:[function(require,module,exports){
+},{"./BasePrepare":252,"./canvas/CanvasPrepare":253,"./limiters/CountLimiter":255,"./limiters/TimeLimiter":256,"./webgl/WebGLPrepare":257}],255:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -48901,7 +48915,7 @@ var CountLimiter = function () {
 
 exports.default = CountLimiter;
 
-},{}],255:[function(require,module,exports){
+},{}],256:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -48959,7 +48973,7 @@ var TimeLimiter = function () {
 
 exports.default = TimeLimiter;
 
-},{}],256:[function(require,module,exports){
+},{}],257:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -49081,7 +49095,7 @@ function findGraphics(item, queue) {
 
 core.WebGLRenderer.registerPlugin('prepare', WebGLPrepare);
 
-},{"../../core":65,"../BasePrepare":251}],257:[function(require,module,exports){
+},{"../../core":65,"../BasePrepare":252}],258:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -49259,7 +49273,7 @@ global.PIXI = exports; // eslint-disable-line
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./accessibility":42,"./core":65,"./deprecation":131,"./ext-filters":132,"./ext-plugins":140,"./extensions":188,"./extract":201,"./extras":209,"./filters":221,"./interaction":227,"./loaders":230,"./mesh":240,"./particles":243,"./polyfill":249,"./prepare":253}]},{},[257])(257)
+},{"./accessibility":42,"./core":65,"./deprecation":131,"./ext-filters":132,"./ext-plugins":140,"./extensions":188,"./extract":201,"./extras":209,"./filters":221,"./interaction":227,"./loaders":230,"./mesh":240,"./particles":243,"./polyfill":250,"./prepare":254}]},{},[258])(258)
 });
 
 
