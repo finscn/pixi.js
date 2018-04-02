@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.1
- * Compiled Thu, 22 Mar 2018 08:34:04 UTC
+ * Compiled Mon, 02 Apr 2018 14:25:21 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -21729,8 +21729,8 @@ var CanvasSpriteRenderer = function () {
                 dy = 0;
             }
 
-            dx -= width / 2;
-            dy -= height / 2;
+            dx -= texture.orig.width / 2;
+            dy -= texture.orig.height / 2;
 
             // Allow for pixel rounding
             if (renderer.roundPixels) {
@@ -21752,9 +21752,9 @@ var CanvasSpriteRenderer = function () {
                     sprite.tintedTexture = _CanvasTinter2.default.getTintedTexture(sprite, sprite.tint);
                 }
 
-                renderer.context.drawImage(sprite.tintedTexture, 0, 0, width * resolution, height * resolution, dx * renderer.resolution, dy * renderer.resolution, width * renderer.resolution, height * renderer.resolution);
+                renderer.context.drawImage(sprite.tintedTexture, 0, 0, width * resolution, height * resolution, dx * renderer.resolution, dy * renderer.resolution, texture.orig.width * renderer.resolution, texture.orig.height * renderer.resolution);
             } else {
-                renderer.context.drawImage(texture.baseTexture.source, texture._frame.x * resolution, texture._frame.y * resolution, width * resolution, height * resolution, dx * renderer.resolution, dy * renderer.resolution, width * renderer.resolution, height * renderer.resolution);
+                renderer.context.drawImage(texture.baseTexture.source, texture._frame.x * resolution, texture._frame.y * resolution, width * resolution, height * resolution, dx * renderer.resolution, dy * renderer.resolution, texture.orig.width * renderer.resolution, texture.orig.height * renderer.resolution);
             }
         }
     };
