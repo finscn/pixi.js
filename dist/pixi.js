@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Wed, 04 Apr 2018 16:47:34 UTC
+ * Compiled Sun, 08 Apr 2018 19:03:46 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35621,6 +35621,7 @@ var RenderContext = function () {
         this.linkDisplayObject(this.textSprite);
 
         this.transformStack = [];
+        this.maskStack = [];
         this.globalTransform = {};
         for (var p in this.defaultTransform) {
             this.globalTransform[p] = this.defaultTransform[p];
@@ -35811,27 +35812,44 @@ var RenderContext = function () {
     };
 
     RenderContext.prototype.updateClipRect = function updateClipRect(x, y, width, height) {
+        this.maskContainer.updateTransform();
+        this.maskShape.clear();
+        this.maskShape.updateTransform();
+        this.maskShape.beginFill(0x000000);
+        this.maskShape.drawRect(x, y, width, height);
+        this.maskShape.endFill();
+    };
+
+    RenderContext.prototype.clipRect = function clipRect(x, y, width, height) {
         this.updateGlobalContainer();
 
         var t = this.globalTransform;
         var dx = x - t.originX;
         var dy = y - t.originY;
 
-        this.maskContainer.updateTransform();
-        this.maskShape.clear();
-        this.maskShape.updateTransform();
-        this.maskShape.beginFill(0x000000);
-        this.maskShape.drawRect(dx, dy, width, height);
-        this.maskShape.endFill();
-    };
+        this.maskStack.push({
+            x: dx,
+            y: dy,
+            width: width,
+            height: height
+        });
 
-    RenderContext.prototype.clipRect = function clipRect(x, y, width, height) {
-        this.updateClipRect(x, y, width, height);
+        this.updateClipRect(dx, dy, width, height);
+
         this.mask = this.maskShape;
     };
 
     RenderContext.prototype.unclipRect = function unclipRect() {
-        this.mask = null;
+        this.maskStack.pop();
+
+        var m = this.maskStack[this.maskStack.length - 1];
+
+        if (m) {
+            this.updateClipRect(m.x, m.y, m.width, m.height);
+            this.mask = this.maskShape;
+        } else {
+            this.mask = null;
+        }
     };
 
     /**
@@ -36285,6 +36303,8 @@ var RenderContext = function () {
         this.texturePool = null;
         this.renderer = null;
         this.canvas = null;
+        this.transformStack = null;
+        this.maskStack = null;
         this.root.destroy(true);
     };
 

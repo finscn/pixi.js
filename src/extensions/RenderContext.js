@@ -448,6 +448,7 @@ export default class RenderContext
         this.linkDisplayObject(this.textSprite);
 
         this.transformStack = [];
+        this.maskStack = [];
         this.globalTransform = {};
         for (const p in this.defaultTransform)
         {
@@ -706,29 +707,49 @@ export default class RenderContext
 
     updateClipRect(x, y, width, height)
     {
+        this.maskContainer.updateTransform();
+        this.maskShape.clear();
+        this.maskShape.updateTransform();
+        this.maskShape.beginFill(0x000000);
+        this.maskShape.drawRect(x, y, width, height);
+        this.maskShape.endFill();
+    }
+
+    clipRect(x, y, width, height)
+    {
         this.updateGlobalContainer();
 
         const t = this.globalTransform;
         const dx = x - t.originX;
         const dy = y - t.originY;
 
-        this.maskContainer.updateTransform();
-        this.maskShape.clear();
-        this.maskShape.updateTransform();
-        this.maskShape.beginFill(0x000000);
-        this.maskShape.drawRect(dx, dy, width, height);
-        this.maskShape.endFill();
-    }
+        this.maskStack.push({
+            x: dx,
+            y: dy,
+            width,
+            height,
+        });
 
-    clipRect(x, y, width, height)
-    {
-        this.updateClipRect(x, y, width, height);
+        this.updateClipRect(dx, dy, width, height);
+
         this.mask = this.maskShape;
     }
 
     unclipRect()
     {
-        this.mask = null;
+        this.maskStack.pop();
+
+        const m = this.maskStack[this.maskStack.length - 1];
+
+        if (m)
+        {
+            this.updateClipRect(m.x, m.y, m.width, m.height);
+            this.mask = this.maskShape;
+        }
+        else
+        {
+            this.mask = null;
+        }
     }
 
     /**
@@ -1246,6 +1267,8 @@ export default class RenderContext
         this.texturePool = null;
         this.renderer = null;
         this.canvas = null;
+        this.transformStack = null;
+        this.maskStack = null;
         this.root.destroy(true);
     }
 
