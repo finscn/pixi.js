@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Thu, 19 Apr 2018 17:42:23 UTC
+ * Compiled Thu, 26 Apr 2018 16:42:00 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -48028,7 +48028,7 @@ var ParticleRenderer = function (_core$ObjectRenderer) {
             // we always upload the dynamic
             buffer.uploadDynamic(children, i, amount);
 
-            var bid = container._bufferUpdateIDs[i] || 0;
+            var bid = container._bufferUpdateIDs[j] || 0;
 
             updateStatic = updateStatic || buffer._updateID < bid;
             // we only upload the static content when we have to!
