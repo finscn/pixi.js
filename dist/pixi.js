@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Thu, 26 Apr 2018 16:42:00 UTC
+ * Compiled Sat, 28 Apr 2018 19:35:18 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -19385,6 +19385,7 @@ var FilterManager = function (_WebGLManager) {
         renderTarget.resolution = resolution;
         renderTarget.defaultFrame.width = renderTarget.size.width = minWidth / resolution;
         renderTarget.defaultFrame.height = renderTarget.size.height = minHeight / resolution;
+        renderTarget.filterPoolKey = key;
 
         return renderTarget;
     };
@@ -19417,16 +19418,7 @@ var FilterManager = function (_WebGLManager) {
 
 
     FilterManager.prototype.freePotRenderTarget = function freePotRenderTarget(renderTarget) {
-        var minWidth = renderTarget.size.width * renderTarget.resolution;
-        var minHeight = renderTarget.size.height * renderTarget.resolution;
-
-        var key = screenKey;
-
-        if (minWidth !== this._screenWidth || minHeight !== this._screenHeight) {
-            key = (minWidth & 0xFFFF) << 16 | minHeight & 0xFFFF;
-        }
-
-        this.pool[key].push(renderTarget);
+        this.pool[renderTarget.filterPoolKey].push(renderTarget);
     };
 
     /**
@@ -20265,6 +20257,13 @@ var RenderTarget = function () {
      * @member {object[]}
      */
     this.filterData = null;
+
+    /**
+     * The key for pooled texture of FilterSystem
+     * @private
+     * @member {string}
+     */
+    this.filterPoolKey = '';
 
     /**
      * The scale mode.
