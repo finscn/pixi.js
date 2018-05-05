@@ -15,7 +15,7 @@ import { uid, TextureCache, getResolutionOfUrl } from '@pixi/utils';
  * You can directly create a texture from an image and then reuse it multiple times like this :
  *
  * ```js
- * let texture = PIXI.Texture.fromImage('assets/image.png');
+ * let texture = PIXI.Texture.from('assets/image.png');
  * let sprite1 = new PIXI.Sprite(texture);
  * let sprite2 = new PIXI.Sprite(texture);
  * ```
@@ -23,7 +23,7 @@ import { uid, TextureCache, getResolutionOfUrl } from '@pixi/utils';
  * Textures made from SVGs, loaded or not, cannot be used before the file finishes processing.
  * You can check for this by checking the sprite's _textureID property.
  * ```js
- * var texture = PIXI.Texture.fromImage('assets/image.svg');
+ * var texture = PIXI.Texture.from('assets/image.svg');
  * var sprite1 = new PIXI.Sprite(texture);
  * //sprite1._textureID should not be undefined if the texture has finished processing the SVG file
  * ```
@@ -279,13 +279,18 @@ export default class Texture extends EventEmitter
      * @param {object} [options] See {@link PIXI.BaseTexture}'s constructor for options.
      * @return {PIXI.Texture} The newly created texture
      */
-    static from(source, options)
+    static from(source, options = {})
     {
         let cacheId = null;
 
         if (typeof source === 'string')
         {
             cacheId = source;
+
+            if (!options.resolution)
+            {
+                options.resolution = getResolutionOfUrl(source);
+            }
         }
         else
         {
@@ -334,7 +339,7 @@ export default class Texture extends EventEmitter
      * @static
      * @param {HTMLImageElement|HTMLCanvasElement} source - The input source.
      * @param {String} imageUrl - File name of texture, for cache and resolving resolution.
-     * @param {String} [name] - Human readible name for the texture cache. If no name is
+     * @param {String} [name] - Human readable name for the texture cache. If no name is
      *        specified, only `imageUrl` will be used as the cache ID.
      * @return {PIXI.Texture} Output texture
      */
@@ -348,7 +353,7 @@ export default class Texture extends EventEmitter
         //  console.log('base resource ' + resource.width);
         const baseTexture = new BaseTexture(resource, {
             scaleMode: settings.SCALE_MODE,
-            resultion: getResolutionOfUrl(imageUrl),
+            resolution: getResolutionOfUrl(imageUrl),
         });
 
         const texture = new Texture(baseTexture);
@@ -359,7 +364,7 @@ export default class Texture extends EventEmitter
             name = imageUrl;
         }
 
-        // lets also add the frame to pixi's global cache for fromFrame and fromImage fucntions
+        // lets also add the frame to pixi's global cache for fromFrame and fromImage functions
         BaseTexture.addToCache(texture.baseTexture, name);
         Texture.addToCache(texture, name);
 
@@ -532,12 +537,6 @@ export default class Texture extends EventEmitter
         return this.orig.height;
     }
 }
-
-Texture.fromImage = Texture.from;
-Texture.fromSVG = Texture.from;
-Texture.fromCanvas = Texture.from;
-Texture.fromVideo = Texture.from;
-Texture.fromFrame = Texture.from;
 
 function createWhiteTexture()
 {

@@ -13,7 +13,7 @@ import FrameBuffer from '../framebuffer/FrameBuffer';
  * ```js
  * let renderer = PIXI.autoDetectRenderer(1024, 1024, { view: canvas, ratio: 1 });
  * let baseRenderTexture = new PIXI.BaseRenderTexture(renderer, 800, 600);
- * let sprite = PIXI.Sprite.fromImage("spinObj_01.png");
+ * let sprite = PIXI.Sprite.from("spinObj_01.png");
  *
  * sprite.position.x = 800/2;
  * sprite.position.y = 600/2;
@@ -92,7 +92,7 @@ export default class BaseRenderTexture extends BaseTexture
 
         this.clearColor = [0, 0, 0, 0];
 
-        this.frameBuffer = new FrameBuffer(width * this.resolution, height * this.resolution)
+        this.frameBuffer = new FrameBuffer(this.width * this.resolution, this.height * this.resolution)
             .addColorTexture(0, this)
             .enableStencil();
 

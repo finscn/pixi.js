@@ -23,7 +23,7 @@ settings.UPLOADS_PER_FRAME = 4;
  *
  * @example
  * // Create a sprite
- * const sprite = new PIXI.Sprite.fromImage('something.png');
+ * const sprite = new PIXI.Sprite.from('something.png');
  *
  * // Load object into GPU
  * app.renderer.plugins.prepare.upload(sprite, () => {
@@ -288,7 +288,7 @@ export default class BasePrepare
             }
         }
 
-        // Get childen recursively
+        // Get children recursively
         if (item instanceof Container)
         {
             for (let i = item.children.length - 1; i >= 0; i--)
@@ -333,7 +333,7 @@ function findMultipleBaseTextures(item, queue)
 {
     let result = false;
 
-    // Objects with mutliple textures
+    // Objects with multiple textures
     if (item && item._textures && item._textures.length)
     {
         for (let i = 0; i < item._textures.length; i++)
