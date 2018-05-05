@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Mon, 30 Apr 2018 18:52:47 UTC
+ * Compiled Sat, 05 May 2018 06:04:20 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -3204,29 +3204,33 @@ module.exports = defaultValue;
 var mapType = require('./mapType');
 var mapSize = require('./mapSize');
 
+var gl;
+
 /**
  * Extracts the attributes
  * @class
  * @memberof PIXI.glCore.shader
- * @param gl {WebGLRenderingContext} The current WebGL rendering context
+ * @param _gl {WebGLRenderingContext} The current WebGL rendering context
  * @param program {WebGLProgram} The shader program to get the attributes from
  * @return attributes {Object}
  */
-var extractAttributes = function(gl, program)
+var extractAttributes = function(_gl, program)
 {
+    gl = _gl;
+
     var attributes = {};
 
-    var totalAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    var totalAttributes = _gl.getProgramParameter(program, _gl.ACTIVE_ATTRIBUTES);
 
     for (var i = 0; i < totalAttributes; i++)
     {
-        var attribData = gl.getActiveAttrib(program, i);
-        var type = mapType(gl, attribData.type);
+        var attribData = _gl.getActiveAttrib(program, i);
+        var type = mapType(_gl, attribData.type);
 
         attributes[attribData.name] = {
             type:type,
             size:mapSize(type),
-            location:gl.getAttribLocation(program, attribData.name),
+            location:_gl.getAttribLocation(program, attribData.name),
             //TODO - make an attribute object
             pointer: pointer
         };
@@ -8573,7 +8577,7 @@ var URL_FILE_EXTENSION = exports.URL_FILE_EXTENSION = /\.(\w{3,4})(?:$|\?|#)/i;
  * @type {RegExp|string}
  * @example data:image/png;base64
  */
-var DATA_URI = exports.DATA_URI = /^\s*data:(?:([\w-]+)\/([\w+.-]+))?(?:;(charset=[\w-]+|base64))?,(.*)/i;
+var DATA_URI = exports.DATA_URI = /^\s*data:(?:([\w-]+)\/([\w+.-]+))?(?:;charset=([\w-]+))?(?:;(base64))?,(.*)/i;
 
 /**
  * Regexp for SVG size.
@@ -10939,6 +10943,14 @@ var Graphics = function (_Container) {
         _this.lineColor = 0;
 
         /**
+         * The alignment of any lines drawn (0.5 = middle, 1 = outter, 0 = inner).
+         *
+         * @member {number}
+         * @default 0
+         */
+        _this.lineAlignment = 0.5;
+
+        /**
          * Graphics data
          *
          * @member {PIXI.GraphicsData[]}
@@ -11082,6 +11094,7 @@ var Graphics = function (_Container) {
         clone.fillAlpha = this.fillAlpha;
         clone.lineWidth = this.lineWidth;
         clone.lineColor = this.lineColor;
+        clone.lineAlignment = this.lineAlignment;
         clone.tint = this.tint;
         clone.blendMode = this.blendMode;
         clone.isMask = this.isMask;
@@ -11108,6 +11121,7 @@ var Graphics = function (_Container) {
      * @param {number} [lineWidth=0] - width of the line to draw, will update the objects stored style
      * @param {number} [color=0] - color of the line to draw, will update the objects stored style
      * @param {number} [alpha=1] - alpha of the line to draw, will update the objects stored style
+     * @param {number} [alignment=1] - alignment of the line to draw, (0 = inner, 0.5 = middle, 1 = outter)
      * @return {PIXI.Graphics} This Graphics object. Good for chaining method calls
      */
 
@@ -11116,10 +11130,12 @@ var Graphics = function (_Container) {
         var lineWidth = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
         var color = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
         var alpha = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+        var alignment = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0.5;
 
         this.lineWidth = lineWidth;
         this.lineColor = color;
         this.lineAlpha = alpha;
+        this.lineAlignment = alignment;
 
         if (this.currentPath) {
             if (this.currentPath.shape.points.length) {
@@ -11134,6 +11150,7 @@ var Graphics = function (_Container) {
                 this.currentPath.lineWidth = this.lineWidth;
                 this.currentPath.lineColor = this.lineColor;
                 this.currentPath.lineAlpha = this.lineAlpha;
+                this.currentPath.lineAlignment = this.lineAlignment;
             }
         }
 
@@ -11588,6 +11605,8 @@ var Graphics = function (_Container) {
     Graphics.prototype.clear = function clear() {
         if (this.lineWidth || this.filling || this.graphicsData.length > 0) {
             this.lineWidth = 0;
+            this.lineAlignment = 0.5;
+
             this.filling = false;
 
             this.boundsDirty = -1;
@@ -11895,7 +11914,7 @@ var Graphics = function (_Container) {
 
         this.currentPath = null;
 
-        var data = new _GraphicsData2.default(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, this.nativeLines, shape);
+        var data = new _GraphicsData2.default(this.lineWidth, this.lineColor, this.lineAlpha, this.fillColor, this.fillAlpha, this.filling, this.nativeLines, shape, this.lineAlignment);
 
         this.graphicsData.push(data);
 
@@ -12056,8 +12075,9 @@ var GraphicsData = function () {
    * @param {boolean} fill - whether or not the shape is filled with a colour
    * @param {boolean} nativeLines - the method for drawing lines
    * @param {PIXI.Circle|PIXI.Rectangle|PIXI.Ellipse|PIXI.Polygon} shape - The shape object to draw.
+   * @param {number} lineAlignment - the alignment of the line.
    */
-  function GraphicsData(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, nativeLines, shape) {
+  function GraphicsData(lineWidth, lineColor, lineAlpha, fillColor, fillAlpha, fill, nativeLines, shape, lineAlignment) {
     _classCallCheck(this, GraphicsData);
 
     /**
@@ -12065,6 +12085,14 @@ var GraphicsData = function () {
      * @member {number}
      */
     this.lineWidth = lineWidth;
+
+    /**
+     * The alignment of any lines drawn (0.5 = middle, 1 = outter, 0 = inner).
+     *
+     * @member {number}
+     * @default 0
+     */
+    this.lineAlignment = lineAlignment;
 
     /**
      * if true the liens will be draw using LINES instead of TRIANGLE_STRIP
@@ -13024,7 +13052,7 @@ function buildCircle(graphicsData, webGLData, webGLDataNativeLines) {
         graphicsData.points = [];
 
         for (var _i = 0; _i < totalSegs + 1; _i++) {
-            graphicsData.points.push(x + Math.sin(seg * _i) * width, y + Math.cos(seg * _i) * height);
+            graphicsData.points.push(x + Math.sin(seg * -_i) * width, y + Math.cos(seg * -_i) * height);
         }
 
         (0, _buildLine2.default)(graphicsData, webGLData, webGLDataNativeLines);
@@ -13135,10 +13163,14 @@ function buildLine(graphicsData, webGLData) {
     perpx *= width;
     perpy *= width;
 
-    // start
-    verts.push(p1x - perpx, p1y - perpy, r, g, b, alpha);
+    var ratio = graphicsData.lineAlignment; // 0.5;
+    var r1 = (1 - ratio) * 2;
+    var r2 = ratio * 2;
 
-    verts.push(p1x + perpx, p1y + perpy, r, g, b, alpha);
+    // start
+    verts.push(p1x - perpx * r1, p1y - perpy * r1, r, g, b, alpha);
+
+    verts.push(p1x + perpx * r2, p1y + perpy * r2, r, g, b, alpha);
 
     for (var i = 1; i < length - 1; ++i) {
         p1x = points[(i - 1) * 2];
@@ -13179,9 +13211,9 @@ function buildLine(graphicsData, webGLData) {
 
         if (Math.abs(denom) < 0.1) {
             denom += 10.1;
-            verts.push(p2x - perpx, p2y - perpy, r, g, b, alpha);
+            verts.push(p2x - perpx * r1, p2y - perpy * r1, r, g, b, alpha);
 
-            verts.push(p2x + perpx, p2y + perpy, r, g, b, alpha);
+            verts.push(p2x + perpx * r2, p2y + perpy * r2, r, g, b, alpha);
 
             continue;
         }
@@ -13200,21 +13232,21 @@ function buildLine(graphicsData, webGLData) {
             perp3x *= width;
             perp3y *= width;
 
-            verts.push(p2x - perp3x, p2y - perp3y);
+            verts.push(p2x - perp3x * r1, p2y - perp3y * r1);
             verts.push(r, g, b, alpha);
 
-            verts.push(p2x + perp3x, p2y + perp3y);
+            verts.push(p2x + perp3x * r2, p2y + perp3y * r2);
             verts.push(r, g, b, alpha);
 
-            verts.push(p2x - perp3x, p2y - perp3y);
+            verts.push(p2x - perp3x * r2 * r1, p2y - perp3y * r1);
             verts.push(r, g, b, alpha);
 
             indexCount++;
         } else {
-            verts.push(px, py);
+            verts.push(p2x + (px - p2x) * r1, p2y + (py - p2y) * r1);
             verts.push(r, g, b, alpha);
 
-            verts.push(p2x - (px - p2x), p2y - (py - p2y));
+            verts.push(p2x - (px - p2x) * r2, p2y - (py - p2y) * r2);
             verts.push(r, g, b, alpha);
         }
     }
@@ -13234,10 +13266,10 @@ function buildLine(graphicsData, webGLData) {
     perpx *= width;
     perpy *= width;
 
-    verts.push(p2x - perpx, p2y - perpy);
+    verts.push(p2x - perpx * r1, p2y - perpy * r1);
     verts.push(r, g, b, alpha);
 
-    verts.push(p2x + perpx, p2y + perpy);
+    verts.push(p2x + perpx * r2, p2y + perpy * r2);
     verts.push(r, g, b, alpha);
 
     indices.push(indexStart);
@@ -28606,8 +28638,9 @@ function decomposeDataUri(dataUri) {
         return {
             mediaType: dataUriMatch[1] ? dataUriMatch[1].toLowerCase() : undefined,
             subType: dataUriMatch[2] ? dataUriMatch[2].toLowerCase() : undefined,
-            encoding: dataUriMatch[3] ? dataUriMatch[3].toLowerCase() : undefined,
-            data: dataUriMatch[4]
+            charset: dataUriMatch[3] ? dataUriMatch[3].toLowerCase() : undefined,
+            encoding: dataUriMatch[4] ? dataUriMatch[4].toLowerCase() : undefined,
+            data: dataUriMatch[5]
         };
     }
 
