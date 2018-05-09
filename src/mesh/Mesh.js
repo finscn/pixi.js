@@ -82,7 +82,22 @@ export default class Mesh extends core.Container
         this.indexDirty = 0;
 
         /**
-         * The blend mode to be applied to the mesh. Set to `PIXI.BLEND_MODES.NORMAL` to remove
+         * Version of mesh verticies array
+         *
+         * @member {number}
+         */
+        this.vertexDirty = 0;
+
+        /**
+         * For backwards compatibility the default is to re-upload verticies each render call.
+         * Set this to `false` and increase `vertexDirty` to manually re-upload the buffer.
+         *
+         * @member {boolean}
+         */
+        this.autoVertexUpdate = true;
+
+        /**
+         * The blend mode to be applied to the sprite. Set to `PIXI.BLEND_MODES.NORMAL` to remove
          * any blend mode.
          *
          * @member {number}
@@ -232,6 +247,10 @@ export default class Mesh extends core.Container
      */
     refresh(forceUpdate)
     {
+        if (this.autoVertexUpdate)
+        {
+            this.vertexDirty++;
+        }
         if (this._uvTransform.update(forceUpdate))
         {
             this._refreshUvs();
