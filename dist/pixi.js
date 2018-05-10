@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Wed, 09 May 2018 15:14:33 UTC
+ * Compiled Thu, 10 May 2018 13:50:27 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -12419,7 +12419,7 @@ var CanvasGraphicsRenderer = function () {
             var fillColor = data.fillColor | 0;
             var lineColor = data.lineColor | 0;
 
-            // super inline cos im an optimization NAZI :)
+            // super inline, cos optimization :)
             data._fillTint = ((fillColor >> 16 & 0xFF) / 255 * tintR * 255 << 16) + ((fillColor >> 8 & 0xFF) / 255 * tintG * 255 << 8) + (fillColor & 0xFF) / 255 * tintB * 255;
 
             data._lineTint = ((lineColor >> 16 & 0xFF) / 255 * tintR * 255 << 16) + ((lineColor >> 8 & 0xFF) / 255 * tintG * 255 << 8) + (lineColor & 0xFF) / 255 * tintB * 255;
@@ -45121,7 +45121,7 @@ var Mesh = function (_core$Container) {
          *
          * @member {boolean}
          */
-        _this.autoVertexUpdate = true;
+        _this.autoUpdate = true;
 
         /**
          * The blend mode to be applied to the sprite. Set to `PIXI.BLEND_MODES.NORMAL` to remove
@@ -45280,7 +45280,7 @@ var Mesh = function (_core$Container) {
 
 
     Mesh.prototype.refresh = function refresh(forceUpdate) {
-        if (this.autoVertexUpdate) {
+        if (this.autoUpdate) {
             this.vertexDirty++;
         }
         if (this._uvTransform.update(forceUpdate)) {
