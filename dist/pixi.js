@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Thu, 10 May 2018 13:50:27 UTC
+ * Compiled Mon, 14 May 2018 19:54:20 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -43729,6 +43729,9 @@ var InteractionManager = function (_EventEmitter) {
         var isTouch = data.pointerType === 'touch';
 
         var isMouse = data.pointerType === 'mouse' || data.pointerType === 'pen';
+        // need to track mouse down status in the mouse block so that we can emit
+        // event in a later block
+        var isMouseTap = false;
 
         // Mouse only
         if (isMouse) {
@@ -43745,8 +43748,8 @@ var InteractionManager = function (_EventEmitter) {
 
                 if (isDown) {
                     this.dispatchEvent(displayObject, isRightButton ? 'rightclick' : 'click', interactionEvent);
-                    // because we can confirm that the mousedown happened on this object, emit pointertap
-                    this.dispatchEvent(displayObject, 'pointertap', interactionEvent);
+                    // because we can confirm that the mousedown happened on this object, flag for later emit of pointertap
+                    isMouseTap = true;
                 }
             } else if (isDown) {
                 this.dispatchEvent(displayObject, isRightButton ? 'rightupoutside' : 'mouseupoutside', interactionEvent);
@@ -43767,8 +43770,8 @@ var InteractionManager = function (_EventEmitter) {
             if (isTouch) this.dispatchEvent(displayObject, 'touchend', interactionEvent);
 
             if (trackingData) {
-                // mouse pointer taps are handled in the isMouse block for code simplicity
-                if (!isMouse) {
+                // emit pointertap if not a mouse, or if the mouse block decided it was a tap
+                if (!isMouse || isMouseTap) {
                     this.dispatchEvent(displayObject, 'pointertap', interactionEvent);
                 }
                 if (isTouch) {
