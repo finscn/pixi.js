@@ -86,6 +86,160 @@ export default class NineSlicePlane extends Plane
     }
 
     /**
+     * Updates the horizontal vertices.
+     *
+     */
+    updateHorizontalVertices()
+    {
+        const vertices = this.vertices;
+
+        const h = this._topHeight + this._bottomHeight;
+        const scale = this._height > h ? 1.0 : this._height / h;
+
+        vertices[1] = vertices[3] = vertices[5] = vertices[7] = 0;
+        vertices[9] = vertices[11] = vertices[13] = vertices[15] = this._topHeight * scale;
+        vertices[17] = vertices[19] = vertices[21] = vertices[23] = this._height - (this._bottomHeight * scale);
+        vertices[25] = vertices[27] = vertices[29] = vertices[31] = this._height;
+    }
+
+    /**
+     * Updates the vertical vertices.
+     *
+     */
+    updateVerticalVertices()
+    {
+        const vertices = this.vertices;
+
+        const w = this._leftWidth + this._rightWidth;
+        const scale = this._width > w ? 1.0 : this._width / w;
+
+        vertices[0] = vertices[8] = vertices[16] = vertices[24] = 0;
+        vertices[2] = vertices[10] = vertices[18] = vertices[26] = this._leftWidth * scale;
+        vertices[4] = vertices[12] = vertices[20] = vertices[28] = this._width - (this._rightWidth * scale);
+        vertices[6] = vertices[14] = vertices[22] = vertices[30] = this._width;
+    }
+
+    /**
+     * Renders the object using the Canvas renderer
+     *
+     * @private
+     * @param {PIXI.CanvasRenderer} renderer - The canvas renderer to render with.
+     */
+    _renderCanvas(renderer)
+    {
+        // no texture - no drawImage
+        if (!this._texture.valid)
+        {
+            return;
+        }
+
+        // advanced rendering - allow texture rotates
+        if (this._texture.rotate)
+        {
+            super._renderCanvas(renderer);
+
+            return;
+        }
+
+        const context = renderer.context;
+
+        context.globalAlpha = this.worldAlpha;
+        renderer.setBlendMode(this.blendMode);
+
+        const transform = this.worldTransform;
+        const res = renderer.resolution;
+
+        if (renderer.roundPixels)
+        {
+            context.setTransform(
+                transform.a * res,
+                transform.b * res,
+                transform.c * res,
+                transform.d * res,
+                (transform.tx * res) | 0,
+                (transform.ty * res) | 0
+            );
+        }
+        else
+        {
+            context.setTransform(
+                transform.a * res,
+                transform.b * res,
+                transform.c * res,
+                transform.d * res,
+                transform.tx * res,
+                transform.ty * res
+            );
+        }
+
+        const base = this._texture.baseTexture;
+        const textureSource = base.source;
+        const w = base.width * base.resolution;
+        const h = base.height * base.resolution;
+
+        this.drawSegment(context, textureSource, w, h, 0, 1, 10, 11);
+        this.drawSegment(context, textureSource, w, h, 2, 3, 12, 13);
+        this.drawSegment(context, textureSource, w, h, 4, 5, 14, 15);
+        this.drawSegment(context, textureSource, w, h, 8, 9, 18, 19);
+        this.drawSegment(context, textureSource, w, h, 10, 11, 20, 21);
+        this.drawSegment(context, textureSource, w, h, 12, 13, 22, 23);
+        this.drawSegment(context, textureSource, w, h, 16, 17, 26, 27);
+        this.drawSegment(context, textureSource, w, h, 18, 19, 28, 29);
+        this.drawSegment(context, textureSource, w, h, 20, 21, 30, 31);
+    }
+
+    /**
+     * Renders one segment of the plane.
+     * to mimic the exact drawing behavior of stretching the image like WebGL does, we need to make sure
+     * that the source area is at least 1 pixel in size, otherwise nothing gets drawn when a slice size of 0 is used.
+     *
+     * @private
+     * @param {CanvasRenderingContext2D} context - The context to draw with.
+     * @param {CanvasImageSource} textureSource - The source to draw.
+     * @param {number} w - width of the texture
+     * @param {number} h - height of the texture
+     * @param {number} x1 - x index 1
+     * @param {number} y1 - y index 1
+     * @param {number} x2 - x index 2
+     * @param {number} y2 - y index 2
+     */
+    drawSegment(context, textureSource, w, h, x1, y1, x2, y2)
+    {
+        // otherwise you get weird results when using slices of that are 0 wide or high.
+        const uvs = this.uvs;
+        const vertices = this.vertices;
+
+        let sw = (uvs[x2] - uvs[x1]) * w;
+        let sh = (uvs[y2] - uvs[y1]) * h;
+        let dw = vertices[x2] - vertices[x1];
+        let dh = vertices[y2] - vertices[y1];
+
+        // make sure the source is at least 1 pixel wide and high, otherwise nothing will be drawn.
+        if (sw < 1)
+        {
+            sw = 1;
+        }
+
+        if (sh < 1)
+        {
+            sh = 1;
+        }
+
+        // make sure destination is at least 1 pixel wide and high, otherwise you get
+        // lines when rendering close to original size.
+        if (dw < 1)
+        {
+            dw = 1;
+        }
+
+        if (dh < 1)
+        {
+            dh = 1;
+        }
+
+        context.drawImage(textureSource, uvs[x1] * w, uvs[y1] * h, sw, sh, vertices[x1], vertices[y1], dw, dh);
+    }
+    /**
      * The width of the left column
      *
      * @member {number}
@@ -214,153 +368,5 @@ export default class NineSlicePlane extends Plane
         this.dirty++;
 
         this.multiplyUvs();
-    }
-
-    /**
-     * Updates the horizontal vertices.
-     */
-    updateHorizontalVertices()
-    {
-        const vertices = this.vertices;
-
-        vertices[1] = vertices[3] = vertices[5] = vertices[7] = 0;
-        vertices[9] = vertices[11] = vertices[13] = vertices[15] = this._topHeight;
-        vertices[17] = vertices[19] = vertices[21] = vertices[23] = this._height - this._bottomHeight;
-        vertices[25] = vertices[27] = vertices[29] = vertices[31] = this._height;
-    }
-
-    /**
-     * Updates the vertical vertices.
-     *
-     */
-    updateVerticalVertices()
-    {
-        const vertices = this.vertices;
-
-        vertices[0] = vertices[8] = vertices[16] = vertices[24] = 0;
-        vertices[2] = vertices[10] = vertices[18] = vertices[26] = this._leftWidth;
-        vertices[4] = vertices[12] = vertices[20] = vertices[28] = this._width - this._rightWidth;
-        vertices[6] = vertices[14] = vertices[22] = vertices[30] = this._width;
-    }
-
-    /**
-     * Renders the object using the Canvas renderer
-     *
-     * @private
-     * @param {PIXI.CanvasRenderer} renderer - The canvas renderer to render with.
-     */
-    _renderCanvas(renderer)
-    {
-        // no texture - no drawImage
-        if (!this._texture.valid)
-        {
-            return;
-        }
-
-        // advanced rendering - allow texture rotates
-        if (this._texture.rotate)
-        {
-            super._renderCanvas(renderer);
-
-            return;
-        }
-
-        const context = renderer.context;
-
-        context.globalAlpha = this.worldAlpha;
-        renderer.setBlendMode(this.blendMode);
-
-        const transform = this.worldTransform;
-        const res = renderer.resolution;
-
-        if (renderer.roundPixels)
-        {
-            context.setTransform(
-                transform.a * res,
-                transform.b * res,
-                transform.c * res,
-                transform.d * res,
-                (transform.tx * res) | 0,
-                (transform.ty * res) | 0
-            );
-        }
-        else
-        {
-            context.setTransform(
-                transform.a * res,
-                transform.b * res,
-                transform.c * res,
-                transform.d * res,
-                transform.tx * res,
-                transform.ty * res
-            );
-        }
-
-        const base = this._texture.baseTexture;
-        const textureSource = base.source;
-        const w = base.width * base.resolution;
-        const h = base.height * base.resolution;
-
-        this.drawSegment(context, textureSource, w, h, 0, 1, 10, 11);
-        this.drawSegment(context, textureSource, w, h, 2, 3, 12, 13);
-        this.drawSegment(context, textureSource, w, h, 4, 5, 14, 15);
-        this.drawSegment(context, textureSource, w, h, 8, 9, 18, 19);
-        this.drawSegment(context, textureSource, w, h, 10, 11, 20, 21);
-        this.drawSegment(context, textureSource, w, h, 12, 13, 22, 23);
-        this.drawSegment(context, textureSource, w, h, 16, 17, 26, 27);
-        this.drawSegment(context, textureSource, w, h, 18, 19, 28, 29);
-        this.drawSegment(context, textureSource, w, h, 20, 21, 30, 31);
-    }
-
-    /**
-     * Renders one segment of the plane.
-     * to mimic the exact drawing behavior of stretching the image like WebGL does, we need to make sure
-     * that the source area is at least 1 pixel in size, otherwise nothing gets drawn when a slice size of 0 is used.
-     *
-     * @private
-     * @param {CanvasRenderingContext2D} context - The context to draw with.
-     * @param {CanvasImageSource} textureSource - The source to draw.
-     * @param {number} w - width of the texture
-     * @param {number} h - height of the texture
-     * @param {number} x1 - x index 1
-     * @param {number} y1 - y index 1
-     * @param {number} x2 - x index 2
-     * @param {number} y2 - y index 2
-     */
-    drawSegment(context, textureSource, w, h, x1, y1, x2, y2)
-    {
-        // otherwise you get weird results when using slices of that are 0 wide or high.
-        const uvs = this.uvs;
-        const vertices = this.vertices;
-
-        let sw = (uvs[x2] - uvs[x1]) * w;
-        let sh = (uvs[y2] - uvs[y1]) * h;
-        let dw = vertices[x2] - vertices[x1];
-        let dh = vertices[y2] - vertices[y1];
-
-        // make sure the source is at least 1 pixel wide and high, otherwise nothing will be drawn.
-        if (sw < 1)
-        {
-            sw = 1;
-        }
-
-        if (sh < 1)
-        {
-            sh = 1;
-        }
-
-        // make sure destination is at least 1 pixel wide and high, otherwise you get
-        // lines when rendering close to original size.
-        if (dw < 1)
-        {
-            dw = 1;
-        }
-
-        if (dh < 1)
-        {
-            dh = 1;
-        }
-
-        context.drawImage(textureSource, uvs[x1] * w, uvs[y1] * h, sw, sh, vertices[x1], vertices[y1], dw, dh);
     }
 }

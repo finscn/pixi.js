@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.7.3
- * Compiled Mon, 14 May 2018 19:54:20 UTC
+ * Compiled Sun, 20 May 2018 05:14:02 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -45574,73 +45574,20 @@ var NineSlicePlane = function (_Plane) {
     }
 
     /**
-     * The width of the left column
-     *
-     * @member {number}
-     */
-
-
-    /**
-     * refreshes both vertices and uvs
-     *
-     * @private
-     */
-    NineSlicePlane.prototype._refreshVertices = function _refreshVertices() {
-        this.updateHorizontalVertices();
-        this.updateVerticalVertices();
-
-        var vertices = this.vertices;
-        var offsetX = this._anchor._x * this.width;
-        var offsetY = this._anchor._y * this.height;
-
-        for (var i = 0; i < 32; i += 2) {
-            vertices[i] += offsetX;
-            vertices[i + 1] += offsetY;
-        }
-        this.dirty++;
-    };
-
-    /**
-     * does nothing
-     *
-     * @private
-     */
-
-
-    NineSlicePlane.prototype._refreshUvs = function _refreshUvs() {
-        this._uvsID = this._lastUvsID;
-
-        var uvs = this.uvs;
-        var texture = this._texture;
-        var width = texture.orig.width;
-        var height = texture.orig.height;
-
-        uvs[0] = uvs[8] = uvs[16] = uvs[24] = 0;
-        uvs[2] = uvs[10] = uvs[18] = uvs[26] = this._leftWidth / width;
-        uvs[4] = uvs[12] = uvs[20] = uvs[28] = 1 - this._rightWidth / width;
-        uvs[6] = uvs[14] = uvs[22] = uvs[30] = 1;
-
-        uvs[1] = uvs[3] = uvs[5] = uvs[7] = 0;
-        uvs[9] = uvs[11] = uvs[13] = uvs[15] = this._topHeight / height;
-        uvs[17] = uvs[19] = uvs[21] = uvs[23] = 1 - this._bottomHeight / height;
-        uvs[25] = uvs[27] = uvs[29] = uvs[31] = 1;
-
-        this.dirty++;
-
-        this.multiplyUvs();
-    };
-
-    /**
      * Updates the horizontal vertices.
+     *
      */
 
 
     NineSlicePlane.prototype.updateHorizontalVertices = function updateHorizontalVertices() {
         var vertices = this.vertices;
 
+        var h = this._topHeight + this._bottomHeight;
+        var scale = this._height > h ? 1.0 : this._height / h;
+
         vertices[1] = vertices[3] = vertices[5] = vertices[7] = 0;
-        vertices[9] = vertices[11] = vertices[13] = vertices[15] = this._topHeight;
-        vertices[17] = vertices[19] = vertices[21] = vertices[23] = this._height - this._bottomHeight;
+        vertices[9] = vertices[11] = vertices[13] = vertices[15] = this._topHeight * scale;
+        vertices[17] = vertices[19] = vertices[21] = vertices[23] = this._height - this._bottomHeight * scale;
         vertices[25] = vertices[27] = vertices[29] = vertices[31] = this._height;
     };
 
@@ -45653,9 +45600,12 @@ var NineSlicePlane = function (_Plane) {
     NineSlicePlane.prototype.updateVerticalVertices = function updateVerticalVertices() {
         var vertices = this.vertices;
 
+        var w = this._leftWidth + this._rightWidth;
+        var scale = this._width > w ? 1.0 : this._width / w;
+
         vertices[0] = vertices[8] = vertices[16] = vertices[24] = 0;
-        vertices[2] = vertices[10] = vertices[18] = vertices[26] = this._leftWidth;
-        vertices[4] = vertices[12] = vertices[20] = vertices[28] = this._width - this._rightWidth;
+        vertices[2] = vertices[10] = vertices[18] = vertices[26] = this._leftWidth * scale;
+        vertices[4] = vertices[12] = vertices[20] = vertices[28] = this._width - this._rightWidth * scale;
         vertices[6] = vertices[14] = vertices[22] = vertices[30] = this._width;
     };
 
@@ -45757,6 +45707,62 @@ var NineSlicePlane = function (_Plane) {
         }
 
         context.drawImage(textureSource, uvs[x1] * w, uvs[y1] * h, sw, sh, vertices[x1], vertices[y1], dw, dh);
+    };
+    /**
+     * The width of the left column
+     *
+     * @member {number}
+     */
+
+
+    /**
+     * refreshes both vertices and uvs
+     *
+     * @private
+     */
+    NineSlicePlane.prototype._refreshVertices = function _refreshVertices() {
+        this.updateHorizontalVertices();
+        this.updateVerticalVertices();
+
+        var vertices = this.vertices;
+        var offsetX = this._anchor._x * this.width;
+        var offsetY = this._anchor._y * this.height;
+
+        for (var i = 0; i < 32; i += 2) {
+            vertices[i] += offsetX;
+            vertices[i + 1] += offsetY;
+        }
+        this.dirty++;
+    };
+
+    /**
+     * does nothing
+     *
+     * @private
+     */
+
+
+    NineSlicePlane.prototype._refreshUvs = function _refreshUvs() {
+        this._uvsID = this._lastUvsID;
+
+        var uvs = this.uvs;
+        var texture = this._texture;
+        var width = texture.orig.width;
+        var height = texture.orig.height;
+
+        uvs[0] = uvs[8] = uvs[16] = uvs[24] = 0;
+        uvs[2] = uvs[10] = uvs[18] = uvs[26] = this._leftWidth / width;
+        uvs[4] = uvs[12] = uvs[20] = uvs[28] = 1 - this._rightWidth / width;
+        uvs[6] = uvs[14] = uvs[22] = uvs[30] = 1;
+
+        uvs[1] = uvs[3] = uvs[5] = uvs[7] = 0;
+        uvs[9] = uvs[11] = uvs[13] = uvs[15] = this._topHeight / height;
+        uvs[17] = uvs[19] = uvs[21] = uvs[23] = 1 - this._bottomHeight / height;
+        uvs[25] = uvs[27] = uvs[29] = uvs[31] = 1;
+
+        this.dirty++;
+
+        this.multiplyUvs();
     };
 
     _createClass(NineSlicePlane, [{
