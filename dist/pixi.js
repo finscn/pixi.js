@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.7.3
- * Compiled Wed, 23 May 2018 17:57:58 UTC
+ * pixi.js - v4.8.0
+ * Compiled Sat, 26 May 2018 19:02:30 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -2048,8 +2048,6 @@ Framebuffer.prototype.enableStencil = function()
     // TODO.. this is depth AND stencil?
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.stencil);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,  this.width  , this.height );
-
-
 };
 
 /**
@@ -2149,7 +2147,6 @@ Framebuffer.createRGBA = function(gl, width, height, data)
     //now create the framebuffer object and attach the texture to it.
     var fbo = new Framebuffer(gl, width, height);
     fbo.enableTexture(texture);
-    //fbo.enableStencil(); // get this back on soon!
 
     //fbo.enableStencil(); // get this back on soon!
 
@@ -7649,7 +7646,7 @@ var AccessibilityManager = function () {
 
         var children = displayObject.children;
 
-        for (var i = children.length - 1; i >= 0; i--) {
+        for (var i = 0; i < children.length; i++) {
             this.updateAccessibleObjects(children[i]);
         }
     };
@@ -7718,6 +7715,14 @@ var AccessibilityManager = function () {
 
                     div.style.width = hitArea.width * sx + 'px';
                     div.style.height = hitArea.height * sy + 'px';
+
+                    // update button titles and hints if they exist and they've changed
+                    if (div.title !== child.accessibleTitle && child.accessibleTitle !== null) {
+                        div.title = child.accessibleTitle;
+                    }
+                    if (div.getAttribute('aria-label') !== child.accessibleHint && child.accessibleHint !== null) {
+                        div.setAttribute('aria-label', child.accessibleHint);
+                    }
                 }
             }
         }
@@ -7776,18 +7781,34 @@ var AccessibilityManager = function () {
             div.style.zIndex = DIV_TOUCH_ZINDEX;
             div.style.borderStyle = 'none';
 
+            // ARIA attributes ensure that button title and hint updates are announced properly
+            if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
+                // Chrome doesn't need aria-live to work as intended; in fact it just gets more confused.
+                div.setAttribute('aria-live', 'off');
+            } else {
+                div.setAttribute('aria-live', 'polite');
+            }
+
+            if (navigator.userAgent.match(/rv:.*Gecko\//)) {
+                // FireFox needs this to announce only the new button name
+                div.setAttribute('aria-relevant', 'additions');
+            } else {
+                // required by IE, other browsers don't much care
+                div.setAttribute('aria-relevant', 'text');
+            }
+
             div.addEventListener('click', this._onClick.bind(this));
             div.addEventListener('focus', this._onFocus.bind(this));
             div.addEventListener('focusout', this._onFocusOut.bind(this));
         }
 
-        if (displayObject.accessibleTitle) {
+        if (displayObject.accessibleTitle && displayObject.accessibleTitle !== null) {
             div.title = displayObject.accessibleTitle;
-        } else if (!displayObject.accessibleTitle && !displayObject.accessibleHint) {
-            div.title = 'displayObject ' + this.tabIndex;
+        } else if (!displayObject.accessibleHint || displayObject.accessibleHint === null) {
+            div.title = 'displayObject ' + displayObject.tabIndex;
         }
 
-        if (displayObject.accessibleHint) {
+        if (displayObject.accessibleHint && displayObject.accessibleHint !== null) {
             div.setAttribute('aria-label', displayObject.accessibleHint);
         }
 
@@ -7825,6 +7846,9 @@ var AccessibilityManager = function () {
 
 
     AccessibilityManager.prototype._onFocus = function _onFocus(e) {
+        if (!e.target.getAttribute('aria-live', 'off')) {
+            e.target.setAttribute('aria-live', 'assertive');
+        }
         var interactionManager = this.renderer.plugins.interaction;
 
         interactionManager.dispatchEvent(e.target.displayObject, 'mouseover', interactionManager.eventData);
@@ -7839,6 +7863,9 @@ var AccessibilityManager = function () {
 
 
     AccessibilityManager.prototype._onFocusOut = function _onFocusOut(e) {
+        if (!e.target.getAttribute('aria-live', 'off')) {
+            e.target.setAttribute('aria-live', 'polite');
+        }
         var interactionManager = this.renderer.plugins.interaction;
 
         interactionManager.dispatchEvent(e.target.displayObject, 'mouseout', interactionManager.eventData);
@@ -7864,10 +7891,15 @@ var AccessibilityManager = function () {
      * Is called when the mouse moves across the renderer element
      *
      * @private
+     * @param {MouseEvent} e - The mouse event.
      */
 
 
-    AccessibilityManager.prototype._onMouseMove = function _onMouseMove() {
+    AccessibilityManager.prototype._onMouseMove = function _onMouseMove(e) {
+        if (e.movementX === 0 && e.movementY === 0) {
+            return;
+        }
+
         this.deactivate();
     };
 
@@ -8365,7 +8397,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.7.3';
+var VERSION = exports.VERSION = '4.8.0';
 
 /**
  * Two Pi.
@@ -28457,7 +28489,7 @@ var TickerListener = function () {
         }
 
         // Redirect to the next item
-        var redirect = this.previous;
+        var redirect = this.next;
 
         // Remove references
         this.next = hard ? null : redirect;
@@ -39129,6 +39161,13 @@ var BitmapText = function (_core$Container) {
         _this._maxLineHeight = 0;
 
         /**
+         * Letter spacing. This is useful for setting the space between characters.
+         * @member {number}
+         * @private
+         */
+        _this._letterSpacing = 0;
+
+        /**
          * Text anchor. read-only
          *
          * @member {PIXI.ObservablePoint}
@@ -39162,44 +39201,33 @@ var BitmapText = function (_core$Container) {
         var pos = new core.Point();
         var chars = [];
         var lineWidths = [];
+        var text = this.text.replace(/(?:\r\n|\r)/g, '\n');
+        var textLength = text.length;
+        var maxWidth = this._maxWidth * data.size / this._font.size;
 
         var prevCharCode = null;
         var lastLineWidth = 0;
         var maxLineWidth = 0;
         var line = 0;
-        var lastSpace = -1;
-        var lastSpaceWidth = 0;
+        var lastBreakPos = -1;
+        var lastBreakWidth = 0;
         var spacesRemoved = 0;
         var maxLineHeight = 0;
 
-        for (var i = 0; i < this.text.length; i++) {
-            var charCode = this.text.charCodeAt(i);
+        for (var i = 0; i < textLength; i++) {
+            var charCode = text.charCodeAt(i);
+            var char = text.charAt(i);
 
-            if (/(\s)/.test(this.text.charAt(i))) {
-                lastSpace = i;
-                lastSpaceWidth = lastLineWidth;
+            if (/(?:\s)/.test(char)) {
+                lastBreakPos = i;
+                lastBreakWidth = lastLineWidth;
             }
 
-            if (/(?:\r\n|\r|\n)/.test(this.text.charAt(i))) {
+            if (char === '\r' || char === '\n') {
                 lineWidths.push(lastLineWidth);
                 maxLineWidth = Math.max(maxLineWidth, lastLineWidth);
-                line++;
-
-                pos.x = 0;
-                pos.y += data.lineHeight;
-                prevCharCode = null;
-                continue;
-            }
-
-            if (lastSpace !== -1 && this._maxWidth > 0 && pos.x * scale > this._maxWidth) {
-                core.utils.removeItems(chars, lastSpace - spacesRemoved, i - lastSpace);
-                i = lastSpace;
-                lastSpace = -1;
+                ++line;
                 ++spacesRemoved;
-
-                lineWidths.push(lastSpaceWidth);
-                maxLineWidth = Math.max(maxLineWidth, lastSpaceWidth);
-                line++;
 
                 pos.x = 0;
                 pos.y += data.lineHeight;
@@ -39221,16 +39249,39 @@ var BitmapText = function (_core$Container) {
                 texture: charData.texture,
                 line: line,
                 charCode: charCode,
-                position: new core.Point(pos.x + charData.xOffset, pos.y + charData.yOffset)
+                position: new core.Point(pos.x + charData.xOffset + this._letterSpacing / 2, pos.y + charData.yOffset)
             });
-            lastLineWidth = pos.x + (charData.texture.width + charData.xOffset);
-            pos.x += charData.xAdvance;
+            pos.x += charData.xAdvance + this._letterSpacing;
+            lastLineWidth = pos.x;
             maxLineHeight = Math.max(maxLineHeight, charData.yOffset + charData.texture.height);
             prevCharCode = charCode;
+
+            if (lastBreakPos !== -1 && maxWidth > 0 && pos.x > maxWidth) {
+                ++spacesRemoved;
+                core.utils.removeItems(chars, 1 + lastBreakPos - spacesRemoved, 1 + i - lastBreakPos);
+                i = lastBreakPos;
+                lastBreakPos = -1;
+
+                lineWidths.push(lastBreakWidth);
+                maxLineWidth = Math.max(maxLineWidth, lastBreakWidth);
+                line++;
+
+                pos.x = 0;
+                pos.y += data.lineHeight;
+                prevCharCode = null;
+            }
         }
 
-        lineWidths.push(lastLineWidth);
-        maxLineWidth = Math.max(maxLineWidth, lastLineWidth);
+        var lastChar = text.charAt(text.length - 1);
+
+        if (lastChar !== '\r' && lastChar !== '\n') {
+            if (/(?:\s)/.test(lastChar)) {
+                lastLineWidth = lastBreakWidth;
+            }
+
+            lineWidths.push(lastLineWidth);
+            maxLineWidth = Math.max(maxLineWidth, lastLineWidth);
+        }
 
         var lineAlignOffsets = [];
 
@@ -39564,6 +39615,25 @@ var BitmapText = function (_core$Container) {
         }
 
         /**
+         * Additional space between characters.
+         *
+         * @member {number}
+         */
+
+    }, {
+        key: 'letterSpacing',
+        get: function get() {
+            return this._letterSpacing;
+        },
+        set: function set(value) // eslint-disable-line require-jsdoc
+        {
+            if (this._letterSpacing !== value) {
+                this._letterSpacing = value;
+                this.dirty = true;
+            }
+        }
+
+        /**
          * The height of the overall text, different from fontSize,
          * which is defined in the style object
          *
@@ -39835,7 +39905,7 @@ var TilingSprite = function (_core$Sprite) {
             this._bounds.minX = this._width * -this._anchor._x;
             this._bounds.minY = this._height * -this._anchor._y;
             this._bounds.maxX = this._width * (1 - this._anchor._x);
-            this._bounds.maxY = this._height * (1 - this._anchor._x);
+            this._bounds.maxY = this._height * (1 - this._anchor._y);
 
             if (!rect) {
                 if (!this._localBoundsRect) {
