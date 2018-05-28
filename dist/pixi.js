@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.0
- * Compiled Sat, 26 May 2018 19:02:30 UTC
+ * Compiled Mon, 28 May 2018 05:24:03 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -44853,6 +44853,17 @@ exports.default = function () {
 
         var pages = resource.data.getElementsByTagName('page');
         var textures = [];
+
+        // Handle completed, when the number of textures
+        // load is the same number as references in the fnt file
+        var completed = function completed() {
+            if (textures.length === pages.length) {
+                parse(resource, textures);
+                next();
+            }
+        };
+
+        // Standard loading options for images
         var loadOptions = {
             crossOrigin: resource.crossOrigin,
             loadType: _resourceLoader.Resource.LOAD_TYPE.IMAGE,
@@ -44860,34 +44871,22 @@ exports.default = function () {
             parentResource: resource
         };
 
-        for (var x = 0; x < pages.length; ++x) {
-            var textureUrl = xmlUrl + pages[x].getAttribute('file');
+        for (var i = 0; i < pages.length; ++i) {
+            var url = xmlUrl + pages[i].getAttribute('file');
 
-            if (_core.utils.TextureCache[textureUrl]) {
-                textures.push(_core.utils.TextureCache[textureUrl]);
-            } else {
-                // load the texture for the font
-                this.add(resource.name + '_image' + x, textureUrl, loadOptions, function () {
-                    var nextTextures = [];
-
-                    for (var _x = 0; _x < pages.length; ++_x) {
-                        var nextTextureUrl = xmlUrl + pages[_x].getAttribute('file');
-
-                        if (_core.utils.TextureCache[nextTextureUrl]) {
-                            nextTextures.push(_core.utils.TextureCache[nextTextureUrl]);
-                        } else {
-                            return;
-                        }
-                    }
-                    parse(resource, nextTextures);
-                    next();
+            // texture is not loaded, we'll attempt to add
+            // it to the load and add the texture to the list
+            if (!this.resources[url]) {
+                this.add(url, loadOptions, function (resource) {
+                    textures.push(resource.texture);
+                    completed();
                 });
+            } else {
+                // incase the image is loaded outside
+                // using the same loader, texture will be available
+                textures.push(this.resources[url].texture);
+                completed();
             }
-        }
-
-        if (textures.length === pages.length) {
-            parse(resource, textures);
-            next();
         }
     };
 };
@@ -44895,8 +44894,6 @@ exports.default = function () {
 var _path = require('path');
 
 var path = _interopRequireWildcard(_path);
-
-var _core = require('../core');
 
 var _resourceLoader = require('resource-loader');
 
@@ -44916,7 +44913,7 @@ function parse(resource, textures) {
     resource.bitmapFont = _extras.BitmapText.registerFont(resource.data, textures);
 }
 
-},{"../core":65,"../extras":209,"path":8,"resource-loader":36}],230:[function(require,module,exports){
+},{"../extras":209,"path":8,"resource-loader":36}],230:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
