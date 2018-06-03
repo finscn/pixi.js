@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.0
- * Compiled Mon, 28 May 2018 05:24:03 UTC
+ * Compiled Sun, 03 Jun 2018 18:48:52 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -21559,6 +21559,8 @@ var Sprite = function (_Container) {
 
     Sprite.prototype.destroy = function destroy(options) {
         _Container.prototype.destroy.call(this, options);
+
+        this._texture.off('update', this._onTextureUpdate, this);
 
         this._anchor = null;
 

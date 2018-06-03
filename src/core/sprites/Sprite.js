@@ -439,6 +439,8 @@ export default class Sprite extends Container
     {
         super.destroy(options);
 
+        this._texture.off('update', this._onTextureUpdate, this);
+
         this._anchor = null;
 
         const destroyTexture = typeof options === 'boolean' ? options : options && options.texture;
