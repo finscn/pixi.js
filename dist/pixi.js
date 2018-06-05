@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.0
- * Compiled Tue, 05 Jun 2018 22:29:38 UTC
+ * Compiled Tue, 05 Jun 2018 23:36:40 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -23826,8 +23826,10 @@ var TextMetrics = function () {
                             width = 0;
                         }
 
-                        // give it its own line
-                        lines += TextMetrics.addLine(token);
+                        var isLastToken = i === tokens.length - 1;
+
+                        // give it its own line if it's not the end
+                        lines += TextMetrics.addLine(token, !isLastToken);
                         canPrependSpaces = false;
                         line = '';
                         width = 0;
