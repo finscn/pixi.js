@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.1
- * Compiled Wed, 06 Jun 2018 17:17:04 UTC
+ * Compiled Mon, 11 Jun 2018 05:23:44 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -21723,7 +21723,7 @@ var Sprite = function (_Container) {
                 return;
             }
 
-            this._texture = value;
+            this._texture = value || _Texture2.default.EMPTY;
             this.cachedTint = 0xFFFFFF;
 
             this._textureID = -1;
