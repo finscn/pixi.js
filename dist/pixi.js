@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.1
- * Compiled Mon, 11 Jun 2018 05:23:44 UTC
+ * Compiled Thu, 21 Jun 2018 16:55:03 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -24339,6 +24339,8 @@ var defaultStyle = {
     leading: 0
 };
 
+var genericFontFamilies = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui'];
+
 /**
  * A TextStyle Object decorates a Text Object. It can be shared between
  * multiple Text objects. Changing the style will update all text objects using it.
@@ -24464,8 +24466,8 @@ var TextStyle = function () {
             // Trim any extra white-space
             var fontFamily = fontFamilies[i].trim();
 
-            // Check if font already contains strings
-            if (!/([\"\'])[^\'\"]+\1/.test(fontFamily)) {
+            // Check if font is already escaped in quotes except for CSS generic fonts
+            if (!/([\"\'])[^\'\"]+\1/.test(fontFamily) && genericFontFamilies.indexOf(fontFamily) < 0) {
                 fontFamily = '"' + fontFamily + '"';
             }
             fontFamilies[i] = fontFamily;
