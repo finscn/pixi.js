@@ -1104,7 +1104,7 @@ export default class RenderContext
 
     createSpriteByTexture(texture, container)
     {
-        const sprite = Sprite.from(texture);
+        const sprite = new Sprite(texture);
 
         if (container !== false)
         {
@@ -1204,7 +1204,7 @@ export default class RenderContext
         texture.orig = new Rectangle();
         texture.trim = new Rectangle();
 
-        const sprite = Sprite.from(texture);
+        const sprite = new Sprite(texture);
 
         sprite.resolution = this.renderer.resolution;
         sprite.context = context;
