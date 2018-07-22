@@ -3,7 +3,6 @@ import settings from '../settings';
 import EventEmitter from 'eventemitter3';
 import pluginTarget from './pluginTarget';
 import * as mixins from './mixin';
-import insertSort from './insertSort';
 import * as isMobile from 'ismobilejs';
 import removeItems from 'remove-array-items';
 import mapPremultipliedBlendModes from './mapPremultipliedBlendModes';
@@ -74,8 +73,6 @@ export {
      * @return {number[]} Triangulated polygon
      */
     earcut,
-
-    insertSort,
 };
 
 /**

@@ -3,6 +3,45 @@ import * as core from '../../core';
 const Container = core.Container;
 
 /**
+ * Sort children by zIndex or compare-function.
+ * @param {function} [compareFunction] - The compare function for sorting.
+ * if no compareFunction, sort children by child.zIndex.
+ */
+Container.prototype.sortChildren = function (compareFunction)
+{
+    const children = this.children;
+    const count = children.length;
+
+    if (count > 0)
+    {
+        if (compareFunction && typeof compareFunction === 'function')
+        {
+            this.children.sort(compareFunction);
+        }
+        else
+        {
+            let childA;
+            let childB;
+
+            for (let i = 1; i < count; i++)
+            {
+                childA = children[i];
+                const zIndex = childA.zIndex || 0;
+
+                let j = i;
+
+                for (; j > 0 && ((childB = children[j - 1]).zIndex || 0) > zIndex; j--)
+                {
+                    children[j] = childB;
+                }
+                children[j] = childA;
+            }
+        }
+        this.onChildrenChange(0);
+    }
+};
+
+/**
  * A fast way to removes all children directly.
  *
  * @param {object|boolean} [options] - Options parameter.
