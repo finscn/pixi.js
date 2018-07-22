@@ -1,4 +1,4 @@
-import { removeItems } from '../utils';
+import { removeItems, insertSort } from '../utils';
 import DisplayObject from './DisplayObject';
 
 /**
@@ -311,6 +311,33 @@ export default class Container extends DisplayObject
         }
 
         throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
+    }
+
+    /**
+     * Sort children with compare function.
+     * @param {function} compareFunction - The compare function for sorting.
+     */
+    sortChildren(compareFunction)
+    {
+        if (this.children.length > 0)
+        {
+            this.children.sort(compareFunction);
+            this.onChildrenChange(0);
+        }
+    }
+
+    /**
+     * Sort children with insert Sort algorithm by the property of children.
+     * only ascending order
+     * @param {string} propertyName - the property name of children.
+     */
+    sortChildrenByProperty(propertyName)
+    {
+        if (this.children.length > 0)
+        {
+            insertSort(this.children, propertyName);
+            this.onChildrenChange(0);
+        }
     }
 
     /**

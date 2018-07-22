@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.1
- * Compiled Mon, 16 Jul 2018 20:48:18 UTC
+ * Compiled Sun, 22 Jul 2018 06:23:31 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -9396,6 +9396,33 @@ var Container = function (_DisplayObject) {
         }
 
         throw new RangeError('removeChildren: numeric values are outside the acceptable range.');
+    };
+
+    /**
+     * Sort children with compare function.
+     * @param {function} compareFunction - The compare function for sorting.
+     */
+
+
+    Container.prototype.sortChildren = function sortChildren(compareFunction) {
+        if (this.children.length > 0) {
+            this.children.sort(compareFunction);
+            this.onChildrenChange(0);
+        }
+    };
+
+    /**
+     * Sort children with insert Sort algorithm by the property of children.
+     * only ascending order
+     * @param {string} propertyName - the property name of children.
+     */
+
+
+    Container.prototype.sortChildrenByProperty = function sortChildrenByProperty(propertyName) {
+        if (this.children.length > 0) {
+            (0, _utils.insertSort)(this.children, propertyName);
+            this.onChildrenChange(0);
+        }
     };
 
     /**
@@ -21098,7 +21125,7 @@ exports.default = {
   MESH_CANVAS_PADDING: 0
 };
 
-},{"./utils/canUploadSameBuffer":122,"./utils/maxRecommendedTextures":127}],102:[function(require,module,exports){
+},{"./utils/canUploadSameBuffer":122,"./utils/maxRecommendedTextures":128}],102:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -23594,7 +23621,7 @@ var Text = function (_Sprite) {
 
 exports.default = Text;
 
-},{"../const":46,"../math":70,"../settings":101,"../sprites/Sprite":102,"../textures/Texture":115,"../utils":125,"../utils/trimCanvas":130,"./TextMetrics":109,"./TextStyle":110}],109:[function(require,module,exports){
+},{"../const":46,"../math":70,"../settings":101,"../sprites/Sprite":102,"../textures/Texture":115,"../utils":125,"../utils/trimCanvas":131,"./TextMetrics":109,"./TextStyle":110}],109:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -28699,7 +28726,7 @@ function determineCrossOrigin(url) {
 'use strict';
 
 exports.__esModule = true;
-exports.premultiplyBlendMode = exports.BaseTextureCache = exports.TextureCache = exports.earcut = exports.mixins = exports.pluginTarget = exports.EventEmitter = exports.removeItems = exports.isMobile = undefined;
+exports.premultiplyBlendMode = exports.BaseTextureCache = exports.TextureCache = exports.insertSort = exports.earcut = exports.mixins = exports.pluginTarget = exports.EventEmitter = exports.removeItems = exports.isMobile = undefined;
 exports.uid = uid;
 exports.hex2rgb = hex2rgb;
 exports.hex2string = hex2string;
@@ -28736,6 +28763,10 @@ var _pluginTarget2 = _interopRequireDefault(_pluginTarget);
 var _mixin = require('./mixin');
 
 var mixins = _interopRequireWildcard(_mixin);
+
+var _insertSort = require('./insertSort');
+
+var _insertSort2 = _interopRequireDefault(_insertSort);
 
 var _ismobilejs = require('ismobilejs');
 
@@ -28784,6 +28815,7 @@ exports.EventEmitter = _eventemitter2.default;
 exports.pluginTarget = _pluginTarget2.default;
 exports.mixins = mixins;
 exports.earcut = _earcut2.default;
+exports.insertSort = _insertSort2.default;
 
 /**
  * Gets the next unique identifier
@@ -29178,7 +29210,36 @@ function premultiplyTintToRgba(tint, alpha, out, premultiply) {
     return out;
 }
 
-},{"../const":46,"../settings":101,"./mapPremultipliedBlendModes":126,"./mixin":128,"./pluginTarget":129,"earcut":2,"eventemitter3":3,"ismobilejs":4,"remove-array-items":31}],126:[function(require,module,exports){
+},{"../const":46,"../settings":101,"./insertSort":126,"./mapPremultipliedBlendModes":127,"./mixin":129,"./pluginTarget":130,"earcut":2,"eventemitter3":3,"ismobilejs":4,"remove-array-items":31}],126:[function(require,module,exports){
+"use strict";
+
+exports.__esModule = true;
+exports.default = insertSort;
+/**
+ * Sort array with insert Sort algorithm by the property of array items.
+ * only ascending order
+ * @param {array} array - the array to sort.
+ * @param {string} propertyName - the property name of array items.
+ */
+function insertSort(array, propertyName) {
+    var t1 = void 0;
+    var t2 = void 0;
+    var count = array.length;
+
+    for (var i = 1; i < count; i++) {
+        t1 = array[i];
+        var sortValue = t1[propertyName];
+
+        var j = i;
+
+        for (; j > 0 && (t2 = array[j - 1])[propertyName] > sortValue; j--) {
+            array[j] = t2;
+        }
+        array[j] = t1;
+    }
+}
+
+},{}],127:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -29221,7 +29282,7 @@ function mapPremultipliedBlendModes() {
     return array;
 }
 
-},{"../const":46}],127:[function(require,module,exports){
+},{"../const":46}],128:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -29243,7 +29304,7 @@ function maxRecommendedTextures(max) {
     return max;
 }
 
-},{"ismobilejs":4}],128:[function(require,module,exports){
+},{"ismobilejs":4}],129:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -29305,7 +29366,7 @@ function performMixins() {
     mixins.length = 0;
 }
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -29371,7 +29432,7 @@ exports.default = {
     }
 };
 
-},{}],130:[function(require,module,exports){
+},{}],131:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -29447,7 +29508,7 @@ function trimCanvas(canvas) {
     };
 }
 
-},{}],131:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30603,7 +30664,7 @@ function deprecation(core) {
     }
 }
 
-},{}],132:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30628,7 +30689,7 @@ Object.defineProperty(exports, 'TestShaderFilter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./perspective/PerspectiveFilter":133,"./testshader/TestShaderFilter":136}],133:[function(require,module,exports){
+},{"./perspective/PerspectiveFilter":134,"./testshader/TestShaderFilter":137}],134:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30705,19 +30766,19 @@ var PerspectiveFilter = function (_core$Filter) {
 
 exports.default = PerspectiveFilter;
 
-},{"../../core":65,"../../extensions/Matrix3":182,"./perspective.frag.js":134,"./perspective.vert.js":135}],134:[function(require,module,exports){
+},{"../../core":65,"../../extensions/Matrix3":183,"./perspective.frag.js":135,"./perspective.vert.js":136}],135:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float uAlpha;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;\n}\n\n";
 
-},{}],135:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nuniform mat3 projectionMatrix;\nvarying vec2 vTextureCoord;\n\n// uniform mat3 quadToSquareMatrix;\n// uniform mat3 squareToQuadMatrix;\nuniform mat3 perspectiveMatrix;\n\nuniform mat3 worldMatrix;\nuniform mat3 worldMatrixT;\n\nuniform float spriteScaleX;\nuniform float spriteScaleY;\nuniform float spriteWidth;\nuniform float spriteHeight;\n\nvoid main(void) {\n    mat3 proM3 = projectionMatrix;\n    mat3 worldM3 = worldMatrix;\n    mat3 worldM3T = worldMatrixT;\n    // mat3 perM3 = quadToSquareMatrix * squareToQuadMatrix;\n    mat3 perM3 = perspectiveMatrix;\n\n    mat4 proM4;\n    proM4[0]=vec4( proM3[0][0],  proM3[0][1],  0,  proM3[0][2] );\n    proM4[1]=vec4( proM3[1][0],  proM3[1][1],  0,  proM3[1][2] );\n    proM4[2]=vec4( 0,            0,            1,  0           );\n    proM4[3]=vec4( proM3[2][0],  proM3[2][1],  0,  proM3[2][2] );\n\n    mat4 perM4;\n    perM4[0]=vec4( perM3[0][0],  perM3[0][1],  0,  perM3[0][2] );\n    perM4[1]=vec4( perM3[1][0],  perM3[1][1],  0,  perM3[1][2] );\n    perM4[2]=vec4( 0,            0,            1,  0           );\n    perM4[3]=vec4( perM3[2][0],  perM3[2][1],  0,  perM3[2][2] );\n\n    mat4 worldM4;\n    worldM4[0]=vec4( worldM3[0][0],  worldM3[0][1],  0,  worldM3[0][2] );\n    worldM4[1]=vec4( worldM3[1][0],  worldM3[1][1],  0,  worldM3[1][2] );\n    worldM4[2]=vec4( 0,              0,              1,  0             );\n    worldM4[3]=vec4( worldM3[2][0],  worldM3[2][1],  0,  worldM3[2][2] );\n\n    float w = spriteWidth / spriteScaleX;\n    float h = spriteHeight / spriteScaleY;\n    float iW = 1.0 / w;\n    float iH = 1.0 / h;\n\n    mat3 normalM3;\n    normalM3[0]=vec3(iW,  0,  0 );\n    normalM3[1]=vec3(0,   iH, 0 );\n    normalM3[2]=vec3(0,   0,  1 );\n\n    vec3 normalPos = normalM3 * worldM3T * vec3(aVertexPosition, 1.0);\n\n    mat4 restoreM4;\n    restoreM4[0]=vec4(w,  0,  0,  0 );\n    restoreM4[1]=vec4(0,  h,  0,  0 );\n    restoreM4[2]=vec4(0,  0,  1,  0 );\n    restoreM4[3]=vec4(0,  0,  0,  1 );\n\n    gl_Position = proM4 * worldM4 * restoreM4 * perM4 *  vec4(normalPos.xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}\n\n";
 
-},{}],136:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30773,19 +30834,19 @@ var TestShaderFilter = function (_core$Filter) {
 
 exports.default = TestShaderFilter;
 
-},{"../../core":65,"./test-shader.frag.js":137,"./test-shader.vert.js":138}],137:[function(require,module,exports){
+},{"../../core":65,"./test-shader.frag.js":138,"./test-shader.vert.js":139}],138:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\n// test-shader.frag.js\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform float uAlpha;\n\nvoid main(void)\n{\n   gl_FragColor = texture2D(uSampler, vTextureCoord) * uAlpha;\n}\n\n";
 
-},{}],138:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\n// test-shader.vert.js\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}\n\n";
 
-},{}],139:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30922,7 +30983,7 @@ var BaseSpriteShaderRenderer = function (_core$ObjectRenderer) {
 
 exports.default = BaseSpriteShaderRenderer;
 
-},{"../core":65}],140:[function(require,module,exports){
+},{"../core":65}],141:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -30995,7 +31056,7 @@ Object.keys(_shaderParticle).forEach(function (key) {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./lighting":144,"./perspective/PerspectiveRenderer":161,"./point/DisplayPoint":164,"./point/DisplayPointGroup":165,"./point/PointGroupRenderer":166,"./point/PointRenderer":167,"./shader-particle":175}],141:[function(require,module,exports){
+},{"./lighting":145,"./perspective/PerspectiveRenderer":162,"./point/DisplayPoint":165,"./point/DisplayPointGroup":166,"./point/PointGroupRenderer":167,"./point/PointRenderer":168,"./shader-particle":176}],142:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31191,7 +31252,7 @@ var LightQuad = function () {
 
 exports.default = LightQuad;
 
-},{"../../core/utils/createIndicesForQuads":123,"pixi-gl-core":15}],142:[function(require,module,exports){
+},{"../../core/utils/createIndicesForQuads":123,"pixi-gl-core":15}],143:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31349,7 +31410,7 @@ LightSpriteRenderer.defaultNormalTexture = Texture.from(canvas);
 LightSpriteRenderer.pluginName = 'lightSprite';
 WebGLRenderer.registerPlugin(LightSpriteRenderer.pluginName, LightSpriteRenderer);
 
-},{"../../core":65,"./LightQuad":141,"./lights/light/Light":156}],143:[function(require,module,exports){
+},{"../../core":65,"./LightQuad":142,"./lights/light/Light":157}],144:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31435,7 +31496,7 @@ var LightTarget = function () {
 
 exports.default = LightTarget;
 
-},{"./LightSpriteRenderer":142}],144:[function(require,module,exports){
+},{"./LightSpriteRenderer":143}],145:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31480,37 +31541,37 @@ exports.default = {
     LightTarget: _LightTarget2.default
 };
 
-},{"./LightSpriteRenderer":142,"./LightTarget":143,"./lights/ambientLight/AmbientLight":150,"./lights/directionalLight/DirectionalLight":153,"./lights/light/Light":156,"./lights/light/LightWithAmbient":157,"./lights/pointLight/PointLight":158}],145:[function(require,module,exports){
+},{"./LightSpriteRenderer":143,"./LightTarget":144,"./lights/ambientLight/AmbientLight":151,"./lights/directionalLight/DirectionalLight":154,"./lights/light/Light":157,"./lights/light/LightWithAmbient":158,"./lights/pointLight/PointLight":159}],146:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nuniform sampler2D uSampler;\nuniform sampler2D uNormalSampler;\n\n// light color, has multiplied bright for intensity.\nuniform vec3 uLightColor;\n\n// light attenuation coefficients (constant, linear, quadratic)\nuniform vec3 uLightFalloff;\n\nvarying vec2 vTextureCoord;\nvarying vec2 vNormalTextureCoord;\n\nuniform vec2 uViewSize;\n\nuniform mat3 uWorldMatrix;\nuniform bool uFixedNormal;\n\n";
 
-},{}],146:[function(require,module,exports){
+},{}],147:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nattribute vec2 aNormalTextureCoord;\n\nuniform mat3 projectionMatrix;\n\nvarying vec2 vTextureCoord;\nvarying vec2 vNormalTextureCoord;\n\n";
 
-},{}],147:[function(require,module,exports){
+},{}],148:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\n// normalize vectors\nvec3 normal3 = vec3(normalColor.xyz * 2.0 - 1.0);\nvec3 N = normalize(\n        uFixedNormal ?\n            normal3 :\n            vec3((uWorldMatrix * vec3(normal3.xy, 0.0)).xy , normal3.z)\n    );\n\n";
 
-},{}],148:[function(require,module,exports){
+},{}],149:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nvec4 diffuseColor = texture2D(uSampler, vTextureCoord);\n\n// bail out early when diffuse has no data\nif (diffuseColor.a == 0.0) {\n   discard;\n}\n\n";
 
-},{}],149:[function(require,module,exports){
+},{}],150:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nvec4 normalColor = texture2D(uNormalSampler, vNormalTextureCoord);\n\n// Red layer is X coords.\n// normalColor.r = 1.0 - normalColor.r;\n\n// Green layer is flipped Y coords.\nnormalColor.g = 1.0 - normalColor.g;\n\n";
 
-},{}],150:[function(require,module,exports){
+},{}],151:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31573,7 +31634,7 @@ var AmbientLight = function (_Light) {
 
 exports.default = AmbientLight;
 
-},{"../../../../core/const":46,"../light/Light":156,"./ambient.frag.js":151,"./ambient.vert.js":152}],151:[function(require,module,exports){
+},{"../../../../core/const":46,"../light/Light":157,"./ambient.frag.js":152,"./ambient.vert.js":153}],152:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31598,7 +31659,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n' + _commonHeadFrag2.default + '\n\nvoid main(void)\n{\n\n' + _loadDiffuseFrag2.default + '\n' + _loadNormalFrag2.default + '\n\n    uViewSize;\n\n    // simplified lambert shading that makes assumptions for ambient color\n\n    // compute Distance\n    float D = 1.0;\n\n' + _computeNormalFrag2.default + '\n\n    vec3 L = vec3(1.0, 1.0, 1.0);\n\n    // pre-multiply light color with intensity\n    // then perform "N dot L" to determine our diffuse\n    vec3 diffuse = uLightColor * max(dot(N, L), 0.0);\n\n    vec3 finalColor = diffuseColor.rgb * diffuse;\n\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\n}\n\n';
 
-},{"../_shared/common-head.frag.js":145,"../_shared/compute-normal.frag.js":147,"../_shared/load-diffuse.frag.js":148,"../_shared/load-normal.frag.js":149}],152:[function(require,module,exports){
+},{"../_shared/common-head.frag.js":146,"../_shared/compute-normal.frag.js":148,"../_shared/load-diffuse.frag.js":149,"../_shared/load-normal.frag.js":150}],153:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31611,7 +31672,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n' + _commonHeadVert2.default + '\n\nvoid main(void) {\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n    vNormalTextureCoord = aNormalTextureCoord;\n}\n\n';
 
-},{"../_shared/common-head.vert.js":146}],153:[function(require,module,exports){
+},{"../_shared/common-head.vert.js":147}],154:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31692,7 +31753,7 @@ var DirectionalLight = function (_LightWithAmbient) {
 
 exports.default = DirectionalLight;
 
-},{"../light/LightWithAmbient":157,"./directional.frag.js":154,"./directional.vert.js":155}],154:[function(require,module,exports){
+},{"../light/LightWithAmbient":158,"./directional.frag.js":155,"./directional.vert.js":156}],155:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31717,7 +31778,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n// imports the common uniforms like samplers, and ambient/light color\n' + _commonHeadFrag2.default + '\n\nuniform vec3 uAmbientColor;\nuniform vec3 uLightDirection;\n\nvoid main()\n{\n\n' + _loadDiffuseFrag2.default + '\n' + _loadNormalFrag2.default + '\n\n    // the directional vector of the light\n    vec3 lightVector = uLightDirection;\n\n    // correct for aspect ratio\n    lightVector.y *= uViewSize.y / uViewSize.x;\n\n    // compute Distance\n    // float D = length(lightVector);\n\n' + _computeNormalFrag2.default + '\n\n    vec3 L = normalize(lightVector);\n\n    // pre-multiply light color with intensity\n    // then perform "N dot L" to determine our diffuse\n    vec3 diffuse = uLightColor * max(dot(N, L), 0.0);\n\n    // calculate attenuation\n    float attenuation = 1.0;\n\n    // calculate final intesity and color, then combine\n    vec3 intensity = uAmbientColor + diffuse * attenuation;\n\n    vec3 finalColor = diffuseColor.rgb * intensity;\n\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\n}\n\n';
 
-},{"../_shared/common-head.frag.js":145,"../_shared/compute-normal.frag.js":147,"../_shared/load-diffuse.frag.js":148,"../_shared/load-normal.frag.js":149}],155:[function(require,module,exports){
+},{"../_shared/common-head.frag.js":146,"../_shared/compute-normal.frag.js":148,"../_shared/load-diffuse.frag.js":149,"../_shared/load-normal.frag.js":150}],156:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31730,7 +31791,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n' + _commonHeadVert2.default + '\n\nvoid main(void) {\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n    vNormalTextureCoord = aNormalTextureCoord;\n}\n\n';
 
-},{"../_shared/common-head.vert.js":146}],156:[function(require,module,exports){
+},{"../_shared/common-head.vert.js":147}],157:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -31918,7 +31979,7 @@ Light.locationMapping = {
     aNormalTextureCoord: 2
 };
 
-},{"../../../../core":65,"../../../../core/const":46}],157:[function(require,module,exports){
+},{"../../../../core":65,"../../../../core/const":46}],158:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32023,7 +32084,7 @@ var LightWithAmbient = function (_Light) {
 
 exports.default = LightWithAmbient;
 
-},{"../../../../core":65,"../../../../core/const":46,"./Light":156}],158:[function(require,module,exports){
+},{"../../../../core":65,"../../../../core/const":46,"./Light":157}],159:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32116,7 +32177,7 @@ var PointLight = function (_LightWithAmbient) {
 
 exports.default = PointLight;
 
-},{"../../../../core":65,"../light/LightWithAmbient":157,"./point.frag.js":159,"./point.vert.js":160}],159:[function(require,module,exports){
+},{"../../../../core":65,"../light/LightWithAmbient":158,"./point.frag.js":160,"./point.vert.js":161}],160:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32141,7 +32202,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n// imports the common uniforms like samplers, and ambient color\n' + _commonHeadFrag2.default + '\n\nvarying float flippedY;\n\nuniform vec3 uAmbientColor;\nuniform vec3 uLightPosition;\nuniform float uLightRadius;\n\nvoid main()\n{\n\n' + _loadDiffuseFrag2.default + '\n' + _loadNormalFrag2.default + '\n\n    vec2 fragCoord = gl_FragCoord.xy / uViewSize.xy;\n\n    // FBOs positions are flipped.\n    fragCoord.y = flippedY > 0.0 ? 1.0 - fragCoord.y : fragCoord.y;\n\n    vec3 lightPosition = uLightPosition / vec3(uViewSize, uViewSize.x);\n    float lightRadius = uLightRadius / uViewSize.x;\n\n    // the directional vector of the light\n    vec3 lightVector = vec3(lightPosition.xy - fragCoord, lightPosition.z);\n\n    // correct for aspect ratio\n    lightVector.y *= uViewSize.y / uViewSize.x;\n\n    // compute Distance\n    float D = length(lightVector);\n\n    vec3 intensity = uAmbientColor;\n    // bail out early when pixel outside of light sphere\n    if (D <= lightRadius) {\n\n' + _computeNormalFrag2.default + '\n\n        // vec3 L = normalize(lightVector);\n        vec3 L = lightVector / D;\n\n        // pre-multiply light color with intensity\n        // then perform N dot L to determine our diffuse\n        vec3 diffuse = uLightColor * max(dot(N, L), 0.0);\n\n        // calculate attenuation\n        float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\n\n        // calculate final intesity and color, then combine\n        intensity += diffuse * attenuation;\n    }\n\n    // TODO : roughness\n    // TODO : finalColor = ambient + diffuse + specular\n\n    vec3 finalColor = diffuseColor.rgb * intensity;\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\n}\n\n';
 
-},{"../_shared/common-head.frag.js":145,"../_shared/compute-normal.frag.js":147,"../_shared/load-diffuse.frag.js":148,"../_shared/load-normal.frag.js":149}],160:[function(require,module,exports){
+},{"../_shared/common-head.frag.js":146,"../_shared/compute-normal.frag.js":148,"../_shared/load-diffuse.frag.js":149,"../_shared/load-normal.frag.js":150}],161:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32154,7 +32215,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = '\n\n' + _commonHeadVert2.default + '\n\nvarying float flippedY;\n\nvoid main(void) {\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n    vNormalTextureCoord = aNormalTextureCoord;\n\n    flippedY = projectionMatrix[1][1] < 0.0 ? 1.0 : 0.0;\n}\n\n';
 
-},{"../_shared/common-head.vert.js":146}],161:[function(require,module,exports){
+},{"../_shared/common-head.vert.js":147}],162:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32421,15 +32482,15 @@ exports.default = PerspectiveRenderer;
 
 WebGLRenderer.registerPlugin('perspective', PerspectiveRenderer);
 
-},{"../../core":65,"../../extensions/Matrix3":182,"../BaseSpriteShaderRenderer":139,"./perspective.frag.js":162,"./perspective.vert.js":163}],162:[function(require,module,exports){
-arguments[4][134][0].apply(exports,arguments)
-},{"dup":134}],163:[function(require,module,exports){
+},{"../../core":65,"../../extensions/Matrix3":183,"../BaseSpriteShaderRenderer":140,"./perspective.frag.js":163,"./perspective.vert.js":164}],163:[function(require,module,exports){
+arguments[4][135][0].apply(exports,arguments)
+},{"dup":135}],164:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nvarying vec2 vTextureCoord;\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat4 projectionMatrix;\nuniform mat4 worldMatrix;\n\n// uniform mat3 quadToSquareMatrix;\n// uniform mat3 squareToQuadMatrix;\nuniform mat3 perspectiveMatrix;\n\nvoid main(void) {\n\n    mat4 perM4 = mat4(\n        perspectiveMatrix[0][0],  perspectiveMatrix[0][1],  0,  perspectiveMatrix[0][2],\n        perspectiveMatrix[1][0],  perspectiveMatrix[1][1],  0,  perspectiveMatrix[1][2],\n        0,                        0,                        1,  0,\n        perspectiveMatrix[2][0],  perspectiveMatrix[2][1],  0,  perspectiveMatrix[2][2]\n    );\n\n    gl_Position = projectionMatrix * worldMatrix * perM4 * vec4(aVertexPosition.xy, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}\n\n";
 
-},{}],164:[function(require,module,exports){
+},{}],165:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32507,7 +32568,7 @@ var DisplayPoint = function (_DisplayObject) {
 
 exports.default = DisplayPoint;
 
-},{"../../core":65}],165:[function(require,module,exports){
+},{"../../core":65}],166:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32615,7 +32676,7 @@ var DisplayPointGroup = function (_DisplayObject) {
 
 exports.default = DisplayPointGroup;
 
-},{"../../core":65}],166:[function(require,module,exports){
+},{"../../core":65}],167:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -32829,7 +32890,7 @@ exports.default = PointGroupRenderer;
 
 WebGLRenderer.registerPlugin('pointGroup', PointGroupRenderer);
 
-},{"../../core":65,"../../core/settings":101,"./PointRenderer":167,"bit-twiddle":1,"pixi-gl-core":15}],167:[function(require,module,exports){
+},{"../../core":65,"../../core/settings":101,"./PointRenderer":168,"bit-twiddle":1,"pixi-gl-core":15}],168:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -33151,7 +33212,7 @@ exports.default = PointRenderer;
 
 WebGLRenderer.registerPlugin('point', PointRenderer);
 
-},{"../../core":65,"../../core/settings":101,"../../core/sprites/webgl/BatchBuffer":105,"bit-twiddle":1,"pixi-gl-core":15}],168:[function(require,module,exports){
+},{"../../core":65,"../../core/settings":101,"../../core/sprites/webgl/BatchBuffer":105,"bit-twiddle":1,"pixi-gl-core":15}],169:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -33677,7 +33738,7 @@ var ShaderParticle = function (_DisplayObject) {
 
 exports.default = ShaderParticle;
 
-},{"../../core/const":46,"../../core/display/Bounds":47,"../../core/display/DisplayObject":49,"../../core/math":70,"../../core/textures/Texture":115,"pixi-gl-core":15}],169:[function(require,module,exports){
+},{"../../core/const":46,"../../core/display/Bounds":47,"../../core/display/DisplayObject":49,"../../core/math":70,"../../core/textures/Texture":115,"pixi-gl-core":15}],170:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -33877,7 +33938,7 @@ var ShaderParticleDisplay = function (_ShaderParticleProces) {
 
 exports.default = ShaderParticleDisplay;
 
-},{"../../core/Shader":44,"./ShaderParticle":168,"./ShaderParticleProcessor":170,"./display.frag.js":173,"./display.vert.js":174,"pixi-gl-core":15}],170:[function(require,module,exports){
+},{"../../core/Shader":44,"./ShaderParticle":169,"./ShaderParticleProcessor":171,"./display.frag.js":174,"./display.vert.js":175,"pixi-gl-core":15}],171:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34133,7 +34194,7 @@ var ShaderParticleProcessor = function () {
 
 exports.default = ShaderParticleProcessor;
 
-},{}],171:[function(require,module,exports){
+},{}],172:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34375,7 +34436,7 @@ exports.default = ShaderParticleRenderer;
 
 WebGLRenderer.registerPlugin('shaderparticle', ShaderParticleRenderer);
 
-},{"../../core":65,"./ShaderParticle":168,"./render.frag.js":176,"./render.vert.js":177,"pixi-gl-core":15}],172:[function(require,module,exports){
+},{"../../core":65,"./ShaderParticle":169,"./render.frag.js":177,"./render.vert.js":178,"pixi-gl-core":15}],173:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34707,19 +34768,19 @@ var ShaderParticleStatus = function (_ShaderParticleProces) {
 
 exports.default = ShaderParticleStatus;
 
-},{"../../core/Shader":44,"../../core/const":46,"../../core/renderers/webgl/utils/RenderTarget":96,"./ShaderParticle":168,"./ShaderParticleProcessor":170,"./status.frag.js":178,"./status.vert.js":179,"pixi-gl-core":15}],173:[function(require,module,exports){
+},{"../../core/Shader":44,"../../core/const":46,"../../core/renderers/webgl/utils/RenderTarget":96,"./ShaderParticle":169,"./ShaderParticleProcessor":171,"./status.frag.js":179,"./status.vert.js":180,"pixi-gl-core":15}],174:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\n\nuniform float uAlpha;\nuniform float uColorMultiplier;\nuniform vec3 uColorOffset;\n\nvoid main(void) {\n  vec4 color = texture2D(uSampler, vTextureCoord) * uAlpha;\n  color.rgb *= uColorMultiplier;\n  color.rgb += uColorOffset * color.a;\n\n  gl_FragColor = color;\n}\n\n";
 
-},{}],174:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nuniform mat3 projectionMatrix;\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uStatusOut0;\nattribute vec2 aParticleIndex;\n\nuniform vec2 uPosition;\n\n\n// attribute vec4 aParticleFrame;\n\n// uniform vec2 uParticleFrameSize;\n// attribute vec2 aParticleFrameOffset;\n\nvoid main(void){\n\n    vec4 state;\n\n    state = texture2D(uStatusOut0, aParticleIndex);\n\n    vec2 position = state.xy;\n\n    vec2 v = aVertexPosition + position + uPosition;\n\n    gl_Position = vec4((projectionMatrix * vec3(v, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = aTextureCoord;\n\n    // vTextureCoord = aParticleFrame.xy + aTextureCoord * aParticleFrame.zw;\n    // vTextureCoord = aParticleFrameOffset.xy + aTextureCoord * uParticleFrameSize.xy;\n}\n\n";
 
-},{}],175:[function(require,module,exports){
+},{}],176:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -34762,31 +34823,31 @@ Object.defineProperty(exports, 'ShaderParticleRenderer', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./ShaderParticle":168,"./ShaderParticleDisplay":169,"./ShaderParticleRenderer":171,"./ShaderParticleStatus":172}],176:[function(require,module,exports){
+},{"./ShaderParticle":169,"./ShaderParticleDisplay":170,"./ShaderParticleRenderer":172,"./ShaderParticleStatus":173}],177:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nprecision mediump float;\n\nuniform sampler2D uSampler;\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(uSampler, vTextureCoord);\n}\n\n";
 
-},{}],177:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nprecision mediump float;\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nvarying vec2 vTextureCoord;\n\nuniform float uFlipY;\n\nvoid main(void){\n    gl_Position = vec4(aVertexPosition.x, aVertexPosition.y * uFlipY, 0.0, 1.0);\n    vTextureCoord = aTextureCoord;\n}\n\n";
 
-},{}],178:[function(require,module,exports){
+},{}],179:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nprecision mediump float;\n\nvarying vec2 vTextureCoord;\nuniform sampler2D uStatusIn;\nuniform vec2 uViewSize;\n\nconst float gravity = 0.75;\n\nvoid main(void)\n{\n    vec4 position = texture2D(uStatusIn, vTextureCoord);\n\n    position.xy += position.zw;\n    position.w += gravity;\n\n    if(position.y > uViewSize.y)\n    {\n        position.y = uViewSize.y;\n        if(position.w > 25.0)\n        {\n            position.w = 25.0;\n        }\n        position.w *= -1.0;\n    }\n\n    if(position.x > uViewSize.x)\n    {\n        position.x = uViewSize.x;\n        position.z *= -1.0;\n    }\n    else if(position.x < 0.0)\n    {\n        position.x = 0.0;\n        position.z *= -1.0;\n    }\n\n    gl_FragColor = position;\n}\n\n";
 
-},{}],179:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports.default = "\n\nprecision mediump float;\n\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nvarying vec2 vTextureCoord;\n\nvoid main(void){\n   gl_Position = vec4(aVertexPosition, 0.0, 1.0);\n   vTextureCoord = aTextureCoord;\n}\n\n";
 
-},{}],180:[function(require,module,exports){
+},{}],181:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -35372,7 +35433,7 @@ var Animation = function () {
 
 exports.default = Animation;
 
-},{"../core/textures/Texture":115}],181:[function(require,module,exports){
+},{"../core/textures/Texture":115}],182:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -35547,7 +35608,7 @@ var LeafSprite = function (_core$Sprite) {
 
 exports.default = LeafSprite;
 
-},{"../core":65}],182:[function(require,module,exports){
+},{"../core":65}],183:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -35778,7 +35839,7 @@ Matrix3.str = function (a) {
     return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' + a[3] + ', ' + a[4] + ', ' + a[5] + ', ' + a[6] + ', ' + a[7] + ', ' + a[8] + ')';
 };
 
-},{}],183:[function(require,module,exports){
+},{}],184:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -36959,7 +37020,7 @@ var RenderContext = function () {
 
 exports.default = RenderContext;
 
-},{"../core":65,"../core/const":46,"../core/renderers/canvas/utils/CanvasRenderTarget":79,"../mesh":240,"../particles":243}],184:[function(require,module,exports){
+},{"../core":65,"../core/const":46,"../core/renderers/canvas/utils/CanvasRenderTarget":79,"../mesh":241,"../particles":244}],185:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37094,7 +37155,7 @@ var SimpleContainer = function (_core$Container) {
 
 exports.default = SimpleContainer;
 
-},{"../core":65}],185:[function(require,module,exports){
+},{"../core":65}],186:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37241,7 +37302,7 @@ var ParticleContainer = function (_particles$ParticleCo) {
 
 exports.default = ParticleContainer;
 
-},{"../particles":243}],186:[function(require,module,exports){
+},{"../particles":244}],187:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37363,7 +37424,7 @@ var SpriteTrail = function () {
 
 exports.default = SpriteTrail;
 
-},{"../core":65}],187:[function(require,module,exports){
+},{"../core":65}],188:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -37472,7 +37533,7 @@ _Animation2.default.createPlaneMesh = function (frames, duration, verticesX, ver
     return plane;
 };
 
-},{"../core":65,"../mesh":240,"./Animation.js":180}],188:[function(require,module,exports){
+},{"../core":65,"../mesh":241,"./Animation.js":181}],189:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -37549,7 +37610,7 @@ require('./animation-static.js');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./Animation":180,"./LeafSprite":181,"./Matrix3":182,"./RenderContext":183,"./SimpleContainer":184,"./SimpleParticleContainer":185,"./SpriteTrail":186,"./animation-static.js":187,"./mixin":189,"./patch":199}],189:[function(require,module,exports){
+},{"./Animation":181,"./LeafSprite":182,"./Matrix3":183,"./RenderContext":184,"./SimpleContainer":185,"./SimpleParticleContainer":186,"./SpriteTrail":187,"./animation-static.js":188,"./mixin":190,"./patch":200}],190:[function(require,module,exports){
 'use strict';
 
 require('./mixin-TransformStatic');
@@ -37570,7 +37631,7 @@ require('./mixin-Text');
 
 require('./mixin-utils');
 
-},{"./mixin-Container":190,"./mixin-DisplayObject":191,"./mixin-Matrix":192,"./mixin-Mesh":193,"./mixin-Sprite":194,"./mixin-Text":195,"./mixin-Transform":196,"./mixin-TransformStatic":197,"./mixin-utils":198}],190:[function(require,module,exports){
+},{"./mixin-Container":191,"./mixin-DisplayObject":192,"./mixin-Matrix":193,"./mixin-Mesh":194,"./mixin-Sprite":195,"./mixin-Text":196,"./mixin-Transform":197,"./mixin-TransformStatic":198,"./mixin-utils":199}],191:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -37678,7 +37739,7 @@ Container.prototype.renderChildrenCanvas = function (renderer) {
     }
 };
 
-},{"../../core":65}],191:[function(require,module,exports){
+},{"../../core":65}],192:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -37715,7 +37776,7 @@ DisplayObject.prototype.remove = function () {
     }
 };
 
-},{"../../core":65}],192:[function(require,module,exports){
+},{"../../core":65}],193:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -37776,7 +37837,7 @@ Matrix.prototype.toArray16 = function (transpose, array) {
     return array;
 };
 
-},{"../../core":65}],193:[function(require,module,exports){
+},{"../../core":65}],194:[function(require,module,exports){
 'use strict';
 
 var _mesh = require('../../mesh');
@@ -37796,7 +37857,7 @@ if (Mesh) {
     };
 }
 
-},{"../../mesh":240}],194:[function(require,module,exports){
+},{"../../mesh":241}],195:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -37888,7 +37949,7 @@ Sprite.prototype.perspectivePoint = function (mat, x, y, scaleX, scaleY) {
 //     }
 // };
 
-},{"../../core":65}],195:[function(require,module,exports){
+},{"../../core":65}],196:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -38039,7 +38100,7 @@ Text.prototype.refresh = function () {
 Text.prototype.simpleMode = false;
 Text.prototype.refreshPosition = false;
 
-},{"../../core":65}],196:[function(require,module,exports){
+},{"../../core":65}],197:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -38076,7 +38137,7 @@ Transform.prototype.updateTransformAsOrphan = function () {
     this._worldID++;
 };
 
-},{"../../core":65}],197:[function(require,module,exports){
+},{"../../core":65}],198:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -38118,7 +38179,7 @@ TransformStatic.prototype.updateTransformAsOrphan = function () {
     this._worldID++;
 };
 
-},{"../../core":65}],198:[function(require,module,exports){
+},{"../../core":65}],199:[function(require,module,exports){
 'use strict';
 
 var _core = require('../../core');
@@ -38173,11 +38234,11 @@ utils.createAnimation = function (textures, totalDuration, loop) {
     return sprite;
 };
 
-},{"../../core":65}],199:[function(require,module,exports){
+},{"../../core":65}],200:[function(require,module,exports){
 // TODO
 "use strict";
 
-},{}],200:[function(require,module,exports){
+},{}],201:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38357,7 +38418,7 @@ exports.default = CanvasExtract;
 
 core.CanvasRenderer.registerPlugin('extract', CanvasExtract);
 
-},{"../../core":65}],201:[function(require,module,exports){
+},{"../../core":65}],202:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38382,7 +38443,7 @@ Object.defineProperty(exports, 'canvas', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./canvas/CanvasExtract":200,"./webgl/WebGLExtract":202}],202:[function(require,module,exports){
+},{"./canvas/CanvasExtract":201,"./webgl/WebGLExtract":203}],203:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -38617,7 +38678,7 @@ exports.default = WebGLExtract;
 
 core.WebGLRenderer.registerPlugin('extract', WebGLExtract);
 
-},{"../../core":65}],203:[function(require,module,exports){
+},{"../../core":65}],204:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39026,7 +39087,7 @@ var AnimatedSprite = function (_core$Sprite) {
 
 exports.default = AnimatedSprite;
 
-},{"../core":65}],204:[function(require,module,exports){
+},{"../core":65}],205:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -39671,7 +39732,7 @@ exports.default = BitmapText;
 
 BitmapText.fonts = {};
 
-},{"../core":65,"../core/math/ObservablePoint":68,"../core/settings":101,"../core/utils":125}],205:[function(require,module,exports){
+},{"../core":65,"../core/math/ObservablePoint":68,"../core/settings":101,"../core/utils":125}],206:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40117,7 +40178,7 @@ var TilingSprite = function (_core$Sprite) {
 
 exports.default = TilingSprite;
 
-},{"../core":65,"../core/sprites/canvas/CanvasTinter":104}],206:[function(require,module,exports){
+},{"../core":65,"../core/sprites/canvas/CanvasTinter":104}],207:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -40521,7 +40582,7 @@ DisplayObject.prototype._cacheAsBitmapDestroy = function _cacheAsBitmapDestroy(o
     this.destroy(options);
 };
 
-},{"../core":65,"../core/textures/BaseTexture":112,"../core/textures/Texture":115,"../core/utils":125}],207:[function(require,module,exports){
+},{"../core":65,"../core/textures/BaseTexture":112,"../core/textures/Texture":115,"../core/utils":125}],208:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -40556,7 +40617,7 @@ core.Container.prototype.getChildByName = function getChildByName(name) {
     return null;
 };
 
-},{"../core":65}],208:[function(require,module,exports){
+},{"../core":65}],209:[function(require,module,exports){
 'use strict';
 
 var _core = require('../core');
@@ -40590,7 +40651,7 @@ core.DisplayObject.prototype.getGlobalPosition = function getGlobalPosition() {
     return point;
 };
 
-},{"../core":65}],209:[function(require,module,exports){
+},{"../core":65}],210:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40642,7 +40703,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // imported for side effect of extending the prototype only, contains no exports
 
-},{"./AnimatedSprite":203,"./BitmapText":204,"./TilingSprite":205,"./cacheAsBitmap":206,"./getChildByName":207,"./getGlobalPosition":208,"./webgl/TilingSpriteRenderer":210}],210:[function(require,module,exports){
+},{"./AnimatedSprite":204,"./BitmapText":205,"./TilingSprite":206,"./cacheAsBitmap":207,"./getChildByName":208,"./getGlobalPosition":209,"./webgl/TilingSpriteRenderer":211}],211:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40804,7 +40865,7 @@ exports.default = TilingSpriteRenderer;
 
 core.WebGLRenderer.registerPlugin('tilingSprite', TilingSpriteRenderer);
 
-},{"../../core":65,"../../core/const":46,"path":8}],211:[function(require,module,exports){
+},{"../../core":65,"../../core/const":46,"path":8}],212:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -40888,7 +40949,7 @@ var AlphaFilter = function (_core$Filter) {
 
 exports.default = AlphaFilter;
 
-},{"../../core":65,"path":8}],212:[function(require,module,exports){
+},{"../../core":65,"path":8}],213:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41062,7 +41123,7 @@ var BlurFilter = function (_core$Filter) {
 
 exports.default = BlurFilter;
 
-},{"../../core":65,"./BlurXFilter":213,"./BlurYFilter":214}],213:[function(require,module,exports){
+},{"../../core":65,"./BlurXFilter":214,"./BlurYFilter":215}],214:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41228,7 +41289,7 @@ var BlurXFilter = function (_core$Filter) {
 
 exports.default = BlurXFilter;
 
-},{"../../core":65,"./generateBlurFragSource":215,"./generateBlurVertSource":216,"./getMaxBlurKernelSize":217}],214:[function(require,module,exports){
+},{"../../core":65,"./generateBlurFragSource":216,"./generateBlurVertSource":217,"./getMaxBlurKernelSize":218}],215:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41393,7 +41454,7 @@ var BlurYFilter = function (_core$Filter) {
 
 exports.default = BlurYFilter;
 
-},{"../../core":65,"./generateBlurFragSource":215,"./generateBlurVertSource":216,"./getMaxBlurKernelSize":217}],215:[function(require,module,exports){
+},{"../../core":65,"./generateBlurFragSource":216,"./generateBlurVertSource":217,"./getMaxBlurKernelSize":218}],216:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41440,7 +41501,7 @@ function generateFragBlurSource(kernelSize) {
     return fragSource;
 }
 
-},{}],216:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -41484,7 +41545,7 @@ function generateVertBlurSource(kernelSize, x) {
     return vertSource;
 }
 
-},{}],217:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -41500,7 +41561,7 @@ function getMaxKernelSize(gl) {
     return kernelSize;
 }
 
-},{}],218:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42051,7 +42112,7 @@ var ColorMatrixFilter = function (_core$Filter) {
 exports.default = ColorMatrixFilter;
 ColorMatrixFilter.prototype.grayscale = ColorMatrixFilter.prototype.greyscale;
 
-},{"../../core":65,"path":8}],219:[function(require,module,exports){
+},{"../../core":65,"path":8}],220:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42159,7 +42220,7 @@ var DisplacementFilter = function (_core$Filter) {
 
 exports.default = DisplacementFilter;
 
-},{"../../core":65,"path":8}],220:[function(require,module,exports){
+},{"../../core":65,"path":8}],221:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42213,7 +42274,7 @@ var FXAAFilter = function (_core$Filter) {
 
 exports.default = FXAAFilter;
 
-},{"../../core":65,"path":8}],221:[function(require,module,exports){
+},{"../../core":65,"path":8}],222:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42292,7 +42353,7 @@ Object.defineProperty(exports, 'AlphaFilter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./alpha/AlphaFilter":211,"./blur/BlurFilter":212,"./blur/BlurXFilter":213,"./blur/BlurYFilter":214,"./colormatrix/ColorMatrixFilter":218,"./displacement/DisplacementFilter":219,"./fxaa/FXAAFilter":220,"./noise/NoiseFilter":222}],222:[function(require,module,exports){
+},{"./alpha/AlphaFilter":212,"./blur/BlurFilter":213,"./blur/BlurXFilter":214,"./blur/BlurYFilter":215,"./colormatrix/ColorMatrixFilter":219,"./displacement/DisplacementFilter":220,"./fxaa/FXAAFilter":221,"./noise/NoiseFilter":223}],223:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42389,7 +42450,7 @@ var NoiseFilter = function (_core$Filter) {
 
 exports.default = NoiseFilter;
 
-},{"../../core":65,"path":8}],223:[function(require,module,exports){
+},{"../../core":65,"path":8}],224:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -42612,7 +42673,7 @@ var InteractionData = function () {
 
 exports.default = InteractionData;
 
-},{"../core":65}],224:[function(require,module,exports){
+},{"../core":65}],225:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -42695,7 +42756,7 @@ var InteractionEvent = function () {
 
 exports.default = InteractionEvent;
 
-},{}],225:[function(require,module,exports){
+},{}],226:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44474,7 +44535,7 @@ exports.default = InteractionManager;
 core.WebGLRenderer.registerPlugin('interaction', InteractionManager);
 core.CanvasRenderer.registerPlugin('interaction', InteractionManager);
 
-},{"../core":65,"./InteractionData":223,"./InteractionEvent":224,"./InteractionTrackingData":226,"./interactiveTarget":228,"eventemitter3":3}],226:[function(require,module,exports){
+},{"../core":65,"./InteractionData":224,"./InteractionEvent":225,"./InteractionTrackingData":227,"./interactiveTarget":229,"eventemitter3":3}],227:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -44650,7 +44711,7 @@ InteractionTrackingData.FLAGS = Object.freeze({
     RIGHT_DOWN: 1 << 2
 });
 
-},{}],227:[function(require,module,exports){
+},{}],228:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44702,7 +44763,7 @@ Object.defineProperty(exports, 'InteractionEvent', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./InteractionData":223,"./InteractionEvent":224,"./InteractionManager":225,"./InteractionTrackingData":226,"./interactiveTarget":228}],228:[function(require,module,exports){
+},{"./InteractionData":224,"./InteractionEvent":225,"./InteractionManager":226,"./InteractionTrackingData":227,"./interactiveTarget":229}],229:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44819,7 +44880,7 @@ exports.default = {
   _trackedPointers: undefined
 };
 
-},{}],229:[function(require,module,exports){
+},{}],230:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -44939,7 +45000,7 @@ function parse(resource, textures) {
     resource.bitmapFont = _extras.BitmapText.registerFont(resource.data, textures);
 }
 
-},{"../extras":209,"path":8,"resource-loader":36}],230:[function(require,module,exports){
+},{"../extras":210,"path":8,"resource-loader":36}],231:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -45067,7 +45128,7 @@ AppPrototype.destroy = function destroy(removeView, stageOptions) {
     this._parentDestroy(removeView, stageOptions);
 };
 
-},{"../core/Application":43,"./bitmapFontParser":229,"./loader":231,"./spritesheetParser":232,"./textureParser":233,"resource-loader":36}],231:[function(require,module,exports){
+},{"../core/Application":43,"./bitmapFontParser":230,"./loader":232,"./spritesheetParser":233,"./textureParser":234,"resource-loader":36}],232:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -45238,7 +45299,7 @@ var Resource = _resourceLoader2.default.Resource;
 
 Resource.setExtensionXhrType('fnt', Resource.XHR_RESPONSE_TYPE.DOCUMENT);
 
-},{"./bitmapFontParser":229,"./spritesheetParser":232,"./textureParser":233,"eventemitter3":3,"resource-loader":36,"resource-loader/lib/middlewares/parsing/blob":37}],232:[function(require,module,exports){
+},{"./bitmapFontParser":230,"./spritesheetParser":233,"./textureParser":234,"eventemitter3":3,"resource-loader":36,"resource-loader/lib/middlewares/parsing/blob":37}],233:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -45302,7 +45363,7 @@ function getResourcePath(resource, baseUrl) {
     return _url2.default.resolve(resource.url.replace(baseUrl, ''), resource.data.meta.image);
 }
 
-},{"../core":65,"resource-loader":36,"url":38}],233:[function(require,module,exports){
+},{"../core":65,"resource-loader":36,"url":38}],234:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -45325,7 +45386,7 @@ var _Texture2 = _interopRequireDefault(_Texture);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"../core/textures/Texture":115,"resource-loader":36}],234:[function(require,module,exports){
+},{"../core/textures/Texture":115,"resource-loader":36}],235:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -45778,7 +45839,7 @@ Mesh.DRAW_MODES = {
     TRIANGLES: 1
 };
 
-},{"../core":65,"../core/textures/Texture":115}],235:[function(require,module,exports){
+},{"../core":65,"../core/textures/Texture":115}],236:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -46158,7 +46219,7 @@ var NineSlicePlane = function (_Plane) {
 
 exports.default = NineSlicePlane;
 
-},{"./Plane":236}],236:[function(require,module,exports){
+},{"./Plane":237}],237:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -46654,7 +46715,7 @@ var Plane = function (_Mesh) {
 
 exports.default = Plane;
 
-},{"../core":65,"./Mesh":234}],237:[function(require,module,exports){
+},{"../core":65,"./Mesh":235}],238:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -46964,7 +47025,7 @@ var Rope = function (_Plane) {
 
 exports.default = Rope;
 
-},{"../core":65,"./Plane":236,"./RopePoint":238}],238:[function(require,module,exports){
+},{"../core":65,"./Plane":237,"./RopePoint":239}],239:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47064,7 +47125,7 @@ var RopePoint = function (_Point) {
 
 exports.default = RopePoint;
 
-},{"../core/math/Point":69}],239:[function(require,module,exports){
+},{"../core/math/Point":69}],240:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47350,7 +47411,7 @@ exports.default = MeshSpriteRenderer;
 
 core.CanvasRenderer.registerPlugin('mesh', MeshSpriteRenderer);
 
-},{"../../core":65,"../Mesh":234}],240:[function(require,module,exports){
+},{"../../core":65,"../Mesh":235}],241:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47420,7 +47481,7 @@ Object.defineProperty(exports, 'RopePoint', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./Mesh":234,"./NineSlicePlane":235,"./Plane":236,"./Rope":237,"./RopePoint":238,"./canvas/CanvasMeshRenderer":239,"./webgl/MeshRenderer":241}],241:[function(require,module,exports){
+},{"./Mesh":235,"./NineSlicePlane":236,"./Plane":237,"./Rope":238,"./RopePoint":239,"./canvas/CanvasMeshRenderer":240,"./webgl/MeshRenderer":242}],242:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47581,7 +47642,7 @@ exports.default = MeshRenderer;
 
 core.WebGLRenderer.registerPlugin('mesh', MeshRenderer);
 
-},{"../../core":65,"../Mesh":234,"path":8,"pixi-gl-core":15}],242:[function(require,module,exports){
+},{"../../core":65,"../Mesh":235,"path":8,"pixi-gl-core":15}],243:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47981,7 +48042,7 @@ var ParticleContainer = function (_core$Container) {
 
 exports.default = ParticleContainer;
 
-},{"../core":65,"../core/utils":125}],243:[function(require,module,exports){
+},{"../core":65,"../core/utils":125}],244:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48006,7 +48067,7 @@ Object.defineProperty(exports, 'ParticleRenderer', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./ParticleContainer":242,"./webgl/ParticleRenderer":245}],244:[function(require,module,exports){
+},{"./ParticleContainer":243,"./webgl/ParticleRenderer":246}],245:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48255,7 +48316,7 @@ var ParticleBuffer = function () {
 
 exports.default = ParticleBuffer;
 
-},{"../../core/utils/createIndicesForQuads":123,"pixi-gl-core":15}],245:[function(require,module,exports){
+},{"../../core/utils/createIndicesForQuads":123,"pixi-gl-core":15}],246:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48767,7 +48828,7 @@ exports.default = ParticleRenderer;
 
 core.WebGLRenderer.registerPlugin('particle', ParticleRenderer);
 
-},{"../../core":65,"../../core/utils":125,"./ParticleBuffer":244,"./ParticleShader":246}],246:[function(require,module,exports){
+},{"../../core":65,"../../core/utils":125,"./ParticleBuffer":245,"./ParticleShader":247}],247:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -48810,7 +48871,7 @@ var ParticleShader = function (_Shader) {
 
 exports.default = ParticleShader;
 
-},{"../../core/Shader":44}],247:[function(require,module,exports){
+},{"../../core/Shader":44}],248:[function(require,module,exports){
 "use strict";
 
 // References:
@@ -48828,7 +48889,7 @@ if (!Math.sign) {
     };
 }
 
-},{}],248:[function(require,module,exports){
+},{}],249:[function(require,module,exports){
 'use strict';
 
 // References:
@@ -48840,7 +48901,7 @@ if (!Number.isInteger) {
     };
 }
 
-},{}],249:[function(require,module,exports){
+},{}],250:[function(require,module,exports){
 'use strict';
 
 var _objectAssign = require('object-assign');
@@ -48855,7 +48916,7 @@ if (!Object.assign) {
 // https://github.com/sindresorhus/object-assign
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 
-},{"object-assign":6}],250:[function(require,module,exports){
+},{"object-assign":6}],251:[function(require,module,exports){
 'use strict';
 
 require('./Object.assign');
@@ -48882,7 +48943,7 @@ if (!window.Uint16Array) {
     window.Uint16Array = Array;
 }
 
-},{"./Math.sign":247,"./Number.isInteger":248,"./Object.assign":249,"./requestAnimationFrame":251}],251:[function(require,module,exports){
+},{"./Math.sign":248,"./Number.isInteger":249,"./Object.assign":250,"./requestAnimationFrame":252}],252:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -48960,7 +49021,7 @@ if (!global.cancelAnimationFrame) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],252:[function(require,module,exports){
+},{}],253:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -49448,7 +49509,7 @@ function findTextStyle(item, queue) {
     return false;
 }
 
-},{"../core":65,"./limiters/CountLimiter":255}],253:[function(require,module,exports){
+},{"../core":65,"./limiters/CountLimiter":256}],254:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -49568,7 +49629,7 @@ function uploadBaseTextures(prepare, item) {
 
 core.CanvasRenderer.registerPlugin('prepare', CanvasPrepare);
 
-},{"../../core":65,"../BasePrepare":252}],254:[function(require,module,exports){
+},{"../../core":65,"../BasePrepare":253}],255:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -49620,7 +49681,7 @@ Object.defineProperty(exports, 'TimeLimiter', {
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-},{"./BasePrepare":252,"./canvas/CanvasPrepare":253,"./limiters/CountLimiter":255,"./limiters/TimeLimiter":256,"./webgl/WebGLPrepare":257}],255:[function(require,module,exports){
+},{"./BasePrepare":253,"./canvas/CanvasPrepare":254,"./limiters/CountLimiter":256,"./limiters/TimeLimiter":257,"./webgl/WebGLPrepare":258}],256:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -49678,7 +49739,7 @@ var CountLimiter = function () {
 
 exports.default = CountLimiter;
 
-},{}],256:[function(require,module,exports){
+},{}],257:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -49736,7 +49797,7 @@ var TimeLimiter = function () {
 
 exports.default = TimeLimiter;
 
-},{}],257:[function(require,module,exports){
+},{}],258:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -49858,7 +49919,7 @@ function findGraphics(item, queue) {
 
 core.WebGLRenderer.registerPlugin('prepare', WebGLPrepare);
 
-},{"../../core":65,"../BasePrepare":252}],258:[function(require,module,exports){
+},{"../../core":65,"../BasePrepare":253}],259:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -50036,7 +50097,7 @@ global.PIXI = exports; // eslint-disable-line
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./accessibility":42,"./core":65,"./deprecation":131,"./ext-filters":132,"./ext-plugins":140,"./extensions":188,"./extract":201,"./extras":209,"./filters":221,"./interaction":227,"./loaders":230,"./mesh":240,"./particles":243,"./polyfill":250,"./prepare":254}]},{},[258])(258)
+},{"./accessibility":42,"./core":65,"./deprecation":132,"./ext-filters":133,"./ext-plugins":141,"./extensions":189,"./extract":202,"./extras":210,"./filters":222,"./interaction":228,"./loaders":231,"./mesh":241,"./particles":244,"./polyfill":251,"./prepare":255}]},{},[259])(259)
 });
 
 
