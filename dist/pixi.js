@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.1
- * Compiled Mon, 23 Jul 2018 20:43:20 UTC
+ * Compiled Mon, 23 Jul 2018 20:52:17 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -11830,24 +11830,26 @@ var Graphics = function (_Container) {
         var sprite = this._spriteRect;
         var fillColor = this.graphicsData[0].fillColor;
 
-        if (this.tint === 0xffffff) {
-            sprite.tint = fillColor;
-        } else if (this.tint !== this._prevRectTint || fillColor !== this._prevRectFillColor) {
-            var t1 = tempColor1;
-            var t2 = tempColor2;
+        if (this.tint !== this._prevRectTint || fillColor !== this._prevRectFillColor) {
+            if (this.tint === 0xffffff) {
+                sprite.tint = fillColor;
+            } else {
+                var t1 = tempColor1;
+                var t2 = tempColor2;
 
-            (0, _utils.hex2rgb)(fillColor, t1);
-            (0, _utils.hex2rgb)(this.tint, t2);
+                (0, _utils.hex2rgb)(fillColor, t1);
+                (0, _utils.hex2rgb)(this.tint, t2);
 
-            t1[0] *= t2[0];
-            t1[1] *= t2[1];
-            t1[2] *= t2[2];
+                t1[0] *= t2[0];
+                t1[1] *= t2[1];
+                t1[2] *= t2[2];
 
-            sprite.tint = (0, _utils.rgb2hex)(t1);
+                sprite.tint = (0, _utils.rgb2hex)(t1);
+            }
+
+            this._prevRectTint = this.tint;
+            this._prevRectFillColor = fillColor;
         }
-
-        this._prevRectTint = this.tint;
-        this._prevRectFillColor = fillColor;
 
         sprite.alpha = this.graphicsData[0].fillAlpha;
         sprite.worldAlpha = this.worldAlpha * sprite.alpha;
