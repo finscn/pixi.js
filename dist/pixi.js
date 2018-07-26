@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.1
- * Compiled Thu, 26 Jul 2018 11:25:09 UTC
+ * Compiled Thu, 26 Jul 2018 11:48:23 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -21162,9 +21162,9 @@ var Sprite = function (_Container) {
 
         /**
          * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         * The default is 0,0 this means the texture's origin is the top left.
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered.
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner.
          *
          * @member {PIXI.ObservablePoint}
          * @private
