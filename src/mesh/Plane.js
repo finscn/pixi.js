@@ -20,16 +20,16 @@ export default class Plane extends Mesh
 {
     /**
      * @param {PIXI.Texture} texture - The texture to use on the Plane.
-     * @param {number} [verticesX=2] - The number of vertices in the x-axis
-     * @param {number} [verticesY=2] - The number of vertices in the y-axis
+     * @param {number} [verticesX=10] - The number of vertices in the x-axis
+     * @param {number} [verticesY=10] - The number of vertices in the y-axis
      * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
      */
     constructor(texture, verticesX, verticesY, direction)
     {
         super(texture);
 
-        this._verticesX = verticesX || 2;
-        this._verticesY = verticesY || 2;
+        this._verticesX = verticesX || 10;
+        this._verticesY = verticesY || 10;
 
         this._direction = (direction || 0) & (~1);
 
