@@ -6,14 +6,17 @@ export default class SimpleContainer extends core.Container
     // constructor()
     // {
     //     super();
+
+    //     // this.autoCalculateBounds = true;
     // }
 
     addChild(child)
     {
         child.parent = this;
-        // ensure a transform will be recalculated..
-        this.transform._parentID = -1;
+        child.transform._parentID = -1;
         this.children.push(child);
+
+        this._boundsID++;
 
         return child;
     }
@@ -21,7 +24,10 @@ export default class SimpleContainer extends core.Container
     addChildAt(child, index)
     {
         child.parent = this;
+        child.transform._parentID = -1;
         this.children.splice(index, 0, child);
+
+        this._boundsID++;
 
         return child;
     }
@@ -70,8 +76,12 @@ export default class SimpleContainer extends core.Container
         {
             return null;
         }
+
         child.parent = null;
+        // child.transform._parentID = -1;
         this.children.splice(index, 1);
+
+        this._boundsID++;
 
         return child;
     }
@@ -80,11 +90,16 @@ export default class SimpleContainer extends core.Container
     {
         const child = this.children[index];
 
-        if (child)
+        if (!child)
         {
-            child.parent = null;
-            this.children.splice(index, 1);
+            return null;
         }
+
+        child.parent = null;
+        // child.transform._parentID = -1;
+        this.children.splice(index, 1);
+
+        this._boundsID++;
 
         return child;
     }
@@ -92,7 +107,10 @@ export default class SimpleContainer extends core.Container
     removeChildWithIndex(child, index)
     {
         child.parent = null;
+        // child.transform._parentID = -1;
         this.children.splice(index, 1);
+
+        this._boundsID++;
 
         return child;
     }
@@ -112,7 +130,10 @@ export default class SimpleContainer extends core.Container
             for (i = 0; i < removed.length; ++i)
             {
                 removed[i].parent = null;
+                // removed[i].transform._parentID = -1;
             }
+
+            this._boundsID++;
 
             return removed;
         }
@@ -123,6 +144,4 @@ export default class SimpleContainer extends core.Container
 
         return null;
     }
-
 }
-

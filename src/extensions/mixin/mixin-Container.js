@@ -65,6 +65,7 @@ Container.prototype.removeAllChildren = function (options)
     this.children.length = 0;
 
     this.transform._parentID = -1;
+
     this._boundsID++;
 
     this.onChildrenChange(0);
@@ -109,6 +110,8 @@ Container.prototype._removeChildAt = function (index, child)
 {
     this.children.splice(index, 1);
     child.parent = null;
+    // child.transform._parentID = -1;
+    this._boundsID++;
     this.onChildrenChange(index);
     child.emit('removed', this);
 

@@ -11,9 +11,11 @@ export default class ParticleContainer extends particles.ParticleContainer
     addChild(child)
     {
         child.parent = this;
-        // ensure a transform will be recalculated..
-        this.transform._parentID = -1;
+        child.transform._parentID = -1;
         this.children.push(child);
+
+        this._boundsID++;
+
         this.onChildrenChange(this.children.length - 1);
 
         return child;
@@ -22,7 +24,11 @@ export default class ParticleContainer extends particles.ParticleContainer
     addChildAt(child, index)
     {
         child.parent = this;
+        child.transform._parentID = -1;
         this.children.splice(index, 0, child);
+
+        this._boundsID++;
+
         this.onChildrenChange(index);
 
         return child;
@@ -61,6 +67,7 @@ export default class ParticleContainer extends particles.ParticleContainer
 
         this.children.splice(currentIndex, 1);
         this.children.splice(index, 0, child);
+
         this.onChildrenChange(index);
     }
 
@@ -77,8 +84,13 @@ export default class ParticleContainer extends particles.ParticleContainer
         {
             return null;
         }
+
         child.parent = null;
+        // child.transform._parentID = -1;
         this.children.splice(index, 1);
+
+        this._boundsID++;
+
         this.onChildrenChange(index);
 
         return child;
@@ -88,12 +100,18 @@ export default class ParticleContainer extends particles.ParticleContainer
     {
         const child = this.children[index];
 
-        if (child)
+        if (!child)
         {
-            child.parent = null;
-            this.children.splice(index, 1);
-            this.onChildrenChange(index);
+            return null;
         }
+
+        child.parent = null;
+        // child.transform._parentID = -1;
+        this.children.splice(index, 1);
+
+        this._boundsID++;
+
+        this.onChildrenChange(index);
 
         return child;
     }
@@ -101,7 +119,11 @@ export default class ParticleContainer extends particles.ParticleContainer
     removeChildWithIndex(child, index)
     {
         child.parent = null;
+        // child.transform._parentID = -1;
         this.children.splice(index, 1);
+
+        this._boundsID++;
+
         this.onChildrenChange(index);
 
         return child;
@@ -122,7 +144,10 @@ export default class ParticleContainer extends particles.ParticleContainer
             for (i = 0; i < removed.length; ++i)
             {
                 removed[i].parent = null;
+                // removed[i].transform._parentID = -1;
             }
+
+            this._boundsID++;
 
             this.onChildrenChange(beginIndex);
 
