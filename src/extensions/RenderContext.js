@@ -515,13 +515,14 @@ export default class RenderContext
         const container = this.globalContainer;
         const oldChildren = container.removeChildren(0, container.children.length);
 
-        if (toDestroy)
+        for (let i = 0; i < oldChildren.length; ++i)
         {
-            for (let i = 0; i < oldChildren.length; ++i)
-            {
-                const child = oldChildren[i];
+            const child = oldChildren[i];
 
-                child._linkedContext = false;
+            child._linkedContext = false;
+
+            if (toDestroy)
+            {
                 child.destroy(toDestroy);
             }
         }
