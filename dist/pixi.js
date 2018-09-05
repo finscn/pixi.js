@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Wed, 05 Sep 2018 11:43:18 UTC
+ * Compiled Wed, 05 Sep 2018 11:56:26 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35575,21 +35575,27 @@ var Animation = function () {
             this._bindName = bindName;
             this._target[this._bindName] = this;
         }
-        this.changeFrame(this._minIndex, null);
+        // this.changeFrame(this._minIndex, null);
     };
 
     /**
      * Unbind the target of Animation.
+     *
+     * @return {PIXI.DisplayObject} The previous target of Animation
      */
 
 
     Animation.prototype.unbind = function unbind() {
-        if (this._target) {
+        var target = this._target;
+
+        if (target) {
             if (this._bindName) {
-                delete this._target[this._bindName];
+                delete target[this._bindName];
             }
             this._target = null;
         }
+
+        return target;
     };
 
     /**

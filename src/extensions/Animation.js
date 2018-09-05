@@ -557,22 +557,28 @@ export default class Animation
             this._bindName = bindName;
             this._target[this._bindName] = this;
         }
-        this.changeFrame(this._minIndex, null);
+        // this.changeFrame(this._minIndex, null);
     }
 
     /**
      * Unbind the target of Animation.
+     *
+     * @return {PIXI.DisplayObject} The previous target of Animation
      */
     unbind()
     {
-        if (this._target)
+        const target = this._target;
+
+        if (target)
         {
             if (this._bindName)
             {
-                delete this._target[this._bindName];
+                delete target[this._bindName];
             }
             this._target = null;
         }
+
+        return target;
     }
 
     /**
