@@ -20,7 +20,7 @@ import Texture from '../core/textures/Texture';
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
  * @property {number} [duration] - the duration of the frame in ms
- * @property {array} [pivot] - the pivot(ratio) of the frame. Index 0 is x; Index 1 is y.
+ * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
  * If no `frame.pivot`, frame.pivot will be null, then Animation use default or original or previous pivot.
@@ -79,6 +79,26 @@ export default class Animation
         this.loop = true;
 
         /**
+         * Whether allow to skip frames if timeStep too large.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.skipFrame = false;
+
+        /**
+         * The pivot of the animation( the default pivot of all frames).
+         * Index 0 is x; Index 1 is y.
+         * if it's null/undefined/false/0/''/non-number[] , means x = 0 & y = 0.
+         *
+         * @member {number[]}
+         * @default null
+         */
+        this.pivot = null;
+
+        this.duration = duration || 0;
+
+        /**
          * Function to call when a Animation completes playing
          *
          * @method
@@ -125,14 +145,6 @@ export default class Animation
         this.playing = false;
 
         /**
-         * Whether allow to skip frames if timeStep too large.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.skipFrame = false;
-
-        /**
         * The animation current frame index
         *
         * @member {number}
@@ -170,8 +182,6 @@ export default class Animation
          */
         this._minIndex = -1;
         this._maxIndex = -1;
-
-        this.duration = duration || 0;
 
         /**
          * @private
@@ -419,7 +429,7 @@ export default class Animation
         this._target.cachedTint = 0xFFFFFF;
 
         // TODO: Shall we need `pivot` ?
-        const pivot = this.currentFrame.pivot;
+        const pivot = this.currentFrame.pivot || this.pivot;
 
         if (pivot)
         {

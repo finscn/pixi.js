@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Mon, 03 Sep 2018 18:55:32 UTC
+ * Compiled Wed, 05 Sep 2018 11:26:24 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35046,7 +35046,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
  * @property {number} [duration] - the duration of the frame in ms
- * @property {array} [pivot] - the pivot(ratio) of the frame. Index 0 is x; Index 1 is y.
+ * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
  * If no `frame.pivot`, frame.pivot will be null, then Animation use default or original or previous pivot.
@@ -35106,6 +35106,26 @@ var Animation = function () {
         this.loop = true;
 
         /**
+         * Whether allow to skip frames if timeStep too large.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.skipFrame = false;
+
+        /**
+         * The pivot of the animation( the default pivot of all frames).
+         * Index 0 is x; Index 1 is y.
+         * if it's null/undefined/false/0/''/non-number[] , means x = 0 & y = 0.
+         *
+         * @member {number[]}
+         * @default null
+         */
+        this.pivot = null;
+
+        this.duration = duration || 0;
+
+        /**
          * Function to call when a Animation completes playing
          *
          * @method
@@ -35152,14 +35172,6 @@ var Animation = function () {
         this.playing = false;
 
         /**
-         * Whether allow to skip frames if timeStep too large.
-         *
-         * @member {boolean}
-         * @default false
-         */
-        this.skipFrame = false;
-
-        /**
         * The animation current frame index
         *
         * @member {number}
@@ -35197,8 +35209,6 @@ var Animation = function () {
          */
         this._minIndex = -1;
         this._maxIndex = -1;
-
-        this.duration = duration || 0;
 
         /**
          * @private
@@ -35441,7 +35451,7 @@ var Animation = function () {
         this._target.cachedTint = 0xFFFFFF;
 
         // TODO: Shall we need `pivot` ?
-        var pivot = this.currentFrame.pivot;
+        var pivot = this.currentFrame.pivot || this.pivot;
 
         if (pivot) {
             this._target.transform.pivot.set(pivot[0], pivot[1]);
