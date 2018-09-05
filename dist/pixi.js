@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Wed, 05 Sep 2018 11:26:24 UTC
+ * Compiled Wed, 05 Sep 2018 11:43:18 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35114,14 +35114,14 @@ var Animation = function () {
         this.skipFrame = false;
 
         /**
-         * The pivot of the animation( the default pivot of all frames).
+         * The default pivot of the animation(the default pivot of all frames).
          * Index 0 is x; Index 1 is y.
          * if it's null/undefined/false/0/''/non-number[] , means x = 0 & y = 0.
          *
          * @member {number[]}
          * @default null
          */
-        this.pivot = null;
+        this.defaultPivot = null;
 
         this.duration = duration || 0;
 
@@ -35451,7 +35451,7 @@ var Animation = function () {
         this._target.cachedTint = 0xFFFFFF;
 
         // TODO: Shall we need `pivot` ?
-        var pivot = this.currentFrame.pivot || this.pivot;
+        var pivot = this.currentFrame.pivot || this.defaultPivot;
 
         if (pivot) {
             this._target.transform.pivot.set(pivot[0], pivot[1]);
@@ -37677,14 +37677,26 @@ var Plane = mesh.Plane;
  *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
  */
 _Animation2.default.applyTo = function (displayObject) {
-    var properties = [
-    // 'initAnimation',
-    'play', 'pause', 'resume', 'stop', 'gotoAndPlay', 'gotoAndStop', 'update', 'updateByTime', 'changeFrame', 'getNextFrame', 'updateTarget', 'getTarget', 'getFrames', 'setFrames', 'onFrameChange', 'onComplete'];
+    var proto = _Animation2.default.prototype;
 
-    properties.forEach(function (p) {
-        displayObject[p] = _Animation2.default.prototype[p];
-    });
-    displayObject._initAnimation = _Animation2.default.prototype.initAnimation;
+    displayObject.play = proto.play;
+    displayObject.pause = proto.pause;
+    displayObject.resume = proto.resume;
+    displayObject.stop = proto.stop;
+    displayObject.gotoAndPlay = proto.gotoAndPlay;
+    displayObject.gotoAndStop = proto.gotoAndStop;
+    displayObject.update = proto.update;
+    displayObject.updateByTime = proto.updateByTime;
+    displayObject.changeFrame = proto.changeFrame;
+    displayObject.getNextFrame = proto.getNextFrame;
+    displayObject.updateTarget = proto.updateTarget;
+    displayObject.getTarget = proto.getTarget;
+    displayObject.getFrames = proto.getFrames;
+    displayObject.setFrames = proto.setFrames;
+    displayObject.onFrameChange = proto.onFrameChange;
+    displayObject.onComplete = proto.onComplete;
+
+    displayObject._initAnimation = proto.initAnimation;
     displayObject.initAnimation = function (frames, duration) {
         this._initAnimation(frames, duration);
         this._target = this;

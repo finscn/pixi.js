@@ -87,14 +87,14 @@ export default class Animation
         this.skipFrame = false;
 
         /**
-         * The pivot of the animation( the default pivot of all frames).
+         * The default pivot of the animation(the default pivot of all frames).
          * Index 0 is x; Index 1 is y.
          * if it's null/undefined/false/0/''/non-number[] , means x = 0 & y = 0.
          *
          * @member {number[]}
          * @default null
          */
-        this.pivot = null;
+        this.defaultPivot = null;
 
         this.duration = duration || 0;
 
@@ -429,7 +429,7 @@ export default class Animation
         this._target.cachedTint = 0xFFFFFF;
 
         // TODO: Shall we need `pivot` ?
-        const pivot = this.currentFrame.pivot || this.pivot;
+        const pivot = this.currentFrame.pivot || this.defaultPivot;
 
         if (pivot)
         {
