@@ -14,31 +14,26 @@ const Plane = mesh.Plane;
  */
 Animation.applyTo = function (displayObject)
 {
-    const properties = [
-        // 'initAnimation',
-        'play',
-        'pause',
-        'resume',
-        'stop',
-        'gotoAndPlay',
-        'gotoAndStop',
-        'update',
-        'updateByTime',
-        'changeFrame',
-        'getNextFrame',
-        'updateTarget',
-        'getTarget',
-        'getFrames',
-        'setFrames',
-        'onFrameChange',
-        'onComplete',
-    ];
+    const proto = Animation.prototype;
 
-    properties.forEach(function (p)
-    {
-        displayObject[p] = Animation.prototype[p];
-    });
-    displayObject._initAnimation = Animation.prototype.initAnimation;
+    displayObject.play = proto.play;
+    displayObject.pause = proto.pause;
+    displayObject.resume = proto.resume;
+    displayObject.stop = proto.stop;
+    displayObject.gotoAndPlay = proto.gotoAndPlay;
+    displayObject.gotoAndStop = proto.gotoAndStop;
+    displayObject.update = proto.update;
+    displayObject.updateByTime = proto.updateByTime;
+    displayObject.changeFrame = proto.changeFrame;
+    displayObject.getNextFrame = proto.getNextFrame;
+    displayObject.updateTarget = proto.updateTarget;
+    displayObject.getTarget = proto.getTarget;
+    displayObject.getFrames = proto.getFrames;
+    displayObject.setFrames = proto.setFrames;
+    displayObject.onFrameChange = proto.onFrameChange;
+    displayObject.onComplete = proto.onComplete;
+
+    displayObject._initAnimation = proto.initAnimation;
     displayObject.initAnimation = function (frames, duration)
     {
         this._initAnimation(frames, duration);
