@@ -533,16 +533,6 @@ export default class Animation
     }
 
     /**
-     * Get the target of Animation
-     *
-     * @return {PIXI.DisplayObject} The target of Animation
-     */
-    getTarget()
-    {
-        return this._target;
-    }
-
-    /**
      * Bind the target of Animation.
      *
      * @param {PIXI.DisplayObject} target - A display object with Texture.
@@ -551,12 +541,22 @@ export default class Animation
     bind(target, bindName)
     {
         this.unbind();
+
+        if (!target)
+        {
+            return;
+        }
+
         this._target = target;
         if (bindName)
         {
             this._bindName = bindName;
             target.anims = target.anims || {};
             target.anims[this._bindName] = this;
+        }
+        else
+        {
+            target.currentAnim = this;
         }
         // this.changeFrame(this._minIndex, null);
     }
@@ -590,12 +590,26 @@ export default class Animation
 
     activate(startIndex)
     {
-        this.gotoAndPlay(startIndex || 0);
-
         if (this._target)
         {
             this._target.currentAnim = this;
         }
+        this.gotoAndPlay(startIndex || 0);
+    }
+
+    /**
+     * The target displayObject of Animation
+     *
+     * @member {PIXI.DisplayObject}
+     */
+    get target()
+    {
+        return this._target;
+    }
+
+    set target(value) // eslint-disable-line require-jsdoc
+    {
+        this.bind(value, null);
     }
 
     /**
