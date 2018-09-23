@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Thu, 20 Sep 2018 06:02:57 UTC
+ * Compiled Sun, 23 Sep 2018 13:54:16 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -40675,8 +40675,8 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     var bounds = this.getLocalBounds().clone();
 
     // add some padding!
-    if (this.filters) {
-        var padding = this.filters[0].padding;
+    if (this._filters && this._filters.length) {
+        var padding = this._filters[0].padding;
 
         bounds.pad(padding);
     }
