@@ -272,6 +272,19 @@ export default class BaseTexture extends EventEmitter
         this.emit('update', this);
     }
 
+    uploadData(data, width, height)
+    {
+        this.source = data;
+        this.hasLoaded = true;
+
+        this.realWidth = width;
+        this.realHeight = height;
+
+        this._updateDimensions();
+
+        this.emit('update', this);
+    }
+
     /**
      * Update dimensions from real values
      */

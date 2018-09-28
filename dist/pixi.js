@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Fri, 28 Sep 2018 16:55:15 UTC
+ * Compiled Fri, 28 Sep 2018 19:21:15 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -17527,7 +17527,12 @@ var TextureManager = function () {
                 glTexture = new _pixiGlCore.GLTexture(this.gl, null, null, null, null);
                 glTexture.bind(location);
                 glTexture.premultiplyAlpha = true;
-                glTexture.upload(texture.source);
+
+                if (texture.source.buffer) {
+                    glTexture.uploadData(texture.source, texture.realWidth, texture.realHeight);
+                } else {
+                    glTexture.upload(texture.source);
+                }
             }
 
             texture._glTextures[this.renderer.CONTEXT_UID] = glTexture;
@@ -25761,6 +25766,18 @@ var BaseTexture = function (_EventEmitter) {
 
             this._updateDimensions();
         }
+
+        this.emit('update', this);
+    };
+
+    BaseTexture.prototype.uploadData = function uploadData(data, width, height) {
+        this.source = data;
+        this.hasLoaded = true;
+
+        this.realWidth = width;
+        this.realHeight = height;
+
+        this._updateDimensions();
 
         this.emit('update', this);
     };

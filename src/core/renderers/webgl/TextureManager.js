@@ -126,7 +126,15 @@ export default class TextureManager
                 glTexture = new GLTexture(this.gl, null, null, null, null);
                 glTexture.bind(location);
                 glTexture.premultiplyAlpha = true;
-                glTexture.upload(texture.source);
+
+                if (texture.source.buffer)
+                {
+                    glTexture.uploadData(texture.source, texture.realWidth, texture.realHeight);
+                }
+                else
+                {
+                    glTexture.upload(texture.source);
+                }
             }
 
             texture._glTextures[this.renderer.CONTEXT_UID] = glTexture;
