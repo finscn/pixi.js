@@ -1,4 +1,5 @@
 import Shader from '../../Shader';
+import settings from '../../settings';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -60,6 +61,10 @@ function generateSampleSrc(maxTextures)
 
         src += '\n{';
         src += `\n\tcolor = texture2D(uSamplers[${i}], vTextureCoord);`;
+        if (settings.PARSE_COLOR)
+        {
+            src += settings.PARSE_COLOR;
+        }
         src += '\n}';
     }
 

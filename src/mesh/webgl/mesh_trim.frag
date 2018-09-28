@@ -12,6 +12,8 @@ void main(void)
         || coord.y < uClampFrame.y || coord.y > uClampFrame.w)
             discard;
 
-    gl_FragColor = texture2D(uSampler, coord) * uColor;
+    vec4 color = texture2D(uSampler, vTextureCoord);
+    ${parseColor}
+    gl_FragColor = color * uColor;
     gl_FragColor.rgb *= uColorMultiplier;
 }

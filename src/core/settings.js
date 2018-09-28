@@ -229,4 +229,13 @@ export default {
      * @type {number}
      */
     MESH_CANVAS_PADDING: 0,
+
+    /**
+     * The shader code for parsing the color of texture.
+     *
+     * @static
+     * @memberof PIXI.settings
+     * @type {string}
+     */
+    PARSE_COLOR: null,
 };

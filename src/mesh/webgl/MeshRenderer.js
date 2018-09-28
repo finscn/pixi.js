@@ -37,12 +37,21 @@ export default class MeshRenderer extends core.ObjectRenderer
     {
         const gl = this.renderer.gl;
 
+        const parseColor = core.settings.PARSE_COLOR || '';
+        let fragSrc = readFileSync(join(__dirname, './mesh.frag'), 'utf8');
+        let trimFragSrc = readFileSync(join(__dirname, './mesh_trim.frag'), 'utf8');
+
+        fragSrc = fragSrc.replace('${parseColor}', parseColor);
+        trimFragSrc = trimFragSrc.replace('${parseColor}', parseColor);
+
         this.shader = new core.Shader(gl,
             readFileSync(join(__dirname, './mesh.vert'), 'utf8'),
-            readFileSync(join(__dirname, './mesh.frag'), 'utf8'));
+            fragSrc
+            );
         this.shaderTrim = new core.Shader(gl,
             readFileSync(join(__dirname, './mesh.vert'), 'utf8'),
-            readFileSync(join(__dirname, './mesh_trim.frag'), 'utf8'));
+            trimFragSrc
+            );
     }
 
     /**

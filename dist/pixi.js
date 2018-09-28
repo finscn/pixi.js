@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Sun, 23 Sep 2018 13:54:16 UTC
+ * Compiled Fri, 28 Sep 2018 16:55:15 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -21228,7 +21228,16 @@ exports.default = {
    * @memberof PIXI.settings
    * @type {number}
    */
-  MESH_CANVAS_PADDING: 0
+  MESH_CANVAS_PADDING: 0,
+
+  /**
+   * The shader code for parsing the color of texture.
+   *
+   * @static
+   * @memberof PIXI.settings
+   * @type {string}
+   */
+  PARSE_COLOR: null
 };
 
 },{"./utils/canUploadSameBuffer":122,"./utils/maxRecommendedTextures":127}],102:[function(require,module,exports){
@@ -23021,6 +23030,10 @@ var _Shader = require('../../Shader');
 
 var _Shader2 = _interopRequireDefault(_Shader);
 
+var _settings = require('../../settings');
+
+var _settings2 = _interopRequireDefault(_settings);
+
 var _path = require('path');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -23065,6 +23078,9 @@ function generateSampleSrc(maxTextures) {
 
         src += '\n{';
         src += '\n\tcolor = texture2D(uSamplers[' + i + '], vTextureCoord);';
+        if (_settings2.default.PARSE_COLOR) {
+            src += _settings2.default.PARSE_COLOR;
+        }
         src += '\n}';
     }
 
@@ -23074,7 +23090,7 @@ function generateSampleSrc(maxTextures) {
     return src;
 }
 
-},{"../../Shader":44,"path":8}],108:[function(require,module,exports){
+},{"../../Shader":44,"../../settings":101,"path":8}],108:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -47866,8 +47882,15 @@ var MeshRenderer = function (_core$ObjectRenderer) {
     MeshRenderer.prototype.onContextChange = function onContextChange() {
         var gl = this.renderer.gl;
 
-        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', 'varying vec2 vTextureCoord;\nuniform vec4 uColor;\nuniform float uColorMultiplier;\n\nuniform sampler2D uSampler;\n\nvoid main(void)\n{\n    gl_FragColor = texture2D(uSampler, vTextureCoord) * uColor;\n    gl_FragColor.rgb *= uColorMultiplier;\n}\n');
-        this.shaderTrim = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', 'varying vec2 vTextureCoord;\nuniform vec4 uClampFrame;\nuniform vec4 uColor;\nuniform float uColorMultiplier;\n\nuniform sampler2D uSampler;\n\nvoid main(void)\n{\n    vec2 coord = vTextureCoord;\n    if (coord.x < uClampFrame.x || coord.x > uClampFrame.z\n        || coord.y < uClampFrame.y || coord.y > uClampFrame.w)\n            discard;\n\n    gl_FragColor = texture2D(uSampler, coord) * uColor;\n    gl_FragColor.rgb *= uColorMultiplier;\n}\n');
+        var parseColor = core.settings.PARSE_COLOR || '';
+        var fragSrc = 'varying vec2 vTextureCoord;\nuniform vec4 uColor;\nuniform float uColorMultiplier;\n\nuniform sampler2D uSampler;\n\nvoid main(void)\n{\n    vec4 color = texture2D(uSampler, vTextureCoord);\n    ${parseColor}\n    gl_FragColor = color * uColor;\n    gl_FragColor.rgb *= uColorMultiplier;\n}\n';
+        var trimFragSrc = 'varying vec2 vTextureCoord;\nuniform vec4 uClampFrame;\nuniform vec4 uColor;\nuniform float uColorMultiplier;\n\nuniform sampler2D uSampler;\n\nvoid main(void)\n{\n    vec2 coord = vTextureCoord;\n    if (coord.x < uClampFrame.x || coord.x > uClampFrame.z\n        || coord.y < uClampFrame.y || coord.y > uClampFrame.w)\n            discard;\n\n    vec4 color = texture2D(uSampler, vTextureCoord);\n    ${parseColor}\n    gl_FragColor = color * uColor;\n    gl_FragColor.rgb *= uColorMultiplier;\n}\n';
+
+        fragSrc = fragSrc.replace('${parseColor}', parseColor);
+        trimFragSrc = trimFragSrc.replace('${parseColor}', parseColor);
+
+        this.shader = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', fragSrc);
+        this.shaderTrim = new core.Shader(gl, 'attribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat3 projectionMatrix;\nuniform mat3 translationMatrix;\nuniform mat3 uTransform;\n\nvarying vec2 vTextureCoord;\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n\n    vTextureCoord = (uTransform * vec3(aTextureCoord, 1.0)).xy;\n}\n', trimFragSrc);
     };
 
     /**
