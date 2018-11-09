@@ -60,7 +60,7 @@ function generateSampleSrc(maxTextures)
         }
 
         src += '\n{';
-        src += `\n\tcolor = texture2D(uSamplers[${i}], vTextureCoord, ${settings.MIPMAP_LOD_BIAS});`;
+        src += `\n\tcolor = texture2D(uSamplers[${i}], vTextureCoord);`;
         if (settings.PARSE_COLOR)
         {
             src += settings.PARSE_COLOR;
