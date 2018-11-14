@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.2
- * Compiled Fri, 09 Nov 2018 05:34:35 UTC
+ * Compiled Wed, 14 Nov 2018 19:47:41 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -27849,10 +27849,10 @@ var TextureUvs = function () {
             this.y3 = (frame.y + frame.height) / th;
         }
 
-        this.uvsUint32[0] = (this.y0 * 65535 & 0xFFFF) << 16 | this.x0 * 65535 & 0xFFFF;
-        this.uvsUint32[1] = (this.y1 * 65535 & 0xFFFF) << 16 | this.x1 * 65535 & 0xFFFF;
-        this.uvsUint32[2] = (this.y2 * 65535 & 0xFFFF) << 16 | this.x2 * 65535 & 0xFFFF;
-        this.uvsUint32[3] = (this.y3 * 65535 & 0xFFFF) << 16 | this.x3 * 65535 & 0xFFFF;
+        this.uvsUint32[0] = (Math.round(this.y0 * 65535) & 0xFFFF) << 16 | Math.round(this.x0 * 65535) & 0xFFFF;
+        this.uvsUint32[1] = (Math.round(this.y1 * 65535) & 0xFFFF) << 16 | Math.round(this.x1 * 65535) & 0xFFFF;
+        this.uvsUint32[2] = (Math.round(this.y2 * 65535) & 0xFFFF) << 16 | Math.round(this.x2 * 65535) & 0xFFFF;
+        this.uvsUint32[3] = (Math.round(this.y3 * 65535) & 0xFFFF) << 16 | Math.round(this.x3 * 65535) & 0xFFFF;
     };
 
     return TextureUvs;
