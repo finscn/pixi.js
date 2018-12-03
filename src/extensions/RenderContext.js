@@ -708,6 +708,16 @@ export default class RenderContext
 
     updateClipRect(x, y, width, height)
     {
+        if (this._maskX === x && this._maskY === y && this._maskW === width && this._maskH === height)
+        {
+            return;
+        }
+
+        this._maskX = x;
+        this._maskY = y;
+        this._maskW = width;
+        this._maskH = height;
+
         this.maskContainer.updateTransform();
         this.maskShape.clear();
         this.maskShape.updateTransform();
