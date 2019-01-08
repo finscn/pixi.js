@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.8.4
- * Compiled Sat, 05 Jan 2019 16:30:36 UTC
+ * pixi.js - v4.8.5
+ * Compiled Tue, 08 Jan 2019 18:27:40 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -8543,7 +8543,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.8.4';
+var VERSION = exports.VERSION = '4.8.5';
 
 /**
  * Two Pi.
@@ -20993,6 +20993,9 @@ var RenderTarget = function () {
 
 
   RenderTarget.prototype.destroy = function destroy() {
+    if (this.frameBuffer.stencil) {
+      this.gl.deleteRenderbuffer(this.frameBuffer.stencil);
+    }
     this.frameBuffer.destroy();
 
     this.frameBuffer = null;
