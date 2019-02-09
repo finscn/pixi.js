@@ -1153,7 +1153,9 @@ export default class InteractionManager extends EventEmitter
 
         // Guaranteed that there will be at least one event in events, and all events must have the same pointer type
 
-        if (this.autoPreventDefault && events[0].isNormalized)
+        const cancelable = originalEvent.cancelable || !('cancelable' in originalEvent);
+
+        if (cancelable && this.autoPreventDefault && events[0].isNormalized)
         {
             originalEvent.preventDefault();
         }

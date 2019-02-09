@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.5
- * Compiled Fri, 18 Jan 2019 08:04:47 UTC
+ * Compiled Sat, 09 Feb 2019 07:47:43 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -44453,7 +44453,9 @@ var InteractionManager = function (_EventEmitter) {
 
         // Guaranteed that there will be at least one event in events, and all events must have the same pointer type
 
-        if (this.autoPreventDefault && events[0].isNormalized) {
+        var cancelable = originalEvent.cancelable || !('cancelable' in originalEvent);
+
+        if (cancelable && this.autoPreventDefault && events[0].isNormalized) {
             originalEvent.preventDefault();
         }
 
