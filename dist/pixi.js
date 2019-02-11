@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.5
- * Compiled Sat, 09 Feb 2019 21:06:42 UTC
+ * Compiled Mon, 11 Feb 2019 06:38:02 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -40845,7 +40845,7 @@ Object.defineProperties(DisplayObject.prototype, {
                 data.originalRenderCanvas = this.renderCanvas;
 
                 data.originalUpdateTransform = this.updateTransform;
-                data.originalCalculateBounds = this._calculateBounds;
+                data.originalCalculateBounds = this.calculateBounds;
                 data.originalGetLocalBounds = this.getLocalBounds;
 
                 data.originalDestroy = this.destroy;
@@ -40868,7 +40868,7 @@ Object.defineProperties(DisplayObject.prototype, {
 
                 this.renderWebGL = data.originalRenderWebGL;
                 this.renderCanvas = data.originalRenderCanvas;
-                this._calculateBounds = data.originalCalculateBounds;
+                this.calculateBounds = data.originalCalculateBounds;
                 this.getLocalBounds = data.originalGetLocalBounds;
 
                 this.destroy = data.originalDestroy;
@@ -40975,7 +40975,10 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     renderer.filterManager.filterStack = stack;
 
     this.renderWebGL = this._renderCachedWebGL;
+    // the rest is the same as for Canvas
     this.updateTransform = this.displayObjectUpdateTransform;
+    this.calculateBounds = this._calculateCachedBounds;
+    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._mask = null;
     this.filterArea = null;
@@ -40988,10 +40991,6 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     cachedSprite.anchor.y = -(bounds.y / bounds.height);
     cachedSprite.alpha = cacheAlpha;
     cachedSprite._bounds = this._bounds;
-
-    // easy bounds..
-    this._calculateBounds = this._calculateCachedBounds;
-    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._cacheData.sprite = cachedSprite;
 
@@ -41080,7 +41079,10 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
     renderer.context = cachedRenderTarget;
 
     this.renderCanvas = this._renderCachedCanvas;
+    // the rest is the same as for WebGL
+    this.updateTransform = this.displayObjectUpdateTransform;
     this.calculateBounds = this._calculateCachedBounds;
+    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._mask = null;
     this.filterArea = null;
@@ -41091,9 +41093,13 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
     cachedSprite.transform.worldTransform = this.transform.worldTransform;
     cachedSprite.anchor.x = -(bounds.x / bounds.width);
     cachedSprite.anchor.y = -(bounds.y / bounds.height);
-    cachedSprite._bounds = this._bounds;
     cachedSprite.alpha = cacheAlpha;
+    cachedSprite._bounds = this._bounds;
 
+    this._cacheData.sprite = cachedSprite;
+
+    this.transform._parentID = -1;
+    // restore the transform of the cached sprite to avoid the nasty flicker..
     if (!this.parent) {
         this.parent = renderer._tempDisplayObjectParent;
         this.updateTransform();
@@ -41102,10 +41108,7 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
         this.updateTransform();
     }
 
-    this.updateTransform = this.displayObjectUpdateTransform;
-
-    this._cacheData.sprite = cachedSprite;
-
+    // map the hit test..
     this.containsPoint = cachedSprite.containsPoint.bind(cachedSprite);
 };
 
