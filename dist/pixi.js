@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.5
- * Compiled Wed, 13 Feb 2019 03:09:37 UTC
+ * Compiled Thu, 14 Feb 2019 18:46:44 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -11322,10 +11322,10 @@ var Graphics = function (_Container) {
 
 
     Graphics.prototype._quadraticCurveLength = function _quadraticCurveLength(fromX, fromY, cpX, cpY, toX, toY) {
-        var ax = fromX - (2.0 * cpX + toX);
-        var ay = fromY - (2.0 * cpY + toY);
-        var bx = 2.0 * ((cpX - 2.0) * fromX);
-        var by = 2.0 * ((cpY - 2.0) * fromY);
+        var ax = fromX - 2.0 * cpX + toX;
+        var ay = fromY - 2.0 * cpY + toY;
+        var bx = 2.0 * cpX - 2.0 * fromX;
+        var by = 2.0 * cpY - 2.0 * fromY;
         var a = 4.0 * (ax * ax + ay * ay);
         var b = 4.0 * (ax * bx + ay * by);
         var c = bx * bx + by * by;
