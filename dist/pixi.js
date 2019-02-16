@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.8.5
- * Compiled Thu, 14 Feb 2019 18:46:44 UTC
+ * pixi.js - v4.8.6
+ * Compiled Sat, 16 Feb 2019 14:25:05 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -1201,7 +1201,7 @@ function getLeftmost(start) {
     var p = start,
         leftmost = start;
     do {
-        if (p.x < leftmost.x) leftmost = p;
+        if (p.x < leftmost.x || (p.x === leftmost.x && p.y < leftmost.y)) leftmost = p;
         p = p.next;
     } while (p !== start);
 
@@ -8543,7 +8543,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.8.5';
+var VERSION = exports.VERSION = '4.8.6';
 
 /**
  * Two Pi.
@@ -18112,6 +18112,13 @@ var WebGLRenderer = function (_SystemRenderer) {
         this.boundTextures = new Array(maxTextures);
         this.emptyTextures = new Array(maxTextures);
 
+        /**
+         * Did someone temper with textures state? We'll overwrite them when we need to unbind something.
+         * @member {boolean}
+         * @private
+         */
+        this._unknownBoundTextures = false;
+
         // create a texture manager...
         this.textureManager = new _TextureManager2.default(this);
         this.filterManager = new _FilterManager2.default(this);
@@ -18458,12 +18465,25 @@ var WebGLRenderer = function (_SystemRenderer) {
 
         texture = texture.baseTexture || texture;
 
-        for (var i = 0; i < this.boundTextures.length; i++) {
-            if (this.boundTextures[i] === texture) {
-                this.boundTextures[i] = this.emptyTextures[i];
+        if (this._unknownBoundTextures) {
+            this._unknownBoundTextures = false;
+            // someone changed webGL state,
+            // we have to be sure that our texture does not appear in multitexture renderer samplers
 
-                gl.activeTexture(gl.TEXTURE0 + i);
-                gl.bindTexture(gl.TEXTURE_2D, this.emptyTextures[i]._glTextures[this.CONTEXT_UID].texture);
+            for (var i = 0; i < this.boundTextures.length; i++) {
+                if (this.boundTextures[i] === this.emptyTextures[i]) {
+                    gl.activeTexture(gl.TEXTURE0 + i);
+                    gl.bindTexture(gl.TEXTURE_2D, this.emptyTextures[i]._glTextures[this.CONTEXT_UID].texture);
+                }
+            }
+        }
+
+        for (var _i = 0; _i < this.boundTextures.length; _i++) {
+            if (this.boundTextures[_i] === texture) {
+                this.boundTextures[_i] = this.emptyTextures[_i];
+
+                gl.activeTexture(gl.TEXTURE0 + _i);
+                gl.bindTexture(gl.TEXTURE_2D, this.emptyTextures[_i]._glTextures[this.CONTEXT_UID].texture);
             }
         }
 
@@ -18519,6 +18539,8 @@ var WebGLRenderer = function (_SystemRenderer) {
         this.bindVao(null);
         this._activeShader = null;
         this._activeRenderTarget = this.rootRenderTarget;
+
+        this._unknownBoundTextures = true;
 
         for (var i = 0; i < this.boundTextures.length; i++) {
             this.boundTextures[i] = this.emptyTextures[i];
@@ -20090,10 +20112,11 @@ var MaskManager = function (_WebGLManager) {
         alphaMaskFilter[0].resolution = this.renderer.resolution;
         alphaMaskFilter[0].maskSprite = maskData;
 
-        // TODO - may cause issues!
-        target.filterArea = maskData.getBounds(true);
+        var stashFilterArea = target.filterArea;
 
+        target.filterArea = maskData.getBounds(true);
         this.renderer.filterManager.pushFilter(target, alphaMaskFilter);
+        target.filterArea = stashFilterArea;
 
         this.alphaMaskIndex++;
     };
