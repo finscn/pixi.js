@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.6
- * Compiled Sat, 16 Feb 2019 14:25:05 UTC
+ * Compiled Wed, 20 Feb 2019 17:53:25 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -15004,11 +15004,6 @@ var Matrix = function () {
 
         if (delta < 0.00001 || Math.abs(_const.PI_2 - delta) < 0.00001) {
             transform.rotation = skewY;
-
-            if (a < 0 && d >= 0) {
-                transform.rotation += transform.rotation <= 0 ? Math.PI : -Math.PI;
-            }
-
             transform.skew.x = transform.skew.y = 0;
         } else {
             transform.rotation = 0;
