@@ -34,3 +34,4 @@ node_modules
 # local files
 _bak/
 *build.sh
+package-lock.json

@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.8.6
- * Compiled Sun, 24 Feb 2019 15:41:29 UTC
+ * pixi.js - v4.8.7
+ * Compiled Sat, 23 Mar 2019 17:37:07 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -8543,7 +8543,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.8.6';
+var VERSION = exports.VERSION = '4.8.7';
 
 /**
  * Two Pi.
