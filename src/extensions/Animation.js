@@ -548,15 +548,11 @@ export default class Animation
         }
 
         this._target = target;
+
         if (bindName)
         {
             this._bindName = bindName;
-            target.anims = target.anims || {};
-            target.anims[this._bindName] = this;
-        }
-        else
-        {
-            target.currentAnim = this;
+            target[this._bindName] = this;
         }
         // this.changeFrame(this._minIndex, null);
     }
@@ -572,16 +568,10 @@ export default class Animation
 
         if (target)
         {
-            if (this._bindName && target.anims)
+            if (this._bindName && target[this._bindName] === this)
             {
-                delete target.anims[this._bindName];
+                delete target[this._bindName];
             }
-
-            if (target.currentAnim === this)
-            {
-                target.currentAnim = null;
-            }
-
             this._target = null;
         }
 
@@ -590,10 +580,6 @@ export default class Animation
 
     activate(startIndex)
     {
-        if (this._target)
-        {
-            this._target.currentAnim = this;
-        }
         this.gotoAndPlay(startIndex || 0);
     }
 

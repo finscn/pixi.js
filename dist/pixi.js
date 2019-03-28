@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Sat, 23 Mar 2019 17:37:07 UTC
+ * Compiled Thu, 28 Mar 2019 06:06:29 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35796,12 +35796,10 @@ var Animation = function () {
         }
 
         this._target = target;
+
         if (bindName) {
             this._bindName = bindName;
-            target.anims = target.anims || {};
-            target.anims[this._bindName] = this;
-        } else {
-            target.currentAnim = this;
+            target[this._bindName] = this;
         }
         // this.changeFrame(this._minIndex, null);
     };
@@ -35817,14 +35815,9 @@ var Animation = function () {
         var target = this._target;
 
         if (target) {
-            if (this._bindName && target.anims) {
-                delete target.anims[this._bindName];
+            if (this._bindName && target[this._bindName] === this) {
+                delete target[this._bindName];
             }
-
-            if (target.currentAnim === this) {
-                target.currentAnim = null;
-            }
-
             this._target = null;
         }
 
@@ -35832,9 +35825,6 @@ var Animation = function () {
     };
 
     Animation.prototype.activate = function activate(startIndex) {
-        if (this._target) {
-            this._target.currentAnim = this;
-        }
         this.gotoAndPlay(startIndex || 0);
     };
 
@@ -37943,56 +37933,25 @@ var Rope = mesh.Rope;
 var Plane = mesh.Plane;
 
 /**
- * Mixin properties of Animation to a display object , let it become a animation object
- *
- *@param {PIXI.Sprite|PIXI.mesh.Plane|PIXI.mesh.Rope} displayObject - the object to apply
- */
-_Animation2.default.applyTo = function (displayObject) {
-    var proto = _Animation2.default.prototype;
-
-    displayObject.play = proto.play;
-    displayObject.pause = proto.pause;
-    displayObject.resume = proto.resume;
-    displayObject.stop = proto.stop;
-    displayObject.gotoAndPlay = proto.gotoAndPlay;
-    displayObject.gotoAndStop = proto.gotoAndStop;
-    displayObject.update = proto.update;
-    displayObject.updateByTime = proto.updateByTime;
-    displayObject.changeFrame = proto.changeFrame;
-    displayObject.getNextFrame = proto.getNextFrame;
-    displayObject.updateTarget = proto.updateTarget;
-    displayObject.getTarget = proto.getTarget;
-    displayObject.getFrames = proto.getFrames;
-    displayObject.setFrames = proto.setFrames;
-    displayObject.onFrameChange = proto.onFrameChange;
-    displayObject.onComplete = proto.onComplete;
-
-    displayObject._initAnimation = proto.initAnimation;
-    displayObject.initAnimation = function (frames, duration) {
-        this._initAnimation(frames, duration);
-        this._target = this;
-        this._bindName = '_anim';
-        this.changeFrame(this._minIndex, null);
-    };
-};
-
-/**
  * Create a Sprite with animation
  *
  * @param {PIXI.Texture[]|FrameObject[]} frames - an array of {@link PIXI.Texture} or frame
  *  objects that make up the animation
  * @param {number} [duration=0] - The total duration of animation in ms
  *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ * @param {string} animBindName - The name of bind-animation
  *
  * @return {PIXI.Sprite} a sprite with animation
  */
-_Animation2.default.createSprite = function (frames, duration) {
-    var sprite = new Sprite(Texture.EMPTY);
+_Animation2.default.createSprite = function (frames, duration, animBindName) {
+  var sprite = new Sprite(Texture.EMPTY);
 
-    _Animation2.default.applyTo(sprite);
-    sprite.initAnimation(frames, duration);
+  var anim = new _Animation2.default(frames, duration);
 
-    return sprite;
+  anim.bind(sprite, animBindName);
+  anim.gotoAndPlay(0);
+
+  return sprite;
 };
 
 /**
@@ -38002,19 +37961,22 @@ _Animation2.default.createSprite = function (frames, duration) {
  *  objects that make up the animation
  * @param {number} [duration=0] - The total duration of animation in ms
  *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ * @param {string} animBindName - The name of bind-animation
  * @param {number} [verticesX=2] - How many vertices on diameter of the rope
  * @param {number} [verticesY=2] - How many vertices on meridian of the rope, make it 2 or 3
  * @param {number} [direction=0] - Direction of the rope. See {@link PIXI.GroupD8} for explanation
  *
  * @return {PIXI.mesh.Rope} a mesh rope with animation
  */
-_Animation2.default.createRopeMesh = function (frames, duration, verticesX, verticesY, direction) {
-    var rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
+_Animation2.default.createRopeMesh = function (frames, duration, animBindName, verticesX, verticesY, direction) {
+  var rope = new Rope(Texture.EMPTY, verticesX, verticesY, direction);
 
-    _Animation2.default.applyTo(rope);
-    rope.initAnimation(frames, duration);
+  var anim = new _Animation2.default(frames, duration);
 
-    return rope;
+  anim.bind(rope, animBindName);
+  anim.gotoAndPlay(0);
+
+  return rope;
 };
 
 /**
@@ -38024,19 +37986,22 @@ _Animation2.default.createRopeMesh = function (frames, duration, verticesX, vert
  *  objects that make up the animation
  * @param {number} [duration=0] - The total duration of animation in ms
  *     If no `duration`, the duration will equal the sum of all `frame.duration`
+ * @param {string} animBindName - The name of bind-animation
  * @param {number} [verticesX=2] - The number of vertices in the x-axis
  * @param {number} [verticesY=2] - The number of vertices in the y-axis
  * @param {number} [direction=0] - Direction of the mesh. See {@link PIXI.GroupD8} for explanation
  *
  * @return {PIXI.mesh.Plane} a mesh plane with animation
  */
-_Animation2.default.createPlaneMesh = function (frames, duration, verticesX, verticesY, direction) {
-    var plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
+_Animation2.default.createPlaneMesh = function (frames, duration, animBindName, verticesX, verticesY, direction) {
+  var plane = new Plane(Texture.EMPTY, verticesX, verticesY, direction);
 
-    _Animation2.default.applyTo(plane);
-    plane.initAnimation(frames, duration);
+  var anim = new _Animation2.default(frames, duration);
 
-    return plane;
+  anim.bind(plane, animBindName);
+  anim.gotoAndPlay(0);
+
+  return plane;
 };
 
 },{"../core":65,"../mesh":240,"./Animation.js":180}],188:[function(require,module,exports){
