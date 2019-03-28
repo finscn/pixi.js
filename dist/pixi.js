@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Thu, 28 Mar 2019 06:06:29 UTC
+ * Compiled Thu, 28 Mar 2019 07:20:40 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35298,9 +35298,15 @@ var Animation = function () {
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     * @param {string} [defaultBindName='anim'] - The default value of `property name of target for binding`
+     *     If defaultBindName === null/false/'' , will not set anim-instance to target
      */
     function Animation(frames, duration) {
+        var defaultBindName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'anim';
+
         _classCallCheck(this, Animation);
+
+        this.defaultBindName = defaultBindName;
 
         this._target = null;
         this._bindName = null;
@@ -35797,7 +35803,11 @@ var Animation = function () {
 
         this._target = target;
 
-        if (bindName) {
+        if (bindName === undefined) {
+            bindName = this.defaultBindName;
+        }
+
+        if (bindName || bindName === 0) {
             this._bindName = bindName;
             target[this._bindName] = this;
         }

@@ -42,9 +42,13 @@ export default class Animation
      *  objects that make up the animation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
+     * @param {string} [defaultBindName='anim'] - The default value of `property name of target for binding`
+     *     If defaultBindName === null/false/'' , will not set anim-instance to target
      */
-    constructor(frames, duration)
+    constructor(frames, duration, defaultBindName = 'anim')
     {
+        this.defaultBindName = defaultBindName;
+
         this._target = null;
         this._bindName = null;
         this._frames = null;
@@ -549,7 +553,12 @@ export default class Animation
 
         this._target = target;
 
-        if (bindName)
+        if (bindName === undefined)
+        {
+            bindName = this.defaultBindName;
+        }
+
+        if (bindName || bindName === 0)
         {
             this._bindName = bindName;
             target[this._bindName] = this;
