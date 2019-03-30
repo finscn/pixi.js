@@ -232,17 +232,27 @@ export default class Animation
     }
 
     /**
-     * Go to a specific frame and begins playing the Animation
+     * Go to a specific frame
      *
      * @param {number} frameIndex - frame index to start at
      */
-    gotoAndPlay(frameIndex)
+    goto(frameIndex)
     {
         if (frameIndex !== this.currentIndex)
         {
             this.changeFrame(frameIndex, this.currentIndex);
         }
         this.currentTime = this.currentFrame._startTime;
+    }
+
+    /**
+     * Go to a specific frame and begins playing the Animation
+     *
+     * @param {number} frameIndex - frame index to start at
+     */
+    gotoAndPlay(frameIndex)
+    {
+        this.goto(frameIndex);
         this.play();
     }
 
@@ -254,12 +264,7 @@ export default class Animation
     gotoAndStop(frameIndex)
     {
         this.pause();
-
-        if (frameIndex !== this.currentIndex)
-        {
-            this.changeFrame(frameIndex, this.currentIndex);
-        }
-        this.currentTime = this.currentFrame._startTime;
+        this.goto(frameIndex);
     }
 
     /**

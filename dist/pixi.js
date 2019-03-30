@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Sat, 30 Mar 2019 11:53:50 UTC
+ * Compiled Sat, 30 Mar 2019 12:03:01 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35496,6 +35496,20 @@ var Animation = function () {
     };
 
     /**
+     * Go to a specific frame
+     *
+     * @param {number} frameIndex - frame index to start at
+     */
+
+
+    Animation.prototype.goto = function goto(frameIndex) {
+        if (frameIndex !== this.currentIndex) {
+            this.changeFrame(frameIndex, this.currentIndex);
+        }
+        this.currentTime = this.currentFrame._startTime;
+    };
+
+    /**
      * Go to a specific frame and begins playing the Animation
      *
      * @param {number} frameIndex - frame index to start at
@@ -35503,10 +35517,7 @@ var Animation = function () {
 
 
     Animation.prototype.gotoAndPlay = function gotoAndPlay(frameIndex) {
-        if (frameIndex !== this.currentIndex) {
-            this.changeFrame(frameIndex, this.currentIndex);
-        }
-        this.currentTime = this.currentFrame._startTime;
+        this.goto(frameIndex);
         this.play();
     };
 
@@ -35519,11 +35530,7 @@ var Animation = function () {
 
     Animation.prototype.gotoAndStop = function gotoAndStop(frameIndex) {
         this.pause();
-
-        if (frameIndex !== this.currentIndex) {
-            this.changeFrame(frameIndex, this.currentIndex);
-        }
-        this.currentTime = this.currentFrame._startTime;
+        this.goto(frameIndex);
     };
 
     /**
