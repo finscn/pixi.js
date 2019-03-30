@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Thu, 28 Mar 2019 07:20:40 UTC
+ * Compiled Sat, 30 Mar 2019 11:53:50 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35554,14 +35554,18 @@ var Animation = function () {
 
 
     Animation.prototype.updateByTime = function updateByTime(time, skipFrame) {
+        var index = this.currentIndex;
+
+        if (index < this._minIndex || index > this._maxIndex) {
+            return;
+        }
+
+        var prevIndex = index;
         var duration = this.duration;
         var frames = this._frames;
 
-        var frame = void 0;
-        var index = this.currentIndex;
-        var prevIndex = index;
-
         var completed = false;
+        var frame = void 0;
 
         do {
             frame = frames[index];
@@ -35811,6 +35815,7 @@ var Animation = function () {
             this._bindName = bindName;
             target[this._bindName] = this;
         }
+
         // this.changeFrame(this._minIndex, null);
     };
 

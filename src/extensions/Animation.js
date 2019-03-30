@@ -289,14 +289,19 @@ export default class Animation
      */
     updateByTime(time, skipFrame)
     {
+        let index = this.currentIndex;
+
+        if (index < this._minIndex || index > this._maxIndex)
+        {
+            return;
+        }
+
+        const prevIndex = index;
         const duration = this.duration;
         const frames = this._frames;
 
-        let frame;
-        let index = this.currentIndex;
-        const prevIndex = index;
-
         let completed = false;
+        let frame;
 
         do
         {
@@ -563,6 +568,7 @@ export default class Animation
             this._bindName = bindName;
             target[this._bindName] = this;
         }
+
         // this.changeFrame(this._minIndex, null);
     }
 
