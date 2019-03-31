@@ -19,7 +19,7 @@ import Texture from '../core/textures/Texture';
  * @typedef FrameObject
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
- * @property {number} [duration] - the duration of the frame in ms
+ * @property {number} [duration|time] - the duration of the frame in ms
  * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
@@ -523,7 +523,7 @@ export default class Animation
             }
             this._frames.push(frame);
 
-            frame.duration = frame.duration || preDuration;
+            frame.duration = frame.duration || frame.time || preDuration;
 
             // TODO:
             frame.pivot = frame.pivot || null;

@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Sat, 30 Mar 2019 12:03:01 UTC
+ * Compiled Sun, 31 Mar 2019 13:34:52 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -35276,7 +35276,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * @typedef FrameObject
  * @type {object}
  * @property {PIXI.Texture} texture - The texture object of the frame
- * @property {number} [duration] - the duration of the frame in ms
+ * @property {number} [duration|time] - the duration of the frame in ms
  * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
  *
  * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
@@ -35775,7 +35775,7 @@ var Animation = function () {
             }
             this._frames.push(frame);
 
-            frame.duration = frame.duration || preDuration;
+            frame.duration = frame.duration || frame.time || preDuration;
 
             // TODO:
             frame.pivot = frame.pivot || null;
