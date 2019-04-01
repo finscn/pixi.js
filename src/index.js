@@ -68,9 +68,6 @@ import * as extPlugins from './ext-plugins';
 
 const plugins = extPlugins || {};
 
-const lights = plugins.lighting;
-const LightSpriteRenderer = lights.LightSpriteRenderer;
-
 const DisplayPoint = plugins.DisplayPoint;
 const DisplayPointGroup = plugins.DisplayPointGroup;
 const PointGroupRenderer = plugins.PointGroupRenderer;
@@ -91,9 +88,6 @@ export {
     Animation,
     SpriteTrail,
     RenderContext,
-
-    lights,
-    LightSpriteRenderer,
 
     DisplayPoint,
     DisplayPointGroup,

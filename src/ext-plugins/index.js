@@ -7,6 +7,4 @@ export { default as PointRenderer } from './point/PointRenderer';
 export { default as DisplayPointGroup } from './point/DisplayPointGroup';
 export { default as PointGroupRenderer } from './point/PointGroupRenderer';
 
-export { default as lighting } from './lighting';
-
 export * from './shader-particle';
