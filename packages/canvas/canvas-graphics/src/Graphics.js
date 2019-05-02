@@ -7,7 +7,8 @@ let canvasRenderer;
 const tempMatrix = new Matrix();
 
 /**
- * Generates a canvas texture.
+ * Generates a canvas texture. Only available with **pixi.js-legacy** bundle
+ * or the **@pixi/canvas-graphics** package.
  * @method generateCanvasTexture
  * @memberof PIXI.Graphics#
  * @param {number} scaleMode - The scale mode of the texture.
@@ -35,13 +36,17 @@ Graphics.prototype.generateCanvasTexture = function generateCanvasTexture(scaleM
 
     canvasRenderer.render(this, canvasBuffer, true, tempMatrix);
 
-    const texture = Texture.fromCanvas(canvasBuffer.baseTexture._canvasRenderTarget.canvas, scaleMode, 'graphics');
+    const texture = Texture.from(canvasBuffer.baseTexture._canvasRenderTarget.canvas, {
+        scaleMode,
+    });
 
     texture.baseTexture.resolution = resolution;
     texture.baseTexture.update();
 
     return texture;
 };
+
+Graphics.prototype.cachedGraphicsData = [];
 
 /**
  * Renders the object using the Canvas renderer
@@ -58,5 +63,6 @@ Graphics.prototype._renderCanvas = function _renderCanvas(renderer)
         return;
     }
 
+    this.finishPoly();
     renderer.plugins.graphics.render(this);
 };

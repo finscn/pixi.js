@@ -1,9 +1,10 @@
 {
   "name": "@pixi/text",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0",
   "main": "lib/text.js",
   "module": "lib/text.es.js",
-  "description": "PixiJS Application",
+  "bundle": "dist/text.js",
+  "description": "Text via the Canvas API",
   "author": "Mat Groves",
   "contributors": [
     "Matt Karl <matt@mattkarl.com>"
@@ -22,16 +23,20 @@
     "test": "floss --path test"
   },
   "files": [
-    "lib"
+    "lib",
+    "dist"
   ],
   "dependencies": {
-    "@pixi/core": "^5.0.0-alpha.2",
-    "@pixi/math": "^5.0.0-alpha.2",
-    "@pixi/settings": "^5.0.0-alpha.2",
-    "@pixi/sprite": "^5.0.0-alpha.2",
-    "@pixi/utils": "^5.0.0-alpha.2"
+    "@pixi/core": "^5.0.0",
+    "@pixi/math": "^5.0.0-rc.3",
+    "@pixi/settings": "^5.0.0",
+    "@pixi/sprite": "^5.0.0",
+    "@pixi/utils": "^5.0.0"
   },
   "devDependencies": {
-    "floss": "^2.1.3"
+    "@pixi/canvas-display": "^5.0.0",
+    "@pixi/canvas-renderer": "^5.0.0",
+    "@pixi/canvas-sprite": "^5.0.0",
+    "floss": "^2.2.0"
   }
 }

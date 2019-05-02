@@ -1,6 +1,7 @@
 import mapWebGLBlendModesToPixi from './utils/mapWebGLBlendModesToPixi';
 import System from '../System';
 import State from './State';
+import { BLEND_MODES } from '@pixi/constants';
 
 const BLEND = 0;
 const OFFSET = 1;
@@ -9,7 +10,7 @@ const DEPTH_TEST = 3;
 const WINDING = 4;
 
 /**
- * A WebGL state machines
+ * System plugin to the renderer to manage WebGL state machines.
  *
  * @class
  * @extends PIXI.System
@@ -18,7 +19,7 @@ const WINDING = 4;
 export default class StateSystem extends System
 {
     /**
-     * @param {PIXI.Renderer} renderer - Reference to renderer
+     * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
     constructor(renderer)
     {
@@ -30,29 +31,6 @@ export default class StateSystem extends System
          * @readonly
          */
         this.gl = null;
-
-        /**
-         * Return from MAX_VERTEX_ATTRIBS
-         * @member {number}
-         * @readonly
-         */
-        this.maxAttribs = null;
-
-        /**
-         * Check we have vao
-         * @member {OES_vertex_array_object}
-         * @readonly
-         */
-        this.nativeVaoExtension = null;
-
-        /**
-         * Attribute state
-         * @member {object}
-         * @readonly
-         * @property {Array} tempAttribState
-         * @property {Array} attribState
-         */
-        this.attribState = null;
 
         /**
          * State ID
@@ -71,10 +49,17 @@ export default class StateSystem extends System
         /**
          * Blend mode
          * @member {number}
-         * @default 17
+         * @default PIXI.BLEND_MODES.NONE
          * @readonly
          */
-        this.blendMode = 17;
+        this.blendMode = BLEND_MODES.NONE;
+
+        /**
+         * Whether current blend equation is different
+         * @member {boolean}
+         * @protected
+         */
+        this._blendEq = false;
 
         /**
          * Collection of calls
@@ -110,20 +95,6 @@ export default class StateSystem extends System
     contextChange(gl)
     {
         this.gl = gl;
-
-        this.maxAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
-
-        // check we have vao..
-        this.nativeVaoExtension = (
-            gl.getExtension('OES_vertex_array_object')
-            || gl.getExtension('MOZ_OES_vertex_array_object')
-            || gl.getExtension('WEBKIT_OES_vertex_array_object')
-        );
-
-        this.attribState = {
-            tempAttribState: new Array(this.maxAttribs),
-            attribState: new Array(this.maxAttribs),
-        };
 
         this.blendModes = mapWebGLBlendModesToPixi(gl);
 
@@ -170,6 +141,26 @@ export default class StateSystem extends System
         {
             this.checks[i](this, state);
         }
+    }
+
+    /**
+     * Sets the state, when previous state is unknown
+     *
+     * @param {*} state - The state to set
+     */
+    forceState(state)
+    {
+        state = state || this.defaultState;
+        for (let i = 0; i < this.map.length; i++)
+        {
+            this.map[i].call(this, !!(state.data & (1 << i)));
+        }
+        for (let i = 0; i < this.checks.length; i++)
+        {
+            this.checks[i](this, state);
+        }
+
+        this.stateId = state.data;
     }
 
     /**
@@ -239,14 +230,25 @@ export default class StateSystem extends System
         this.blendMode = value;
 
         const mode = this.blendModes[value];
+        const gl = this.gl;
 
         if (mode.length === 2)
         {
-            this.gl.blendFunc(mode[0], mode[1]);
+            gl.blendFunc(mode[0], mode[1]);
         }
         else
         {
-            this.gl.blendFuncSeparate(mode[0], mode[1], mode[2], mode[3]);
+            gl.blendFuncSeparate(mode[0], mode[1], mode[2], mode[3]);
+        }
+        if (mode.length === 6)
+        {
+            this._blendEq = true;
+            gl.blendEquationSeparate(mode[4], mode[5]);
+        }
+        else if (this._blendEq)
+        {
+            this._blendEq = false;
+            gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
         }
     }
 
@@ -261,50 +263,19 @@ export default class StateSystem extends System
         this.gl.polygonOffset(value, scale);
     }
 
-    /**
-     * Disables all the vaos in use
-     *
-     */
-    resetAttributes()
-    {
-        for (let i = 0; i < this.attribState.tempAttribState.length; i++)
-        {
-            this.attribState.tempAttribState[i] = 0;
-        }
-
-        for (let i = 0; i < this.attribState.attribState.length; i++)
-        {
-            this.attribState.attribState[i] = 0;
-        }
-
-        // im going to assume one is always active for performance reasons.
-        for (let i = 1; i < this.maxAttribs; i++)
-        {
-            this.gl.disableVertexAttribArray(i);
-        }
-    }
-
     // used
     /**
      * Resets all the logic and disables the vaos
      */
     reset()
     {
-        // unbind any VAO if they exist..
-        if (this.nativeVaoExtension)
-        {
-            this.nativeVaoExtension.bindVertexArrayOES(null);
-        }
-
-        // reset all attributes..
-        this.resetAttributes();
-
         this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, false);
 
-        this.setBlendMode(0);
+        this.forceState(0);
 
-        // TODO?
-        // this.setState(this.defaultState);
+        this._blendEq = true;
+        this.blendMode = -1;
+        this.setBlendMode(0);
     }
 
     /**

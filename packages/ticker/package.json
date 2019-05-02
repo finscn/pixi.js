@@ -1,9 +1,10 @@
 {
   "name": "@pixi/ticker",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0",
   "main": "lib/ticker.js",
   "module": "lib/ticker.es.js",
-  "description": "PixiJS Application",
+  "bundle": "dist/ticker.js",
+  "description": "Tickers are control the timings within PixiJS",
   "author": "Mat Groves",
   "contributors": [
     "Matt Karl <matt@mattkarl.com>"
@@ -22,12 +23,13 @@
     "test": "floss --path test"
   },
   "files": [
-    "lib"
+    "lib",
+    "dist"
   ],
   "dependencies": {
-    "@pixi/settings": "^5.0.0-alpha.2"
+    "@pixi/settings": "^5.0.0"
   },
   "devDependencies": {
-    "floss": "^2.1.3"
+    "floss": "^2.2.0"
   }
 }

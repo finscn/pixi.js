@@ -1,9 +1,10 @@
 {
   "name": "@pixi/canvas-graphics",
-  "version": "5.0.0-alpha.2",
+  "version": "5.0.0",
   "main": "lib/canvas-graphics.js",
   "module": "lib/canvas-graphics.es.js",
-  "description": "PixiJS Application",
+  "bundle": "dist/canvas-graphics.js",
+  "description": "Canvas mixin for the graphics package",
   "author": "Mat Groves",
   "contributors": [
     "Matt Karl <matt@mattkarl.com>"
@@ -19,15 +20,16 @@
     "access": "public"
   },
   "files": [
-    "lib"
+    "lib",
+    "dist"
   ],
   "dependencies": {
-    "@pixi/canvas-renderer": "^5.0.0-alpha.2",
-    "@pixi/core": "^5.0.0-alpha.2",
-    "@pixi/graphics": "^5.0.0-alpha.2",
-    "@pixi/math": "^5.0.0-alpha.2"
+    "@pixi/canvas-renderer": "^5.0.0",
+    "@pixi/core": "^5.0.0",
+    "@pixi/graphics": "^5.0.0",
+    "@pixi/math": "^5.0.0-rc.3"
   },
   "devDependencies": {
-    "floss": "^2.1.3"
+    "floss": "^2.2.0"
   }
 }

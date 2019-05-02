@@ -4,6 +4,10 @@ import { Rectangle } from '@pixi/math';
 const tempRect = new Rectangle();
 
 /**
+ * System plugin to the renderer to manage render textures.
+ *
+ * Should be added after FramebufferSystem
+ *
  * @class
  * @extends PIXI.System
  * @memberof PIXI.systems
@@ -27,17 +31,10 @@ export default class RenderTextureSystem extends System
         // TODO move this property somewhere else!
         /**
          * List of masks for the StencilSystem
-         * @member {Array}
+         * @member {PIXI.Graphics[]}
          * @readonly
          */
         this.defaultMaskStack = [];
-
-        /**
-         * List of filters for the FilterSystem
-         * @member {Array}
-         * @readonly
-         */
-        this.defaultFilterStack = [{}];
 
         // empty render texture?
         /**
@@ -45,7 +42,14 @@ export default class RenderTextureSystem extends System
          * @member {PIXI.RenderTexture}
          * @readonly
          */
-        this.renderTexture = null;
+        this.current = null;
+
+        /**
+         * Source frame
+         * @member {PIXI.Rectangle}
+         * @readonly
+         */
+        this.sourceFrame = new Rectangle();
 
         /**
          * Destination frame
@@ -57,16 +61,13 @@ export default class RenderTextureSystem extends System
 
     /**
      * Bind the current render texture
-     * @private
      * @param {PIXI.RenderTexture} renderTexture
      * @param {PIXI.Rectangle} sourceFrame
      * @param {PIXI.Rectangle} destinationFrame
      */
-    bind(renderTexture, sourceFrame, destinationFrame)
+    bind(renderTexture = null, sourceFrame, destinationFrame)
     {
-        // TODO - do we want this??
-        if (this.renderTexture === renderTexture) return;
-        this.renderTexture = renderTexture;
+        this.current = renderTexture;
 
         const renderer = this.renderer;
 
@@ -91,7 +92,7 @@ export default class RenderTextureSystem extends System
                 sourceFrame = destinationFrame;
             }
 
-            this.renderer.framebuffer.bind(baseTexture.frameBuffer, destinationFrame);
+            this.renderer.framebuffer.bind(baseTexture.framebuffer, destinationFrame);
 
             this.renderer.projection.update(destinationFrame, sourceFrame, resolution, false);
             this.renderer.stencil.setMaskStack(baseTexture.stencilMaskStack);
@@ -122,6 +123,8 @@ export default class RenderTextureSystem extends System
             this.renderer.stencil.setMaskStack(this.defaultMaskStack);
         }
 
+        this.sourceFrame.copyFrom(sourceFrame);
+
         this.destinationFrame.x = destinationFrame.x / resolution;
         this.destinationFrame.y = destinationFrame.y / resolution;
 
@@ -137,9 +140,9 @@ export default class RenderTextureSystem extends System
      */
     clear(clearColor)
     {
-        if (this.renderTexture)
+        if (this.current)
         {
-            clearColor = clearColor || this.renderTexture.baseTexture.clearColor;
+            clearColor = clearColor || this.current.baseTexture.clearColor;
         }
         else
         {
@@ -152,6 +155,14 @@ export default class RenderTextureSystem extends System
     resize()// screenWidth, screenHeight)
     {
         // resize the root only!
+        this.bind(null);
+    }
+
+    /**
+     * Resets renderTexture state
+     */
+    reset()
+    {
         this.bind(null);
     }
 }

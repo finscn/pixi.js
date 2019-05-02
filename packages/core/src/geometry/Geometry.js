@@ -2,6 +2,7 @@ import Attribute from './Attribute';
 import Buffer from './Buffer';
 import interleaveTypedArrays from './utils/interleaveTypedArrays';
 import getBufferType from './utils/getBufferType';
+import { Runner } from '@pixi/runner';
 
 const byteSizeMap = { 5126: 4, 5123: 2, 5121: 1 };
 let UID = 0;
@@ -19,10 +20,9 @@ const map = {
 
 /**
  * The Geometry represents a model. It consists of two components:
- * GeometryStyle - The structure of the model such as the attributes layout
- * GeometryData - the data of the model - this consists of buffers.
- *
- * This can include anything from positions, uvs, normals, colors etc..
+ * - GeometryStyle - The structure of the model such as the attributes layout
+ * - GeometryData - the data of the model - this consists of buffers.
+ * This can include anything from positions, uvs, normals, colors etc.
  *
  * Geometry can be defined without passing in a style or data if required (thats how I prefer!)
  *
@@ -40,7 +40,7 @@ const map = {
 export default class Geometry
 {
     /**
-     * @param {array} [buffers]  an array of buffers. optional.
+     * @param {PIXI.Buffer[]} [buffers]  an array of buffers. optional.
      * @param {object} [attributes] of the geometry, optional structure of the attributes layout
      */
     constructor(buffers = [], attributes = {})
@@ -54,8 +54,8 @@ export default class Geometry
         /**
          * A map of renderer IDs to webgl VAOs
          *
-         * @private
-         * @type {Array<VertexArrayObject>}
+         * @protected
+         * @type {object}
          */
         this.glVertexArrayObjects = {};
 
@@ -66,6 +66,14 @@ export default class Geometry
         this.instanceCount = 1;
 
         this._size = null;
+
+        this.disposeRunner = new Runner('disposeGeometry', 2);
+
+        /**
+         * Count of existing (not destroyed) meshes that reference this geometry
+         * @member {boolean}
+         */
+        this.refCount = 0;
     }
 
     /**
@@ -137,7 +145,18 @@ export default class Geometry
      */
     getAttribute(id)
     {
-        return this.buffers[this.attributes[id].buffer];
+        return this.attributes[id];
+    }
+
+    /**
+     * returns the requested buffer
+     *
+     * @param {String} id  the name of the buffer required
+     * @return {PIXI.Buffer} the buffer requested.
+     */
+    getBuffer(id)
+    {
+        return this.buffers[this.getAttribute(id).buffer];
     }
 
     /**
@@ -246,21 +265,19 @@ export default class Geometry
     }
 
     /**
+     * disposes WebGL resources that are connected to this geometry
+     */
+    dispose()
+    {
+        this.disposeRunner.run(this, false);
+    }
+
+    /**
      * Destroys the geometry.
      */
     destroy()
     {
-        for (let i = 0; i < this.glVertexArrayObjects.length; i++)
-        {
-            this.glVertexArrayObjects[i].destroy();
-        }
-
-        this.glVertexArrayObjects = null;
-
-        for (let i = 0; i < this.buffers.length; i++)
-        {
-            this.buffers[i].destroy();
-        }
+        this.dispose();
 
         this.buffers = null;
         this.indexBuffer.destroy();
@@ -310,7 +327,7 @@ export default class Geometry
      * merges an array of geometries into a new single one
      * geometry attribute styles must match for this operation to work
      *
-     * @param {array|PIXI.Geometry} geometries array of geometries to merge
+     * @param {PIXI.Geometry[]} geometries array of geometries to merge
      * @returns {PIXI.Geometry} shiny new geometry!
      */
     static merge(geometries)

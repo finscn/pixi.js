@@ -1,11 +1,11 @@
 import Program from './Program';
 import UniformGroup from './UniformGroup';
 
-// let math = require('../../../math');
 /**
+ * A helper class for shaders
+ *
  * @class
  * @memberof PIXI
- * @extends PIXI.Shader
  */
 class Shader
 {
@@ -78,6 +78,11 @@ class Shader
         this.uniformGroup = null;
     }
 
+    /**
+     * Shader uniform values, shortcut for `uniformGroup.uniforms`
+     * @readonly
+     * @member {object}
+     */
     get uniforms()
     {
         return this.uniformGroup.uniforms;
@@ -90,7 +95,7 @@ class Shader
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      *
-     * @returns {PIXI.Shader} an shiny new pixi shader!
+     * @returns {PIXI.Shader} an shiny new Pixi shader!
      */
     static from(vertexSrc, fragmentSrc, uniforms)
     {

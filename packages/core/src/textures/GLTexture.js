@@ -1,10 +1,14 @@
+/**
+ * Internal texture for WebGL context
+ * @class
+ * @memberof PIXI
+ */
 export default class GLTexture
 {
     constructor(texture)
     {
         /**
          * The WebGL texture
-         *
          * @member {WebGLTexture}
          */
         this.texture = texture;
@@ -20,14 +24,20 @@ export default class GLTexture
 
         /**
          * Texture style dirty flag
-         * @type {number}
+         * @member {number}
          */
         this.dirtyStyleId = -1;
 
         /**
          * Whether mip levels has to be generated
-         * @type {boolean}
+         * @member {boolean}
          */
         this.mipmap = false;
+
+        /**
+         * WrapMode copied from baseTexture
+         * @member {number}
+         */
+        this.wrapMode = 33071;
     }
 }

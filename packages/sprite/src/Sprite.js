@@ -3,16 +3,31 @@ import { sign } from '@pixi/utils';
 import { Texture } from '@pixi/core';
 import { BLEND_MODES } from '@pixi/constants';
 import { Container } from '@pixi/display';
+import { settings } from '@pixi/settings';
 
 const tempPoint = new Point();
+const indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
 
 /**
  * The Sprite object is the base for all textured objects that are rendered to the screen
- *
+*
  * A sprite can be created directly from an image like this:
  *
  * ```js
  * let sprite = new PIXI.Sprite.from('assets/image.png');
+ * ```
+ *
+ * The more efficient way to create sprites is using a {@link PIXI.Spritesheet},
+ * as swapping base textures when rendering to the screen is inefficient.
+ *
+ * ```js
+ * PIXI.Loader.shared.add("assets/spritesheet.json").load(setup);
+ *
+ * function setup() {
+ *   let sheet = PIXI.Loader.shared.resources["assets/spritesheet.json"].spritesheet;
+ *   let sprite = new PIXI.Sprite(sheet.textures["image.png"]);
+ *   ...
+ * }
  * ```
  *
  * @class
@@ -22,7 +37,7 @@ const tempPoint = new Point();
 export default class Sprite extends Container
 {
     /**
-     * @param {PIXI.Texture} texture - The texture for this sprite
+     * @param {PIXI.Texture} texture - The texture for this sprite.
      */
     constructor(texture)
     {
@@ -30,14 +45,22 @@ export default class Sprite extends Container
 
         /**
          * The anchor sets the origin point of the texture.
-         * The default is 0,0 this means the texture's origin is the top left
-         * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+         * The default is 0,0 or taken from the {@link PIXI.Texture#defaultAnchor|Texture}
+         * passed to the constructor. A value of 0,0 means the texture's origin is the top left.
+         * Setting the anchor to 0.5,0.5 means the texture's origin is centered.
+         * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner.
+         * Note: Updating the {@link PIXI.Texture#defaultAnchor} after a Texture is
+         * created does _not_ update the Sprite's anchor values.
          *
          * @member {PIXI.ObservablePoint}
          * @private
          */
-        this._anchor = new ObservablePoint(this._onAnchorUpdate, this);
+        this._anchor = new ObservablePoint(
+            this._onAnchorUpdate,
+            this,
+            (texture ? texture.defaultAnchor.x : 0),
+            (texture ? texture.defaultAnchor.y : 0)
+        );
 
         /**
          * The texture that the sprite is using
@@ -99,6 +122,8 @@ export default class Sprite extends Container
          */
         this.cachedTint = 0xFFFFFF;
 
+        this.uvs = null;
+
         // call texture setter
         this.texture = texture || Texture.EMPTY;
 
@@ -124,6 +149,12 @@ export default class Sprite extends Container
         this._transformTrimmedID = -1;
         this._textureTrimmedID = -1;
 
+        // Batchable stuff..
+        // TODO could make this a mixin?
+        this.indices = indices;
+        this.size = 4;
+        this.start = 0;
+
         /**
          * Plugin that is responsible for rendering this element.
          * Allows to customize the rendering process without overriding '_render' & '_renderCanvas' methods.
@@ -131,7 +162,21 @@ export default class Sprite extends Container
          * @member {string}
          * @default 'sprite'
          */
-        this.pluginName = 'sprite';
+        this.pluginName = 'batch';
+
+        /**
+         * used to fast check if a sprite is.. a sprite!
+         * @member {boolean}
+         */
+        this.isSprite = true;
+
+        /**
+         * Internal roundPixels field
+         *
+         * @member {boolean}
+         * @private
+         */
+        this._roundPixels = settings.ROUND_PIXELS;
     }
 
     /**
@@ -145,6 +190,7 @@ export default class Sprite extends Container
         this._textureTrimmedID = -1;
         this.cachedTint = 0xFFFFFF;
 
+        this.uvs = this._texture._uvs.uvsFloat32;
         // so if _width is 0 then width was not set..
         if (this._width)
         {
@@ -173,17 +219,18 @@ export default class Sprite extends Container
      */
     calculateVertices()
     {
-        if (this._transformID === this.transform._worldID && this._textureID === this._texture._updateID)
+        const texture = this._texture;
+
+        if (this._transformID === this.transform._worldID && this._textureID === texture._updateID)
         {
             return;
         }
 
         this._transformID = this.transform._worldID;
-        this._textureID = this._texture._updateID;
+        this._textureID = texture._updateID;
 
         // set the vertex data
 
-        const texture = this._texture;
         const wt = this.transform.worldTransform;
         const a = wt.a;
         const b = wt.b;
@@ -236,8 +283,13 @@ export default class Sprite extends Container
         vertexData[6] = (a * w1) + (c * h0) + tx;
         vertexData[7] = (d * h0) + (b * w1) + ty;
 
-        //   console.log(orig.width)
-        //     console.log(vertexData, this.texture.baseTexture)
+        if (this._roundPixels)
+        {
+            for (let i = 0; i < 8; i++)
+            {
+                vertexData[i] = Math.round(vertexData[i]);
+            }
+        }
     }
 
     /**
@@ -300,7 +352,7 @@ export default class Sprite extends Container
     *
     * Renders the object using the WebGL renderer
     *
-    * @private
+    * @protected
     * @param {PIXI.Renderer} renderer - The webgl renderer to use.
     */
     _render(renderer)
@@ -314,7 +366,7 @@ export default class Sprite extends Container
     /**
      * Updates the bounds of the sprite.
      *
-     * @private
+     * @protected
      */
     _calculateBounds()
     {
@@ -410,6 +462,8 @@ export default class Sprite extends Container
     {
         super.destroy(options);
 
+        this._texture.off('update', this._onTextureUpdate, this);
+
         this._anchor = null;
 
         const destroyTexture = typeof options === 'boolean' ? options : options && options.texture;
@@ -443,6 +497,29 @@ export default class Sprite extends Container
             : new Texture.from(source, options);
 
         return new Sprite(texture);
+    }
+
+    /**
+     * If true PixiJS will Math.floor() x/y values when rendering, stopping pixel interpolation.
+     * Advantages can include sharper image quality (like text) and faster rendering on canvas.
+     * The main disadvantage is movement of objects may appear less smooth.
+     * To set the global default, change {@link PIXI.settings.ROUND_PIXELS}
+     *
+     * @member {boolean}
+     * @default false
+     */
+    set roundPixels(value)
+    {
+        if (this._roundPixels !== value)
+        {
+            this._transformID = -1;
+        }
+        this._roundPixels = value;
+    }
+
+    get roundPixels()
+    {
+        return this._roundPixels;
     }
 
     /**
@@ -482,10 +559,20 @@ export default class Sprite extends Container
     }
 
     /**
-     * The anchor sets the origin point of the texture.
-     * The default is 0,0 this means the texture's origin is the top left
-     * Setting the anchor to 0.5,0.5 means the texture's origin is centered
-     * Setting the anchor to 1,1 would mean the texture's origin point will be the bottom right corner
+     * The anchor sets the origin point of the text. The default value is taken from the {@link PIXI.Texture|Texture}
+     * and passed to the constructor.
+     *
+     * The default is `(0,0)`, this means the text's origin is the top left.
+     *
+     * Setting the anchor to `(0.5,0.5)` means the text's origin is centered.
+     *
+     * Setting the anchor to `(1,1)` would mean the text's origin point will be the bottom right corner.
+     *
+     * If you pass only single parameter, it will set both x and y to the same value as shown in the example below.
+     *
+     * @example
+     * const sprite = new PIXI.Sprite(texture);
+     * sprite.anchor.set(0.5); // This will set the origin to center. (0.5) is same as (0.5, 0.5).
      *
      * @member {PIXI.ObservablePoint}
      */
@@ -534,7 +621,7 @@ export default class Sprite extends Container
             return;
         }
 
-        this._texture = value;
+        this._texture = value || Texture.EMPTY;
         this.cachedTint = 0xFFFFFF;
 
         this._textureID = -1;

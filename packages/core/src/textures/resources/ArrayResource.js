@@ -4,7 +4,7 @@ import { TARGETS } from '@pixi/constants';
 import { autoDetectResource } from './autoDetectResource';
 
 /**
- * Resource for a CubeTexture which contains six resources.
+ * A resource that contains a number of sources.
  *
  * @class
  * @extends PIXI.resources.Resource
@@ -156,7 +156,7 @@ export default class ArrayResource extends Resource
     /**
      * Load all the resources simultaneously
      * @override
-     * @return {Promise} When load is resolved
+     * @return {Promise<void>} When load is resolved
      */
     load()
     {
@@ -188,7 +188,8 @@ export default class ArrayResource extends Resource
      * Upload the resources to the GPU.
      * @param {PIXI.Renderer} renderer
      * @param {PIXI.BaseTexture} texture
-     * @param {PIXI.glCore.Texture} glTexture
+     * @param {PIXI.GLTexture} glTexture
+     * @returns {boolean} whether texture was uploaded
      */
     upload(renderer, texture, glTexture)
     {

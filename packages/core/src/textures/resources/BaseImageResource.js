@@ -47,8 +47,9 @@ export default class BaseImageResource extends Resource
      * Upload the texture to the GPU.
      * @param {PIXI.Renderer} renderer Upload to the renderer
      * @param {PIXI.BaseTexture} baseTexture Reference to parent texture
-     * @param {PIXI.glCore.GLTexture} glTexture Reference
-     * @param {HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|SVGElement} source (optional)
+     * @param {PIXI.GLTexture} glTexture
+     * @param {HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|SVGElement} [source] (optional)
+     * @returns {boolean} true is success
      */
     upload(renderer, baseTexture, glTexture, source)
     {
@@ -60,7 +61,7 @@ export default class BaseImageResource extends Resource
 
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, baseTexture.premultiplyAlpha);
 
-        if (glTexture.width === width && glTexture.height === height)
+        if (baseTexture.target === gl.TEXTURE_2D && glTexture.width === width && glTexture.height === height)
         {
             gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, baseTexture.format, baseTexture.type, source);
         }
@@ -69,7 +70,7 @@ export default class BaseImageResource extends Resource
             glTexture.width = width;
             glTexture.height = height;
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, baseTexture.format, baseTexture.format, baseTexture.type, source);
+            gl.texImage2D(baseTexture.target, 0, baseTexture.format, baseTexture.format, baseTexture.type, source);
         }
 
         return true;

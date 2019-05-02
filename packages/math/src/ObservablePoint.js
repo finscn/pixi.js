@@ -1,7 +1,8 @@
 /**
  * The Point object represents a location in a two-dimensional coordinate system, where x represents
  * the horizontal axis and y represents the vertical axis.
- * An observable point is a point that triggers a callback when the point's position is changed.
+ *
+ * An ObservablePoint is a point that triggers a callback when the point's position is changed.
  *
  * @class
  * @memberof PIXI
@@ -21,6 +22,24 @@ export default class ObservablePoint
 
         this.cb = cb;
         this.scope = scope;
+    }
+
+    /**
+     * Creates a clone of this point.
+     * The callback and scope params can be overidden otherwise they will default
+     * to the clone object's values.
+     *
+     * @override
+     * @param {Function} [cb=null] - callback when changed
+     * @param {object} [scope=null] - owner of callback
+     * @return {PIXI.ObservablePoint} a copy of the point
+     */
+    clone(cb = null, scope = null)
+    {
+        const _cb = cb || this.cb;
+        const _scope = scope || this.scope;
+
+        return new ObservablePoint(_cb, _scope, this._x, this._y);
     }
 
     /**
@@ -46,8 +65,8 @@ export default class ObservablePoint
     /**
      * Copies x and y from the given point
      *
-     * @param {PIXI.Point} p - The point to copy from.
-     * @returns Returns itself.
+     * @param {PIXI.IPoint} p - The point to copy from.
+     * @returns {PIXI.IPoint} Returns itself.
      */
     copyFrom(p)
     {
@@ -64,14 +83,25 @@ export default class ObservablePoint
     /**
      * Copies x and y into the given point
      *
-     * @param {PIXI.Point} p - The point to copy.
-     * @returns Given point with values updated
+     * @param {PIXI.IPoint} p - The point to copy.
+     * @returns {PIXI.IPoint} Given point with values updated
      */
     copyTo(p)
     {
         p.set(this._x, this._y);
 
         return p;
+    }
+
+    /**
+     * Returns true if the given point is equal to this point
+     *
+     * @param {PIXI.IPoint} p - The point to check
+     * @returns {boolean} Whether the given point equal to this point
+     */
+    equals(p)
+    {
+        return (p.x === this._x) && (p.y === this._y);
     }
 
     /**
@@ -112,3 +142,9 @@ export default class ObservablePoint
         }
     }
 }
+
+/**
+ * A number, or a string containing a number.
+ * @memberof PIXI
+ * @typedef {(PIXI.Point|PIXI.ObservablePoint)} IPoint
+ */

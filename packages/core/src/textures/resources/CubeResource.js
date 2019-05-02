@@ -7,7 +7,7 @@ import { TARGETS } from '@pixi/constants';
  * @class
  * @extends PIXI.resources.ArrayResource
  * @memberof PIXI.resources
- * @param {Array<string|PIXI.resource.Resource>} [source] Collection of URLs or resources
+ * @param {Array<string|PIXI.resources.Resource>} [source] Collection of URLs or resources
  *        to use as the sides of the cube.
  * @param {object} [options] - ImageResource options
  * @param {number} [options.width] - Width of resource
@@ -17,16 +17,29 @@ export default class CubeResource extends ArrayResource
 {
     constructor(source, options)
     {
+        options = options || {};
+
         super(source, options);
 
         if (this.length !== CubeResource.SIDES)
         {
             throw new Error(`Invalid length. Got ${this.length}, expected 6`);
         }
+
+        for (let i = 0; i < CubeResource.SIDES; i++)
+        {
+            this.items[i].target = TARGETS.TEXTURE_CUBE_MAP_POSITIVE_X + i;
+        }
+
+        if (options.autoLoad !== false)
+        {
+            this.load();
+        }
     }
 
     /**
      * Add binding
+     *
      * @override
      * @param {PIXI.BaseTexture} baseTexture - parent base texture
      */
@@ -39,6 +52,8 @@ export default class CubeResource extends ArrayResource
 
     /**
      * Upload the resource
+     *
+     * @returns {boolean} true is success
      */
     upload(renderer, baseTexture, glTexture)
     {
@@ -68,6 +83,7 @@ export default class CubeResource extends ArrayResource
 
 /**
  * Number of texture sides to store for CubeResources
+ *
  * @name PIXI.resources.CubeResource.SIDES
  * @static
  * @member {number}

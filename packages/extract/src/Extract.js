@@ -8,7 +8,7 @@ const BYTES_PER_PIXEL = 4;
 /**
  * The extract manager provides functionality to export content from the renderers.
  *
- * An instance of this class is automatically created by default, and can be found at renderer.plugins.extract
+ * An instance of this class is automatically created by default, and can be found at `renderer.plugins.extract`
  *
  * @class
  * @memberof PIXI.extract
@@ -35,14 +35,16 @@ export default class Extract
      * Will return a HTML Image of the target
      *
      * @param {PIXI.DisplayObject|PIXI.RenderTexture} target - A displayObject or renderTexture
-     *  to convert. If left empty will use use the main renderer
+     *  to convert. If left empty will use the main renderer
+     * @param {string} [format] - Image format, e.g. "image/jpeg" or "image/webp".
+     * @param {number} [quality] - JPEG or Webp compression from 0 to 1. Default is 0.92.
      * @return {HTMLImageElement} HTML Image of the target
      */
-    image(target)
+    image(target, format, quality)
     {
         const image = new Image();
 
-        image.src = this.base64(target);
+        image.src = this.base64(target, format, quality);
 
         return image;
     }
@@ -52,19 +54,21 @@ export default class Extract
      *  `Extract.getCanvas` and then running toDataURL on that.
      *
      * @param {PIXI.DisplayObject|PIXI.RenderTexture} target - A displayObject or renderTexture
-     *  to convert. If left empty will use use the main renderer
+     *  to convert. If left empty will use the main renderer
+     * @param {string} [format] - Image format, e.g. "image/jpeg" or "image/webp".
+     * @param {number} [quality] - JPEG or Webp compression from 0 to 1. Default is 0.92.
      * @return {string} A base64 encoded string of the texture.
      */
-    base64(target)
+    base64(target, format, quality)
     {
-        return this.canvas(target).toDataURL();
+        return this.canvas(target).toDataURL(format, quality);
     }
 
     /**
      * Creates a Canvas element, renders this target to it and then returns it.
      *
      * @param {PIXI.DisplayObject|PIXI.RenderTexture} target - A displayObject or renderTexture
-     *  to convert. If left empty will use use the main renderer
+     *  to convert. If left empty will use the main renderer
      * @return {HTMLCanvasElement} A Canvas element with the texture rendered on.
      */
     canvas(target)
@@ -112,7 +116,7 @@ export default class Extract
         const width = frame.width * resolution;
         const height = frame.height * resolution;
 
-        const canvasBuffer = new CanvasRenderTarget(width, height);
+        const canvasBuffer = new CanvasRenderTarget(width, height, 1);
 
         const webglPixels = new Uint8Array(BYTES_PER_PIXEL * width * height);
 
@@ -157,7 +161,7 @@ export default class Extract
      * order, with integer values between 0 and 255 (included).
      *
      * @param {PIXI.DisplayObject|PIXI.RenderTexture} target - A displayObject or renderTexture
-     *  to convert. If left empty will use use the main renderer
+     *  to convert. If left empty will use the main renderer
      * @return {Uint8ClampedArray} One-dimensional array containing the pixel data of the entire texture
      */
     pixels(target)

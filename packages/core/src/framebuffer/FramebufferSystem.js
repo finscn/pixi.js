@@ -1,8 +1,12 @@
 import System from '../System';
 import { Rectangle } from '@pixi/math';
+import { ENV } from '@pixi/constants';
+import { settings } from '../settings';
+import Framebuffer from './Framebuffer';
 
 /**
- * Framebuffer system
+ * System plugin to the renderer to manage framebuffers.
+ *
  * @class
  * @extends PIXI.System
  * @memberof PIXI.systems
@@ -10,38 +14,97 @@ import { Rectangle } from '@pixi/math';
 export default class FramebufferSystem extends System
 {
     /**
+     * @param {PIXI.Renderer} renderer - The renderer this System works for.
+     */
+    constructor(renderer)
+    {
+        super(renderer);
+
+        /**
+         * A list of managed framebuffers
+         * @member {PIXI.Framebuffer[]}
+         * @readonly
+         */
+        this.managedFramebuffers = [];
+
+        /**
+         * Framebuffer value that shows that we don't know what is bound
+         * @member {Framebuffer}
+         * @readonly
+         */
+        this.unknownFramebuffer = new Framebuffer(10, 10);
+    }
+
+    /**
      * Sets up the renderer context and necessary buffers.
-     *
-     * @private
      */
     contextChange()
     {
-        this.gl = this.renderer.gl;
+        const gl = this.gl = this.renderer.gl;
+
         this.CONTEXT_UID = this.renderer.CONTEXT_UID;
-        this.current = null;
+        this.current = this.unknownFramebuffer;
         this.viewport = new Rectangle();
-        this.drawBufferExtension = this.renderer.context.extensions.drawBuffers;
+        this.hasMRT = true;
+        this.writeDepthTexture = true;
+
+        this.disposeAll(true);
+
+        // webgl2
+        if (this.renderer.context.webGLVersion === 1)
+        {
+            // webgl 1!
+            let nativeDrawBuffersExtension = this.renderer.context.extensions.drawBuffers;
+            let nativeDepthTextureExtension = this.renderer.context.extensions.depthTexture;
+
+            if (settings.PREFER_ENV === ENV.WEBGL_LEGACY)
+            {
+                nativeDrawBuffersExtension = null;
+                nativeDepthTextureExtension = null;
+            }
+
+            if (nativeDrawBuffersExtension)
+            {
+                gl.drawBuffers = (activeTextures) =>
+                    nativeDrawBuffersExtension.drawBuffersWEBGL(activeTextures);
+            }
+            else
+            {
+                this.hasMRT = false;
+                gl.drawBuffers = () =>
+                {
+                    // empty
+                };
+            }
+
+            if (!nativeDepthTextureExtension)
+            {
+                this.writeDepthTexture = false;
+            }
+        }
     }
 
     /**
      * Bind a framebuffer
      *
      * @param {PIXI.Framebuffer} framebuffer
-     * @param {PIXI.Rectangle} frame
+     * @param {PIXI.Rectangle} [frame] frame, default is framebuffer size
      */
     bind(framebuffer, frame)
     {
         const { gl } = this;
 
-        this.current = framebuffer;
-
         if (framebuffer)
         {
             // TODO caching layer!
 
-            const fbo = framebuffer.glFrameBuffers[this.CONTEXT_UID] || this.initFramebuffer(framebuffer);
+            const fbo = framebuffer.glFramebuffers[this.CONTEXT_UID] || this.initFramebuffer(framebuffer);
 
-            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
+            if (this.current !== framebuffer)
+            {
+                this.current = framebuffer;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, fbo.framebuffer);
+            }
             // make sure all textures are unbound..
 
             // now check for updates...
@@ -89,7 +152,11 @@ export default class FramebufferSystem extends System
         }
         else
         {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            if (this.current)
+            {
+                this.current = null;
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            }
 
             if (frame)
             {
@@ -162,7 +229,7 @@ export default class FramebufferSystem extends System
     /**
      * Initialize framebuffer
      *
-     * @private
+     * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
     initFramebuffer(framebuffer)
@@ -178,7 +245,10 @@ export default class FramebufferSystem extends System
             dirtySize: 0,
         };
 
-        framebuffer.glFrameBuffers[this.CONTEXT_UID] = fbo;
+        framebuffer.glFramebuffers[this.CONTEXT_UID] = fbo;
+
+        this.managedFramebuffers.push(framebuffer);
+        framebuffer.disposeRunner.add(this);
 
         return fbo;
     }
@@ -186,38 +256,52 @@ export default class FramebufferSystem extends System
     /**
      * Resize the framebuffer
      *
-     * @private
+     * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
     resizeFramebuffer(framebuffer)
     {
         const { gl } = this;
 
-        if (framebuffer.stencil || framebuffer.depth)
+        const fbo = framebuffer.glFramebuffers[this.CONTEXT_UID];
+
+        if (fbo.stencil)
         {
-            gl.bindRenderbuffer(gl.RENDERBUFFER, this.stencil);
+            gl.bindRenderbuffer(gl.RENDERBUFFER, fbo.stencil);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, framebuffer.width, framebuffer.height);
+        }
+
+        const colorTextures = framebuffer.colorTextures;
+
+        for (let i = 0; i < colorTextures.length; i++)
+        {
+            this.renderer.texture.bind(colorTextures[i], 0);
+        }
+
+        if (framebuffer.depthTexture)
+        {
+            this.renderer.texture.bind(framebuffer.depthTexture, 0);
         }
     }
 
     /**
      * Update the framebuffer
      *
-     * @private
+     * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
     updateFramebuffer(framebuffer)
     {
         const { gl } = this;
 
-        const fbo = framebuffer.glFrameBuffers[this.CONTEXT_UID];
+        const fbo = framebuffer.glFramebuffers[this.CONTEXT_UID];
 
         // bind the color texture
         const colorTextures = framebuffer.colorTextures;
 
         let count = colorTextures.length;
 
-        if (!this.drawBufferExtension)
+        if (!gl.drawBuffers)
         {
             count = Math.min(count, 1);
         }
@@ -252,16 +336,16 @@ export default class FramebufferSystem extends System
             activeTextures.push(gl.COLOR_ATTACHMENT0 + i);
         }
 
-        if (this.drawBufferExtension && activeTextures.length > 1)
+        if (activeTextures.length > 1)
         {
-            this.drawBufferExtension.drawBuffersWEBGL(activeTextures);
+            gl.drawBuffers(activeTextures);
         }
 
         if (framebuffer.depthTexture)
         {
-            const depthTextureExt = this.renderer.context.extensions.depthTexture;
+            const writeDepthTexture = this.writeDepthTexture;
 
-            if (depthTextureExt)
+            if (writeDepthTexture)
             {
                 const depthTexture = framebuffer.depthTexture;
 
@@ -275,16 +359,82 @@ export default class FramebufferSystem extends System
             }
         }
 
-        if (framebuffer.stencil || framebuffer.depth)
+        if (!fbo.stencil && (framebuffer.stencil || framebuffer.depth))
         {
             fbo.stencil = gl.createRenderbuffer();
 
             gl.bindRenderbuffer(gl.RENDERBUFFER, fbo.stencil);
 
             // TODO.. this is depth AND stencil?
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, fbo.stencil);
+            if (!framebuffer.depthTexture)
+            { // you can't have both, so one should take priority if enabled
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, fbo.stencil);
+            }
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL, framebuffer.width, framebuffer.height);
             // fbo.enableStencil();
         }
+    }
+
+    /**
+     * Disposes framebuffer
+     * @param {PIXI.Framebuffer} framebuffer framebuffer that has to be disposed of
+     * @param {boolean} [contextLost=false] If context was lost, we suppress all delete function calls
+     */
+    disposeFramebuffer(framebuffer, contextLost)
+    {
+        const fbo = framebuffer.glFramebuffers[this.CONTEXT_UID];
+        const gl = this.gl;
+
+        if (!fbo)
+        {
+            return;
+        }
+
+        delete framebuffer.glFramebuffers[this.CONTEXT_UID];
+
+        const index = this.managedFramebuffers.indexOf(framebuffer);
+
+        if (index >= 0)
+        {
+            this.managedFramebuffers.splice(index, 1);
+        }
+
+        framebuffer.disposeRunner.remove(this);
+
+        if (!contextLost)
+        {
+            gl.deleteFramebuffer(fbo.framebuffer);
+            if (fbo.stencil)
+            {
+                gl.deleteRenderbuffer(fbo.stencil);
+            }
+        }
+    }
+
+    /**
+     * Disposes all framebuffers, but not textures bound to them
+     * @param {boolean} [contextLost=false] If context was lost, we suppress all delete function calls
+     */
+    disposeAll(contextLost)
+    {
+        const list = this.managedFramebuffers;
+
+        this.managedFramebuffers = [];
+
+        for (let i = 0; i < list.count; i++)
+        {
+            this.disposeFramebuffer(list[i], contextLost);
+        }
+    }
+
+    /**
+     * resets framebuffer stored state, binds screen framebuffer
+     *
+     * should be called before renderTexture reset()
+     */
+    reset()
+    {
+        this.current = this.unknownFramebuffer;
+        this.viewport = new Rectangle();
     }
 }

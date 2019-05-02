@@ -1,18 +1,15 @@
 import { Ticker, UPDATE_PRIORITY } from '@pixi/ticker';
 import { Point } from '@pixi/math';
 import { DisplayObject } from '@pixi/display';
-import { mixins } from '@pixi/utils';
 import InteractionData from './InteractionData';
 import InteractionEvent from './InteractionEvent';
 import InteractionTrackingData from './InteractionTrackingData';
-import EventEmitter from 'eventemitter3';
+import { EventEmitter } from '@pixi/utils';
 import interactiveTarget from './interactiveTarget';
 
-// Mix interactiveTarget into DisplayObject.prototype, after deprecation has been handled
-mixins.delayMixin(
-    DisplayObject.prototype,
-    interactiveTarget
-);
+// Mix interactiveTarget into DisplayObject.prototype,
+// after deprecation has been handled
+DisplayObject.mixin(interactiveTarget);
 
 const MOUSE_POINTER_ID = 1;
 
@@ -25,14 +22,16 @@ const hitTestEvent = {
 };
 
 /**
- * The interaction manager deals with mouse, touch and pointer events. Any DisplayObject can be interactive
- * if its interactive parameter is set to true
+ * The interaction manager deals with mouse, touch and pointer events.
+ *
+ * Any DisplayObject can be interactive if its `interactive` property is set to true.
+ *
  * This manager also supports multitouch.
  *
- * An instance of this class is automatically created by default, and can be found at renderer.plugins.interaction
+ * An instance of this class is automatically created by default, and can be found at `renderer.plugins.interaction`
  *
  * @class
- * @extends EventEmitter
+ * @extends PIXI.utils.EventEmitter
  * @memberof PIXI.interaction
  */
 export default class InteractionManager extends EventEmitter
@@ -114,7 +113,7 @@ export default class InteractionManager extends EventEmitter
         /**
          * The DOM element to bind to.
          *
-         * @private
+         * @protected
          * @member {HTMLElement}
          */
         this.interactionDOMElement = null;
@@ -135,7 +134,7 @@ export default class InteractionManager extends EventEmitter
         /**
          * Have events been attached to the dom element?
          *
-         * @private
+         * @protected
          * @member {boolean}
          */
         this.eventsAdded = false;
@@ -143,7 +142,7 @@ export default class InteractionManager extends EventEmitter
         /**
          * Is the mouse hovering over the renderer?
          *
-         * @private
+         * @protected
          * @member {boolean}
          */
         this.mouseOverRenderer = false;
@@ -214,7 +213,7 @@ export default class InteractionManager extends EventEmitter
          * values, objects are handled as dictionaries of CSS values for interactionDOMElement,
          * and functions are called instead of changing the CSS.
          * Default CSS cursor values are provided for 'default' and 'pointer' modes.
-         * @member {Object.<string, (string|Function|Object.<string, string>)>}
+         * @member {Object.<string, Object>}
          */
         this.cursorStyles = {
             default: 'inherit',
@@ -252,8 +251,6 @@ export default class InteractionManager extends EventEmitter
          * @default 1
          */
         this.resolution = 1;
-
-        this.setTargetElement(this.renderer.view, this.renderer.resolution);
 
         /**
          * Fired when a pointer device button (usually a mouse left-button) is pressed on the display
@@ -351,6 +348,9 @@ export default class InteractionManager extends EventEmitter
 
         /**
          * Fired when a pointer device button is released over the display object.
+         * Not always fired when some buttons are held down while others are released. In those cases,
+         * use [mousedown]{@link PIXI.interaction.InteractionManager#event:mousedown} and
+         * [mouseup]{@link PIXI.interaction.InteractionManager#event:mouseup} instead.
          *
          * @event PIXI.interaction.InteractionManager#pointerup
          * @param {PIXI.interaction.InteractionEvent} event - Interaction event
@@ -647,6 +647,8 @@ export default class InteractionManager extends EventEmitter
          * @event PIXI.DisplayObject#touchmove
          * @param {PIXI.interaction.InteractionEvent} event - Interaction event
          */
+
+        this.setTargetElement(this.renderer.view, this.renderer.resolution);
     }
 
     /**
@@ -706,7 +708,7 @@ export default class InteractionManager extends EventEmitter
             return;
         }
 
-        Ticker.shared.add(this.update, this, UPDATE_PRIORITY.INTERACTION);
+        Ticker.system.add(this.update, this, UPDATE_PRIORITY.INTERACTION);
 
         if (window.navigator.msPointerEnabled)
         {
@@ -769,7 +771,7 @@ export default class InteractionManager extends EventEmitter
             return;
         }
 
-        Ticker.shared.remove(this.update, this);
+        Ticker.system.remove(this.update, this);
 
         if (window.navigator.msPointerEnabled)
         {
@@ -814,7 +816,7 @@ export default class InteractionManager extends EventEmitter
 
     /**
      * Updates the state of interactive objects.
-     * Invoked by a throttled ticker update from {@link PIXI.Ticker.shared}.
+     * Invoked by a throttled ticker update from {@link PIXI.Ticker.system}.
      *
      * @param {number} deltaTime - time delta since last tick
      */
@@ -968,7 +970,7 @@ export default class InteractionManager extends EventEmitter
             rect = this.interactionDOMElement.getBoundingClientRect();
         }
 
-        const resolutionMultiplier = navigator.isCocoonJS ? this.resolution : (1.0 / this.resolution);
+        const resolutionMultiplier = 1.0 / this.resolution;
 
         point.x = ((x - rect.left) * (this.interactionDOMElement.width / rect.width)) * resolutionMultiplier;
         point.y = ((y - rect.top) * (this.interactionDOMElement.height / rect.height)) * resolutionMultiplier;
@@ -979,7 +981,7 @@ export default class InteractionManager extends EventEmitter
      * specified function on all interactive objects it finds. It will also take care of hit
      * testing the interactive objects and passes the hit across in the function.
      *
-     * @private
+     * @protected
      * @param {PIXI.interaction.InteractionEvent} interactionEvent - event containing the point that
      *  is tested for collision
      * @param {PIXI.Container|PIXI.Sprite|PIXI.TilingSprite} displayObject - the displayObject
@@ -1039,7 +1041,9 @@ export default class InteractionManager extends EventEmitter
             }
             interactiveParent = false;
         }
-        // If there is a mask, no need to test against anything else if the pointer is not within the mask
+        // If there is a mask, no need to hitTest against anything else if the pointer is not within the mask.
+        // We still want to hitTestChildren, however, to ensure a mouseout can still be generated.
+        // https://github.com/pixijs/pixi.js/issues/5135
         else if (displayObject._mask)
         {
             if (hitTest)
@@ -1047,7 +1051,6 @@ export default class InteractionManager extends EventEmitter
                 if (!(displayObject._mask.containsPoint && displayObject._mask.containsPoint(point)))
                 {
                     hitTest = false;
-                    hitTestChildren = false;
                 }
             }
         }
@@ -1155,7 +1158,12 @@ export default class InteractionManager extends EventEmitter
 
         if (this.autoPreventDefault && events[0].isNormalized)
         {
-            originalEvent.preventDefault();
+            const cancelable = originalEvent.cancelable || !('cancelable' in originalEvent);
+
+            if (cancelable)
+            {
+                originalEvent.preventDefault();
+            }
         }
 
         const eventLen = events.length;
@@ -1349,6 +1357,9 @@ export default class InteractionManager extends EventEmitter
         const isTouch = data.pointerType === 'touch';
 
         const isMouse = (data.pointerType === 'mouse' || data.pointerType === 'pen');
+        // need to track mouse down status in the mouse block so that we can emit
+        // event in a later block
+        let isMouseTap = false;
 
         // Mouse only
         if (isMouse)
@@ -1368,8 +1379,8 @@ export default class InteractionManager extends EventEmitter
                 if (isDown)
                 {
                     this.dispatchEvent(displayObject, isRightButton ? 'rightclick' : 'click', interactionEvent);
-                    // because we can confirm that the mousedown happened on this object, emit pointertap
-                    this.dispatchEvent(displayObject, 'pointertap', interactionEvent);
+                    // because we can confirm that the mousedown happened on this object, flag for later emit of pointertap
+                    isMouseTap = true;
                 }
             }
             else if (isDown)
@@ -1398,8 +1409,8 @@ export default class InteractionManager extends EventEmitter
 
             if (trackingData)
             {
-                // mouse pointer taps are handled in the isMouse block for code simplicity
-                if (!isMouse)
+                // emit pointertap if not a mouse, or if the mouse block decided it was a tap
+                if (!isMouse || isMouseTap)
                 {
                     this.dispatchEvent(displayObject, 'pointertap', interactionEvent);
                 }
@@ -1709,15 +1720,6 @@ export default class InteractionManager extends EventEmitter
 
         this.mapPositionToPoint(interactionData.global, pointerEvent.clientX, pointerEvent.clientY);
 
-        // This is the way InteractionManager processed touch events before the refactoring, so I've kept
-        // it here. But it doesn't make that much sense to me, since mapPositionToPoint already factors
-        // in this.resolution, so this just divides by this.resolution twice for touch events...
-        if (navigator.isCocoonJS && pointerEvent.pointerType === 'touch')
-        {
-            interactionData.global.x = interactionData.global.x / this.resolution;
-            interactionData.global.y = interactionData.global.y / this.resolution;
-        }
-
         // Not really sure why this is happening, but it's how a previous version handled things
         if (pointerEvent.pointerType === 'touch')
         {
@@ -1762,8 +1764,8 @@ export default class InteractionManager extends EventEmitter
                 if (typeof touch.pointerType === 'undefined') touch.pointerType = 'touch';
                 if (typeof touch.pointerId === 'undefined') touch.pointerId = touch.identifier || 0;
                 if (typeof touch.pressure === 'undefined') touch.pressure = touch.force || 0.5;
-                touch.twist = 0;
-                touch.tangentialPressure = 0;
+                if (typeof touch.twist === 'undefined') touch.twist = 0;
+                if (typeof touch.tangentialPressure === 'undefined') touch.tangentialPressure = 0;
                 // TODO: Remove these, as layerX/Y is not a standard, is deprecated, has uneven
                 // support, and the fill ins are not quite the same
                 // offsetX/Y might be okay, but is not the same as clientX/Y when the canvas's top
@@ -1788,8 +1790,8 @@ export default class InteractionManager extends EventEmitter
             if (typeof event.pointerType === 'undefined') event.pointerType = 'mouse';
             if (typeof event.pointerId === 'undefined') event.pointerId = MOUSE_POINTER_ID;
             if (typeof event.pressure === 'undefined') event.pressure = 0.5;
-            event.twist = 0;
-            event.tangentialPressure = 0;
+            if (typeof event.twist === 'undefined') event.twist = 0;
+            if (typeof event.tangentialPressure === 'undefined') event.tangentialPressure = 0;
 
             // mark the mouse event as normalized, just so that we know we did it
             event.isNormalized = true;

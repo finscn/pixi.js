@@ -1,9 +1,8 @@
 /**
  * Trim transparent borders from a canvas
  *
- * @memberof PIXI
+ * @memberof PIXI.utils
  * @function trimCanvas
- * @private
  * @param {HTMLCanvasElement} canvas - the canvas to trim
  * @returns {object} Trim data
  */
@@ -25,6 +24,7 @@ export function trimCanvas(canvas)
         right: null,
         bottom: null,
     };
+    let data = null;
     let i;
     let x;
     let y;
@@ -70,10 +70,12 @@ export function trimCanvas(canvas)
         }
     }
 
-    width = bound.right - bound.left;
-    height = bound.bottom - bound.top + 1;
-
-    const data = context.getImageData(bound.left, bound.top, width, height);
+    if (bound.top !== null)
+    {
+        width = bound.right - bound.left;
+        height = bound.bottom - bound.top + 1;
+        data = context.getImageData(bound.left, bound.top, width, height);
+    }
 
     return {
         height,

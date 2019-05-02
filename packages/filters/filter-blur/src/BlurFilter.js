@@ -4,7 +4,8 @@ import BlurFilterPass from './BlurFilterPass';
 
 /**
  * The BlurFilter applies a Gaussian blur to an object.
- * The strength of the blur can be set for x- and y-axis separately.
+ *
+ * The strength of the blur can be set for the x-axis and y-axis separately.
  *
  * @class
  * @extends PIXI.Filter
@@ -13,9 +14,9 @@ import BlurFilterPass from './BlurFilterPass';
 export default class BlurFilter extends Filter
 {
     /**
-     * @param {number} strength - The strength of the blur filter.
-     * @param {number} quality - The quality of the blur filter.
-     * @param {number} resolution - The resolution of the blur filter.
+     * @param {number} [strength=8] - The strength of the blur filter.
+     * @param {number} [quality=4] - The quality of the blur filter.
+     * @param {number} [resolution] - The resolution of the blur filter.
      * @param {number} [kernelSize=5] - The kernelSize of the blur filter.Options: 5, 7, 9, 11, 13, 15.
      */
     constructor(strength, quality, resolution, kernelSize)
@@ -25,7 +26,6 @@ export default class BlurFilter extends Filter
         this.blurXFilter = new BlurFilterPass(true, strength, quality, resolution, kernelSize);
         this.blurYFilter = new BlurFilterPass(false, strength, quality, resolution, kernelSize);
 
-        this._padding = 0;
         this.resolution = resolution || settings.RESOLUTION;
         this.quality = quality || 4;
         this.blur = strength || 8;
@@ -36,31 +36,31 @@ export default class BlurFilter extends Filter
     /**
      * Applies the filter.
      *
-     * @param {PIXI.FilterManager} filterManager - The manager.
-     * @param {PIXI.RenderTarget} input - The input target.
-     * @param {PIXI.RenderTarget} output - The output target.
+     * @param {PIXI.systems.FilterSystem} filterManager - The manager.
+     * @param {PIXI.RenderTexture} input - The input target.
+     * @param {PIXI.RenderTexture} output - The output target.
      */
-    apply(filterManager, input, output)
+    apply(filterManager, input, output, clear)
     {
         const xStrength = Math.abs(this.blurXFilter.strength);
         const yStrength = Math.abs(this.blurYFilter.strength);
 
         if (xStrength && yStrength)
         {
-            const renderTarget = filterManager.getFilterTexture(true);
+            const renderTarget = filterManager.getFilterTexture();
 
             this.blurXFilter.apply(filterManager, input, renderTarget, true);
-            this.blurYFilter.apply(filterManager, renderTarget, output, false);
+            this.blurYFilter.apply(filterManager, renderTarget, output, clear);
 
             filterManager.returnFilterTexture(renderTarget);
         }
         else if (yStrength)
         {
-            this.blurYFilter.apply(filterManager, input, output, false);
+            this.blurYFilter.apply(filterManager, input, output, clear);
         }
         else
         {
-            this.blurXFilter.apply(filterManager, input, output, false);
+            this.blurXFilter.apply(filterManager, input, output, clear);
         }
     }
 
@@ -151,12 +151,12 @@ export default class BlurFilter extends Filter
      */
     get blendMode()
     {
-        return this.blurYFilter._blendMode;
+        return this.blurYFilter.blendMode;
     }
 
     set blendMode(value) // eslint-disable-line require-jsdoc
     {
-        this.blurYFilter._blendMode = value;
+        this.blurYFilter.blendMode = value;
     }
 
     /**

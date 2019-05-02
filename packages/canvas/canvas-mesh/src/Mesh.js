@@ -1,6 +1,25 @@
 import { Mesh } from '@pixi/mesh';
 import { settings } from './settings';
 
+/**
+ * Renders the object using the Canvas renderer
+ *
+ * @private
+ * @method _renderCanvas
+ * @memberof PIXI.Mesh#
+ * @param {PIXI.CanvasRenderer} renderer - The canvas renderer.
+ */
+Mesh.prototype._renderCanvas = function _renderCanvas(renderer)
+{
+    if (this.shader.uvMatrix)
+    {
+        this.shader.uvMatrix.update();
+        this.calculateUvs();
+    }
+
+    this.material._renderCanvas(renderer, this);
+};
+
 // IMPORTANT: Please do NOT use this as a precedent to use `settings` after the object is created
 // this was merely created to completely decouple canvas from the base Mesh class and we are
 // unable to add `canvasPadding` in the constructor anymore, as the case was for PixiJS v4.
@@ -21,7 +40,7 @@ Mesh.prototype._canvasPadding = null;
  *
  * @see PIXI.settings.MESH_CANVAS_PADDING
  * @member {number} canvasPadding
- * @memberof PIXI.Mesh#
+ * @memberof PIXI.SimpleMesh#
  * @default 0
  */
 Object.defineProperty(Mesh.prototype, 'canvasPadding', {

@@ -1,18 +1,16 @@
 import { Rectangle } from '@pixi/math';
 
 /**
- * 'Builder' pattern for bounds rectangles
- * Axis-Aligned Bounding Box
- * It is not a shape! Its mutable thing, no 'EMPTY' or that kind of problems
+ * 'Builder' pattern for bounds rectangles.
+ *
+ * This could be called an Axis-Aligned Bounding Box.
+ * It is not an actual shape. It is a mutable thing; no 'EMPTY' or those kind of problems.
  *
  * @class
  * @memberof PIXI
  */
 export default class Bounds
 {
-    /**
-     *
-     */
     constructor()
     {
         /**
@@ -153,7 +151,7 @@ export default class Bounds
     /**
      * Adds sprite frame, transformed.
      *
-     * @param {PIXI.TransformBase} transform - TODO
+     * @param {PIXI.Transform} transform - TODO
      * @param {number} x0 - TODO
      * @param {number} y0 - TODO
      * @param {number} x1 - TODO
@@ -210,12 +208,43 @@ export default class Bounds
     }
 
     /**
-     * Add an array of vertices
+     * Adds screen vertices from array
      *
-     * @param {PIXI.TransformBase} transform - TODO
-     * @param {Float32Array} vertices - TODO
-     * @param {number} beginOffset - TODO
-     * @param {number} endOffset - TODO
+     * @param {Float32Array} vertexData - calculated vertices
+     * @param {number} beginOffset - begin offset
+     * @param {number} endOffset - end offset, excluded
+     */
+    addVertexData(vertexData, beginOffset, endOffset)
+    {
+        let minX = this.minX;
+        let minY = this.minY;
+        let maxX = this.maxX;
+        let maxY = this.maxY;
+
+        for (let i = beginOffset; i < endOffset; i += 2)
+        {
+            const x = vertexData[i];
+            const y = vertexData[i + 1];
+
+            minX = x < minX ? x : minX;
+            minY = y < minY ? y : minY;
+            maxX = x > maxX ? x : maxX;
+            maxY = y > maxY ? y : maxY;
+        }
+
+        this.minX = minX;
+        this.minY = minY;
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
+    /**
+     * Add an array of mesh vertices
+     *
+     * @param {PIXI.Transform} transform - mesh transform
+     * @param {Float32Array} vertices - mesh coordinates in array
+     * @param {number} beginOffset - begin offset
+     * @param {number} endOffset - end offset, excluded
      */
     addVertices(transform, vertices, beginOffset, endOffset)
     {

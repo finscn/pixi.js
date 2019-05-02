@@ -4,27 +4,35 @@ import { setPrecision,
     compileProgram,
     mapSize,
     mapType,
-    getTestContext } from './utils';
+    getTestContext,
+    getMaxFragmentPrecision } from './utils';
 import { ProgramCache } from '@pixi/utils';
 import defaultFragment from './defaultProgram.frag';
 import defaultVertex from './defaultProgram.vert';
 import { settings } from '@pixi/settings';
+import { PRECISION } from '@pixi/constants';
 
 let UID = 0;
 
+const nameCache = {};
+
 /**
+ * Helper class to create a shader program.
+ *
  * @class
  * @memberof PIXI
- * @extends PIXI.Shader
  */
-class Program
+export default class Program
 {
     /**
      * @param {string} [vertexSrc] - The source of the vertex shader.
      * @param {string} [fragmentSrc] - The source of the fragment shader.
+     * @param {string} [name] - Name for shader
      */
-    constructor(vertexSrc, fragmentSrc)
+    constructor(vertexSrc, fragmentSrc, name = 'pixi-shader')
     {
+        this.id = UID++;
+
         /**
          * The vertex shader.
          *
@@ -39,8 +47,29 @@ class Program
          */
         this.fragmentSrc = fragmentSrc || Program.defaultFragmentSrc;
 
-        this.vertexSrc = setPrecision(this.vertexSrc, settings.PRECISION_VERTEX);
-        this.fragmentSrc = setPrecision(this.fragmentSrc, settings.PRECISION_FRAGMENT);
+        this.vertexSrc = this.vertexSrc.trim();
+        this.fragmentSrc = this.fragmentSrc.trim();
+
+        if (this.vertexSrc.substring(0, 8) !== '#version')
+        {
+            name = name.replace(/\s+/g, '-');
+
+            if (nameCache[name])
+            {
+                nameCache[name]++;
+                name += `-${nameCache[name]}`;
+            }
+            else
+            {
+                nameCache[name] = 1;
+            }
+
+            this.vertexSrc = `#define SHADER_NAME ${name}\n${this.vertexSrc}`;
+            this.fragmentSrc = `#define SHADER_NAME ${name}\n${this.fragmentSrc}`;
+
+            this.vertexSrc = setPrecision(this.vertexSrc, settings.PRECISION_VERTEX, PRECISION.HIGH);
+            this.fragmentSrc = setPrecision(this.fragmentSrc, settings.PRECISION_FRAGMENT, getMaxFragmentPrecision());
+        }
 
         // currently this does not extract structs only default types
         this.extractData(this.vertexSrc, this.fragmentSrc);
@@ -49,14 +78,12 @@ class Program
         this.glPrograms = {};
 
         this.syncUniforms = null;
-
-        this.id = UID++;
     }
 
     /**
      * Extracts the data for a buy creating a small test program
      * or reading the src directly.
-     * @private
+     * @protected
      *
      * @param {string} [vertexSrc] - The source of the vertex shader.
      * @param {string} [fragmentSrc] - The source of the fragment shader.
@@ -85,8 +112,8 @@ class Program
      * returns the attribute data from the program
      * @private
      *
-     * @param {webGL-program} [program] - the webgl program
-     * @param {context} [gl] - the webGL context
+     * @param {WebGLProgram} [program] - the WebGL program
+     * @param {WebGLRenderingContext} [gl] - the WebGL context
      *
      * @returns {object} the attribute data for this program
      */
@@ -130,7 +157,7 @@ class Program
      * @private
      *
      * @param {webGL-program} [program] - the webgl program
-     * @param {context} [gl] - the webGL context
+     * @param {context} [gl] - the WebGL context
      *
      * @returns {object} the uniform data for this program
      */
@@ -170,6 +197,7 @@ class Program
      *
      * @static
      * @constant
+     * @member {string}
      */
     static get defaultVertexSrc()
     {
@@ -181,6 +209,7 @@ class Program
      *
      * @static
      * @constant
+     * @member {string}
      */
     static get defaultFragmentSrc()
     {
@@ -195,9 +224,9 @@ class Program
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      *
-     * @returns {PIXI.Shader} an shiny new pixi shader!
+     * @returns {PIXI.Program} an shiny new Pixi shader!
      */
-    static from(vertexSrc, fragmentSrc)
+    static from(vertexSrc, fragmentSrc, name)
     {
         const key = vertexSrc + fragmentSrc;
 
@@ -205,11 +234,9 @@ class Program
 
         if (!program)
         {
-            ProgramCache[key] = program = new Program(vertexSrc, fragmentSrc);
+            ProgramCache[key] = program = new Program(vertexSrc, fragmentSrc, name);
         }
 
         return program;
     }
 }
-
-export default Program;

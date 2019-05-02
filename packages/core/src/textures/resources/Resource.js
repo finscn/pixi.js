@@ -1,8 +1,10 @@
-import Runner from 'mini-runner';
+import { Runner } from '@pixi/runner';
 
 /**
- * Base Texture resource class, manages validation and upload depends on its type.
- * upload is required.
+ * Base resource class for textures that manages validation and uploading, depending on its type.
+ *
+ * Uploading of a base texture to the GPU is required.
+ *
  * @class
  * @memberof PIXI.resources
  */
@@ -42,7 +44,7 @@ export default class Resource
          * and not cleaning up resources that were created
          * externally.
          * @member {boolean}
-         * @private
+         * @protected
          */
         this.internal = false;
 
@@ -50,6 +52,7 @@ export default class Resource
          * Mini-runner for handling resize events
          *
          * @member {Runner}
+         * @private
          */
         this.onResize = new Runner('setRealSize', 2);
 
@@ -57,6 +60,7 @@ export default class Resource
          * Mini-runner for handling update events
          *
          * @member {Runner}
+         * @private
          */
         this.onUpdate = new Runner('update');
     }
@@ -128,7 +132,7 @@ export default class Resource
      * This can be overridden to start preloading a resource
      * or do any other prepare step.
      * @protected
-     * @return {Promise} Handle the validate event
+     * @return {Promise<void>} Handle the validate event
      */
     load()
     {
@@ -162,7 +166,7 @@ export default class Resource
      *
      * @param {PIXI.Renderer} renderer - yeah, renderer!
      * @param {PIXI.BaseTexture} baseTexture - the texture
-     * @param {PIXI.glCore.Texture} glTexture - texture instance for this webgl context
+     * @param {PIXI.GLTexture} glTexture - texture instance for this webgl context
      * @returns {boolean} true is success
      */
     upload(renderer, baseTexture, glTexture) // eslint-disable-line no-unused-vars
@@ -175,7 +179,7 @@ export default class Resource
      *
      * @param {PIXI.Renderer} renderer - yeah, renderer!
      * @param {PIXI.BaseTexture} baseTexture - the texture
-     * @param {PIXI.glCore.Texture} glTexture - texture instance for this webgl context
+     * @param {PIXI.GLTexture} glTexture - texture instance for this webgl context
      * @returns {boolean} `true` is success
      */
     style(renderer, baseTexture, glTexture) // eslint-disable-line no-unused-vars

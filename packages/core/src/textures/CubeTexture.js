@@ -2,7 +2,7 @@ import BaseTexture from './BaseTexture';
 import CubeResource from './resources/CubeResource';
 
 /**
- * Texture that depends on six other resources.
+ * A Texture that depends on six other resources.
  *
  * @class
  * @extends PIXI.BaseTexture
@@ -17,6 +17,7 @@ export default class CubeTexture extends BaseTexture
      * @param {object} [options] - Optional options passed to the resources being loaded.
      *        See {@PIXI.resources.autoDetectResource autoDetectResource} for more info
      *        on the options available to each resource.
+     * @returns {PIXI.CubeTexture} new cube texture
      */
     static from(resources, options)
     {

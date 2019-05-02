@@ -2,6 +2,8 @@ import Point from '../Point';
 import { SHAPES } from '../const';
 
 /**
+ * A class to define a shape via user defined co-orinates.
+ *
  * @class
  * @memberof PIXI
  */
@@ -34,8 +36,6 @@ export default class Polygon
             points = p;
         }
 
-        this.closed = true;
-
         /**
          * An array of the points of this polygon
          *
@@ -52,6 +52,13 @@ export default class Polygon
          * @see PIXI.SHAPES
          */
         this.type = SHAPES.POLY;
+
+        /**
+         * `false` after moveTo, `true` after `closePath`. In all other cases it is `true`.
+         * @member {boolean}
+         * @default true
+         */
+        this.closeStroke = true;
     }
 
     /**
@@ -61,22 +68,11 @@ export default class Polygon
      */
     clone()
     {
-        return new Polygon(this.points.slice());
-    }
+        const polygon = new Polygon(this.points.slice());
 
-    /**
-     * Closes the polygon, adding points if necessary.
-     *
-     */
-    close()
-    {
-        const points = this.points;
+        polygon.closeStroke = this.closeStroke;
 
-        // close the poly if the value is true!
-        if (points[0] !== points[points.length - 2] || points[1] !== points[points.length - 1])
-        {
-            points.push(points[0], points[1]);
-        }
+        return polygon;
     }
 
     /**

@@ -1,10 +1,9 @@
-import { hex2string, hex2rgb } from '@pixi/utils';
+import { hex2string, hex2rgb, deprecation, EventEmitter } from '@pixi/utils';
 import { Matrix, Rectangle } from '@pixi/math';
 import { RENDERER_TYPE } from '@pixi/constants';
 import { settings } from '@pixi/settings';
 import { Container } from '@pixi/display';
 import RenderTexture from './renderTexture/RenderTexture';
-import EventEmitter from 'eventemitter3';
 
 const tempMatrix = new Matrix();
 
@@ -14,48 +13,43 @@ const tempMatrix = new Matrix();
  *
  * @abstract
  * @class
- * @extends EventEmitter
+ * @extends PIXI.utils.EventEmitter
  * @memberof PIXI
  */
 export default class AbstractRenderer extends EventEmitter
 {
-    // eslint-disable-next-line valid-jsdoc
     /**
      * @param {string} system - The name of the system this renderer is for.
-     * @param {object} [options] - The optional renderer parameters
-     * @param {number} [options.width=800] - the width of the screen
-     * @param {number} [options.height=600] - the height of the screen
-     * @param {HTMLCanvasElement} [options.view] - the canvas to use as a view, optional
-     * @param {boolean} [options.transparent=false] - If the render view is transparent, default false
+     * @param {object} [options] - The optional renderer parameters.
+     * @param {number} [options.width=800] - The width of the screen.
+     * @param {number} [options.height=600] - The height of the screen.
+     * @param {HTMLCanvasElement} [options.view] - The canvas to use as a view, optional.
+     * @param {boolean} [options.transparent=false] - If the render view is transparent.
      * @param {boolean} [options.autoDensity=false] - Resizes renderer view in CSS pixels to allow for
-     *   resolutions other than 1
-     * @param {boolean} [options.antialias=false] - sets antialias (only applicable in chrome at the moment)
+     *   resolutions other than 1.
+     * @param {boolean} [options.antialias=false] - Sets antialias
      * @param {number} [options.resolution=1] - The resolution / device pixel ratio of the renderer. The
      *  resolution of the renderer retina would be 2.
-     * @param {boolean} [options.preserveDrawingBuffer=false] - enables drawing buffer preservation,
-     *  enable this if you need to call toDataUrl on the webgl context.
+     * @param {boolean} [options.preserveDrawingBuffer=false] - Enables drawing buffer preservation,
+     *  enable this if you need to call toDataUrl on the WebGL context.
      * @param {boolean} [options.clearBeforeRender=true] - This sets if the renderer will clear the canvas or
      *      not before the new render pass.
      * @param {number} [options.backgroundColor=0x000000] - The background color of the rendered area
      *  (shown if not transparent).
-     * @param {boolean} [options.roundPixels=false] - If true PixiJS will Math.floor() x/y values when rendering,
-     *  stopping pixel interpolation.
      */
-    constructor(system, options, arg2, arg3)
+    constructor(system, options)
     {
         super();
 
-        // Support for constructor(system, screenWidth, screenHeight, options)
-        if (typeof options === 'number')
-        {
-            options = Object.assign({
-                width: options,
-                height: arg2 || settings.RENDER_OPTIONS.height,
-            }, arg3);
-        }
-
         // Add the default render options
         options = Object.assign({}, settings.RENDER_OPTIONS, options);
+
+        // Deprecation notice for renderer roundPixels option
+        if (options.roundPixels)
+        {
+            settings.ROUND_PIXELS = options.roundPixels;
+            deprecation('5.0.0', 'Renderer roundPixels option is deprecated, please use PIXI.settings.ROUND_PIXELS', 2);
+        }
 
         /**
          * The supplied constructor options.
@@ -75,23 +69,23 @@ export default class AbstractRenderer extends EventEmitter
         this.type = RENDERER_TYPE.UNKNOWN;
 
         /**
-         * Measurements of the screen. (0, 0, screenWidth, screenHeight)
+         * Measurements of the screen. (0, 0, screenWidth, screenHeight).
          *
-         * Its safe to use as filterArea or hitArea for whole stage
+         * Its safe to use as filterArea or hitArea for the whole stage.
          *
          * @member {PIXI.Rectangle}
          */
         this.screen = new Rectangle(0, 0, options.width, options.height);
 
         /**
-         * The canvas element that everything is drawn to
+         * The canvas element that everything is drawn to.
          *
          * @member {HTMLCanvasElement}
          */
         this.view = options.view || document.createElement('canvas');
 
         /**
-         * The resolution / device pixel ratio of the renderer
+         * The resolution / device pixel ratio of the renderer.
          *
          * @member {number}
          * @default 1
@@ -99,26 +93,19 @@ export default class AbstractRenderer extends EventEmitter
         this.resolution = options.resolution || settings.RESOLUTION;
 
         /**
-         * Whether the render view is transparent
+         * Whether the render view is transparent.
          *
          * @member {boolean}
          */
         this.transparent = options.transparent;
 
         /**
-         * Whether css dimensions of canvas view should be resized to screen dimensions automatically
+         * Whether CSS dimensions of canvas view should be resized to screen dimensions automatically.
          *
          * @member {boolean}
          */
         this.autoDensity = options.autoDensity || options.autoResize || false;
         // autoResize is deprecated, provides fallback support
-
-        /**
-         * Tracks the blend modes useful for this renderer.
-         *
-         * @member {object<string, mixed>}
-         */
-        this.blendModes = null;
 
         /**
          * The value of the preserveDrawingBuffer flag affects whether or not the contents of
@@ -132,7 +119,7 @@ export default class AbstractRenderer extends EventEmitter
          * This sets if the CanvasRenderer will clear the canvas or not before the new render pass.
          * If the scene is NOT transparent PixiJS will use a canvas sized fillRect operation every
          * frame to set the canvas background color. If the scene is transparent PixiJS will use clearRect
-         * to clear the canvas every frame. Disable this by setting this to false. For example if
+         * to clear the canvas every frame. Disable this by setting this to false. For example, if
          * your game has a canvas filling background image you often don't need this set.
          *
          * @member {boolean}
@@ -141,18 +128,10 @@ export default class AbstractRenderer extends EventEmitter
         this.clearBeforeRender = options.clearBeforeRender;
 
         /**
-         * If true PixiJS will Math.floor() x/y values when rendering, stopping pixel interpolation.
-         * Handy for crisp pixel art and speed on legacy devices.
-         *
-         * @member {boolean}
-         */
-        this.roundPixels = options.roundPixels;
-
-        /**
          * The background color as a number.
          *
          * @member {number}
-         * @private
+         * @protected
          */
         this._backgroundColor = 0x000000;
 
@@ -160,7 +139,7 @@ export default class AbstractRenderer extends EventEmitter
          * The background color as an [R, G, B] array.
          *
          * @member {number[]}
-         * @private
+         * @protected
          */
         this._backgroundColorRgba = [0, 0, 0, 0];
 
@@ -168,17 +147,17 @@ export default class AbstractRenderer extends EventEmitter
          * The background color as a string.
          *
          * @member {string}
-         * @private
+         * @protected
          */
         this._backgroundColorString = '#000000';
 
         this.backgroundColor = options.backgroundColor || this._backgroundColor; // run bg color setter
 
         /**
-         * This temporary display object used as the parent of the currently being rendered item
+         * This temporary display object used as the parent of the currently being rendered item.
          *
          * @member {PIXI.DisplayObject}
-         * @private
+         * @protected
          */
         this._tempDisplayObjectParent = new Container();
 
@@ -186,7 +165,7 @@ export default class AbstractRenderer extends EventEmitter
          * The last root object that the renderer tried to render.
          *
          * @member {PIXI.DisplayObject}
-         * @private
+         * @protected
          */
         this._lastObjectRendered = this._tempDisplayObjectParent;
 
@@ -213,7 +192,7 @@ export default class AbstractRenderer extends EventEmitter
     }
 
     /**
-     * Same as view.width, actual number of pixels in the canvas by horizontal
+     * Same as view.width, actual number of pixels in the canvas by horizontal.
      *
      * @member {number}
      * @readonly
@@ -225,7 +204,7 @@ export default class AbstractRenderer extends EventEmitter
     }
 
     /**
-     * Same as view.height, actual number of pixels in the canvas by vertical
+     * Same as view.height, actual number of pixels in the canvas by vertical.
      *
      * @member {number}
      * @readonly
@@ -237,11 +216,11 @@ export default class AbstractRenderer extends EventEmitter
     }
 
     /**
-     * Resizes the screen and canvas to the specified width and height
-     * Canvas dimensions are multiplied by resolution
+     * Resizes the screen and canvas to the specified width and height.
+     * Canvas dimensions are multiplied by resolution.
      *
-     * @param {number} screenWidth - the new width of the screen
-     * @param {number} screenHeight - the new height of the screen
+     * @param {number} screenWidth - The new width of the screen.
+     * @param {number} screenHeight - The new height of the screen.
      */
     resize(screenWidth, screenHeight)
     {
@@ -262,12 +241,12 @@ export default class AbstractRenderer extends EventEmitter
      * Useful function that returns a texture of the display object that can then be used to create sprites
      * This can be quite useful if your displayObject is complicated and needs to be reused multiple times.
      *
-     * @param {PIXI.DisplayObject} displayObject - The displayObject the object will be generated from
-     * @param {number} scaleMode - Should be one of the scaleMode consts
-     * @param {number} resolution - The resolution / device pixel ratio of the texture being generated
+     * @param {PIXI.DisplayObject} displayObject - The displayObject the object will be generated from.
+     * @param {number} scaleMode - Should be one of the scaleMode consts.
+     * @param {number} resolution - The resolution / device pixel ratio of the texture being generated.
      * @param {PIXI.Rectangle} [region] - The region of the displayObject, that shall be rendered,
      *        if no region is specified, defaults to the local bounds of the displayObject.
-     * @return {PIXI.Texture} a texture of the graphics object
+     * @return {PIXI.Texture} A texture of the graphics object.
      */
     generateTexture(displayObject, scaleMode, resolution, region)
     {
@@ -282,7 +261,7 @@ export default class AbstractRenderer extends EventEmitter
         tempMatrix.tx = -region.x;
         tempMatrix.ty = -region.y;
 
-        this.render(displayObject, renderTexture, false, tempMatrix, true);
+        this.render(displayObject, renderTexture, false, tempMatrix, !!displayObject.parent);
 
         return renderTexture;
     }
@@ -325,8 +304,6 @@ export default class AbstractRenderer extends EventEmitter
 
         this.preserveDrawingBuffer = false;
         this.clearBeforeRender = false;
-
-        this.roundPixels = false;
 
         this._backgroundColor = 0;
         this._backgroundColorRgba = null;

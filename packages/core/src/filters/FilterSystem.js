@@ -3,14 +3,14 @@ import System from '../System';
 import RenderTexture from '../renderTexture/RenderTexture';
 import Quad from '../utils/Quad';
 import QuadUv from '../utils/QuadUv';
-import { Rectangle } from '@pixi/math';
-import * as filterTransforms from './filterTransforms';
-import bitTwiddle from 'bit-twiddle';
+import { Rectangle, Matrix } from '@pixi/math';
+import { nextPow2 } from '@pixi/utils';
 import UniformGroup from '../shader/UniformGroup';
 import { DRAW_MODES } from '@pixi/constants';
 
 /**
- * Internal class to manage filter state
+ * System plugin to the renderer to manage filter states.
+ *
  * @class
  * @private
  */
@@ -19,6 +19,33 @@ class FilterState
     constructor()
     {
         this.renderTexture = null;
+
+        /**
+         * Target of the filters
+         * We store for case when custom filter wants to know the element it was applied on
+         * @member {PIXI.DisplayObject}
+         * @private
+         */
+        this.target = null;
+
+        /**
+         * Compatibility with PixiJS v4 filters
+         * @member {boolean}
+         * @default false
+         * @private
+         */
+        this.legacy = false;
+
+        /**
+         * Resolution of filters
+         * @member {number}
+         * @default 1
+         * @private
+         */
+        this.resolution = 1;
+
+        // next three fields are created only for root
+        // re-assigned for everything else
 
         /**
          * Source frame
@@ -40,36 +67,25 @@ class FilterState
          * @private
          */
         this.filters = [];
+    }
 
-        /**
-         * Target
-         * @member {PIXI.DisplayObject}
-         * @private
-         */
+    /**
+     * clears the state
+     * @private
+     */
+    clear()
+    {
         this.target = null;
-
-        /**
-         * Compatibility with PixiJS v4 filters
-         * @member {boolean}
-         * @default false
-         * @private
-         */
-        this.legacy = false;
-
-        /**
-         * Resolution of filters
-         * @member {number}
-         * @default 1
-         * @private
-         */
-        this.resolution = 1;
+        this.filters = null;
+        this.renderTexture = null;
     }
 }
 
 const screenKey = 'screen';
 
 /**
- * Manage the rendering of filters within PixiJS
+ * System plugin to the renderer to manage the filters.
+ *
  * @class
  * @memberof PIXI.systems
  * @extends PIXI.System
@@ -84,6 +100,13 @@ export default class FilterSystem extends System
         super(renderer);
 
         /**
+         * List of filters for the FilterSystem
+         * @member {Object[]}
+         * @readonly
+         */
+        this.defaultFilterStack = [{}];
+
+        /**
          * stores a bunch of PO2 textures used for filtering
          * @member {Object}
          */
@@ -91,7 +114,7 @@ export default class FilterSystem extends System
 
         /**
          * a pool for storing filter states, save us creating new ones each tick
-         * @member {Array}
+         * @member {Object[]}
          */
         this.statePool = [];
 
@@ -155,7 +178,7 @@ export default class FilterSystem extends System
     push(target, filters)
     {
         const renderer = this.renderer;
-        const filterStack = this.renderer.renderTexture.defaultFilterStack;
+        const filterStack = this.defaultFilterStack;
         const state = this.statePool.pop() || new FilterState();
 
         let resolution = filters[0].resolution;
@@ -177,18 +200,25 @@ export default class FilterSystem extends System
             legacy = legacy || filter.legacy;
         }
 
+        if (filterStack.length === 1)
+        {
+            this.defaultFilterStack[0].renderTexture = renderer.renderTexture.current;
+        }
+
         filterStack.push(state);
 
         state.resolution = resolution;
 
         state.legacy = legacy;
 
-        state.sourceFrame = target.filterArea || target.getBounds(true);
+        state.target = target;
+
+        state.sourceFrame.copyFrom(target.filterArea || target.getBounds(true));
 
         state.sourceFrame.pad(padding);
         if (autoFit)
         {
-            state.sourceFrame.fit(this.renderer.renderTexture.destinationFrame);
+            state.sourceFrame.fit(this.renderer.renderTexture.sourceFrame);
         }
 
         // round to whole number based on resolution
@@ -201,6 +231,7 @@ export default class FilterSystem extends System
         state.destinationFrame.height = state.renderTexture.height;
 
         state.renderTexture.filterFrame = state.sourceFrame;
+
         renderer.renderTexture.bind(state.renderTexture, state.sourceFrame);// /, state.destinationFrame);
         renderer.renderTexture.clear();
     }
@@ -211,8 +242,7 @@ export default class FilterSystem extends System
      */
     pop()
     {
-        const renderer = this.renderer;
-        const filterStack = renderer.renderTexture.defaultFilterStack;
+        const filterStack = this.defaultFilterStack;
         const state = filterStack.pop();
         const filters = state.filters;
 
@@ -294,6 +324,7 @@ export default class FilterSystem extends System
             this.returnFilterTexture(flop);
         }
 
+        state.clear();
         this.statePool.push(state);
     }
 
@@ -301,8 +332,8 @@ export default class FilterSystem extends System
      * Draws a filter.
      *
      * @param {PIXI.Filter} filter - The filter to draw.
-     * @param {PIXI.RenderTarget} input - The input render target.
-     * @param {PIXI.RenderTarget} output - The target to output to.
+     * @param {PIXI.RenderTexture} input - The input render target.
+     * @param {PIXI.RenderTexture} output - The target to output to.
      * @param {boolean} clear - Should the output be cleared before rendering to it
      */
     applyFilter(filter, input, output, clear)
@@ -344,27 +375,9 @@ export default class FilterSystem extends System
     }
 
     /**
-     * Calculates the mapped matrix.
+     * Multiply _input normalized coordinates_ to this matrix to get _sprite texture normalized coordinates_.
      *
-     * TODO playing around here.. this is temporary - (will end up in the shader)
-     * this returns a matrix that will normalize map filter cords in the filter to screen space
-     *
-     * @param {PIXI.Matrix} outputMatrix - the matrix to output to.
-     * @return {PIXI.Matrix} The mapped matrix.
-     */
-    calculateScreenSpaceMatrix(outputMatrix)
-    {
-        const currentState = this.activeState;
-
-        return filterTransforms.calculateScreenSpaceMatrix(
-            outputMatrix,
-            currentState.sourceFrame,
-            currentState.destinationFrame
-        );
-    }
-
-    /**
-     * This will map the filter coord so that a texture can be used based on the transform of a sprite
+     * Use `outputMatrix * vTextureCoord` in the shader.
      *
      * @param {PIXI.Matrix} outputMatrix - The matrix to output to.
      * @param {PIXI.Sprite} sprite - The sprite to map to.
@@ -372,14 +385,18 @@ export default class FilterSystem extends System
      */
     calculateSpriteMatrix(outputMatrix, sprite)
     {
-        const currentState = this.activeState;
+        const { sourceFrame, destinationFrame } = this.activeState;
+        const { orig } = sprite._texture;
+        const mappedMatrix = outputMatrix.set(destinationFrame.width, 0, 0,
+            destinationFrame.height, sourceFrame.x, sourceFrame.y);
+        const worldTransform = sprite.worldTransform.copyTo(Matrix.TEMP_MATRIX);
 
-        return filterTransforms.calculateSpriteMatrix(
-            outputMatrix,
-            currentState.sourceFrame,
-            currentState.destinationFrame,
-            sprite
-        );
+        worldTransform.invert();
+        mappedMatrix.prepend(worldTransform);
+        mappedMatrix.scale(1.0 / orig.width, 1.0 / orig.height);
+        mappedMatrix.translate(sprite.anchor.x, sprite.anchor.y);
+
+        return mappedMatrix;
     }
 
     /**
@@ -405,7 +422,7 @@ export default class FilterSystem extends System
      *
      * TODO move to a separate class could be on renderer?
      *
-     * @private
+     * @protected
      * @param {number} minWidth - The minimum width of the render texture in real pixels.
      * @param {number} minHeight - The minimum height of the render texture in real pixels.
      * @param {number} [resolution=1] - The resolution of the render texture.
@@ -420,8 +437,8 @@ export default class FilterSystem extends System
 
         if (minWidth !== this._pixelsWidth || minHeight !== this._pixelsHeight)
         {
-            minWidth = bitTwiddle.nextPow2(minWidth);
-            minHeight = bitTwiddle.nextPow2(minHeight);
+            minWidth = nextPow2(minWidth);
+            minHeight = nextPow2(minHeight);
             key = ((minWidth & 0xFFFF) << 16) | (minHeight & 0xFFFF);
         }
 
@@ -468,7 +485,7 @@ export default class FilterSystem extends System
     /**
      * Frees a render texture back into the pool.
      *
-     * @param {PIXI.RenderTarget} renderTexture - The renderTarget to free
+     * @param {PIXI.RenderTexture} renderTexture - The renderTarget to free
      */
     returnFilterTexture(renderTexture)
     {

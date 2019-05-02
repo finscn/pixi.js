@@ -9,9 +9,6 @@ import Matrix from './Matrix';
  */
 export default class Transform
 {
-    /**
-     *
-     */
     constructor()
     {
         /**
@@ -43,7 +40,7 @@ export default class Transform
         this.scale = new ObservablePoint(this.onChange, this, 1, 1);
 
         /**
-         * The pivot point of the displayObject that it rotates around
+         * The pivot point of the displayObject that it rotates around.
          *
          * @member {PIXI.ObservablePoint}
          */
@@ -187,8 +184,11 @@ export default class Transform
 
     set rotation(value) // eslint-disable-line require-jsdoc
     {
-        this._rotation = value;
-        this.updateSkew();
+        if (this._rotation !== value)
+        {
+            this._rotation = value;
+            this.updateSkew();
+        }
     }
 }
 

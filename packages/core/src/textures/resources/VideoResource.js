@@ -10,6 +10,8 @@ import { Ticker } from '@pixi/ticker';
  * @param {object} [options] - Options to use
  * @param {boolean} [options.autoLoad=true] - Start loading the video immediately
  * @param {boolean} [options.autoPlay=true] - Start playing video immediately
+ * @param {number} [options.updateFPS=0] - How many times a second to update the texture from the video.
+ * Leave at 0 to update at every render.
  * @param {boolean} [options.crossorigin=true] - Load image using cross origin
  */
 export default class VideoResource extends BaseImageResource
@@ -40,7 +42,12 @@ export default class VideoResource extends BaseImageResource
                 let { src, mime } = source[i];
 
                 src = src || source[i];
-                mime = mime || `video/${src.substr(src.lastIndexOf('.') + 1)}`;
+
+                const baseSrc = src.split('?').shift().toLowerCase();
+                const ext = baseSrc.substr(baseSrc.lastIndexOf('.') + 1);
+
+                mime = mime || `video/${ext}`;
+
                 sourceElement.src = src;
                 sourceElement.type = mime;
 
@@ -55,6 +62,8 @@ export default class VideoResource extends BaseImageResource
 
         this._autoUpdate = true;
         this._isAutoUpdating = false;
+        this._updateFPS = options.updateFPS || 0;
+        this._msToNextUpdate = 0;
 
         /**
          * When set to true will automatically play videos used by this texture once
@@ -67,7 +76,7 @@ export default class VideoResource extends BaseImageResource
 
         /**
          * Promise when loading
-         * @member {Promise}
+         * @member {Promise<void>}
          * @private
          * @default null
          */
@@ -89,6 +98,33 @@ export default class VideoResource extends BaseImageResource
         }
     }
 
+    /**
+     * Trigger updating of the texture
+     *
+     * @param {number} [deltaTime=0] - time delta since last tick
+     */
+    update(deltaTime = 0)
+    {
+        if (!this.destroyed)
+        {
+            // account for if video has had its playbackRate changed
+            const elapsedMS = Ticker.shared.elapsedMS * this.source.playbackRate;
+
+            this._msToNextUpdate = Math.floor(this._msToNextUpdate - elapsedMS);
+            if (!this._updateFPS || this._msToNextUpdate <= 0)
+            {
+                super.update(deltaTime);
+                this._msToNextUpdate = this._updateFPS ? Math.floor(1000 / this._updateFPS) : 0;
+            }
+        }
+    }
+
+    /**
+     * Start preloading the video resource.
+     *
+     * @protected
+     * @return {Promise<void>} Handle the validate event
+     */
     load()
     {
         if (this._load)
@@ -271,6 +307,25 @@ export default class VideoResource extends BaseImageResource
                 Ticker.shared.add(this.update, this);
                 this._isAutoUpdating = true;
             }
+        }
+    }
+
+    /**
+     * How many times a second to update the texture from the video. Leave at 0 to update at every render.
+     * A lower fps can help performance, as updating the texture at 60fps on a 30ps video may not be efficient.
+     *
+     * @member {number}
+     */
+    get updateFPS()
+    {
+        return this._updateFPS;
+    }
+
+    set updateFPS(value) // eslint-disable-line require-jsdoc
+    {
+        if (value !== this._updateFPS)
+        {
+            this._updateFPS = value;
         }
     }
 

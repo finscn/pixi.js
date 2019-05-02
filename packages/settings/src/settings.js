@@ -1,3 +1,4 @@
+import isMobile from 'ismobilejs';
 import maxRecommendedTextures from './utils/maxRecommendedTextures';
 import canUploadSameBuffer from './utils/canUploadSameBuffer';
 
@@ -20,16 +21,18 @@ export default {
      * Mipmapping will only succeed if the base texture uploaded has power of two dimensions.
      *
      * @static
+     * @name MIPMAP_TEXTURES
      * @memberof PIXI.settings
-     * @type {boolean}
-     * @default true
+     * @type {PIXI.MIPMAP_MODES}
+     * @default PIXI.MIPMAP_MODES.POW2
      */
-    MIPMAP_TEXTURES: true,
+    MIPMAP_TEXTURES: 1,
 
     /**
      * Default resolution / device pixel ratio of the renderer.
      *
      * @static
+     * @name RESOLUTION
      * @memberof PIXI.settings
      * @type {number}
      * @default 1
@@ -40,6 +43,7 @@ export default {
      * Default filter resolution.
      *
      * @static
+     * @name FILTER_RESOLUTION
      * @memberof PIXI.settings
      * @type {number}
      * @default 1
@@ -50,6 +54,7 @@ export default {
      * The maximum textures that this device supports.
      *
      * @static
+     * @name SPRITE_MAX_TEXTURES
      * @memberof PIXI.settings
      * @type {number}
      * @default 32
@@ -65,6 +70,7 @@ export default {
      * The default aims to balance desktop and mobile devices.
      *
      * @static
+     * @name SPRITE_BATCH_SIZE
      * @memberof PIXI.settings
      * @type {number}
      * @default 4096
@@ -76,19 +82,18 @@ export default {
      * or {@link PIXI.CanvasRenderer}.
      *
      * @static
-     * @constant
+     * @name RENDER_OPTIONS
      * @memberof PIXI.settings
      * @type {object}
      * @property {HTMLCanvasElement} view=null
      * @property {number} resolution=1
      * @property {boolean} antialias=false
      * @property {boolean} forceFXAA=false
-     * @property {boolean} autoResize=false
+     * @property {boolean} autoDensity=false
      * @property {boolean} transparent=false
      * @property {number} backgroundColor=0x000000
      * @property {boolean} clearBeforeRender=true
      * @property {boolean} preserveDrawingBuffer=false
-     * @property {boolean} roundPixels=false
      * @property {number} width=800
      * @property {number} height=600
      * @property {boolean} legacy=false
@@ -97,12 +102,11 @@ export default {
         view: null,
         antialias: false,
         forceFXAA: false,
-        autoResize: false,
+        autoDensity: false,
         transparent: false,
         backgroundColor: 0x000000,
         clearBeforeRender: true,
         preserveDrawingBuffer: false,
-        roundPixels: false,
         width: 800,
         height: 600,
         legacy: false,
@@ -112,6 +116,7 @@ export default {
      * Default Garbage Collection mode.
      *
      * @static
+     * @name GC_MODE
      * @memberof PIXI.settings
      * @type {PIXI.GC_MODES}
      * @default PIXI.GC_MODES.AUTO
@@ -122,6 +127,7 @@ export default {
      * Default Garbage Collection max idle.
      *
      * @static
+     * @name GC_MAX_IDLE
      * @memberof PIXI.settings
      * @type {number}
      * @default 3600
@@ -132,6 +138,7 @@ export default {
      * Default Garbage Collection maximum check count.
      *
      * @static
+     * @name GC_MAX_CHECK_COUNT
      * @memberof PIXI.settings
      * @type {number}
      * @default 600
@@ -142,6 +149,7 @@ export default {
      * Default wrap modes that are supported by pixi.
      *
      * @static
+     * @name WRAP_MODE
      * @memberof PIXI.settings
      * @type {PIXI.WRAP_MODES}
      * @default PIXI.WRAP_MODES.CLAMP
@@ -149,9 +157,10 @@ export default {
     WRAP_MODE: 33071,
 
     /**
-     * The scale modes that are supported by pixi.
+     * Default scale mode for textures.
      *
      * @static
+     * @name SCALE_MODE
      * @memberof PIXI.settings
      * @type {PIXI.SCALE_MODES}
      * @default PIXI.SCALE_MODES.LINEAR
@@ -162,6 +171,7 @@ export default {
      * Default specify float precision in vertex shader.
      *
      * @static
+     * @name PRECISION_VERTEX
      * @memberof PIXI.settings
      * @type {PIXI.PRECISION}
      * @default PIXI.PRECISION.HIGH
@@ -170,19 +180,21 @@ export default {
 
     /**
      * Default specify float precision in fragment shader.
+     * iOS is best set at highp due to https://github.com/pixijs/pixi.js/issues/3742
      *
      * @static
+     * @name PRECISION_FRAGMENT
      * @memberof PIXI.settings
      * @type {PIXI.PRECISION}
      * @default PIXI.PRECISION.MEDIUM
      */
-    PRECISION_FRAGMENT: 'mediump',
+    PRECISION_FRAGMENT: isMobile.apple.device ? 'highp' : 'mediump',
 
     /**
      * Can we upload the same buffer in a single frame?
      *
      * @static
-     * @constant
+     * @name CAN_UPLOAD_SAME_BUFFER
      * @memberof PIXI.settings
      * @type {boolean}
      */
@@ -192,10 +204,23 @@ export default {
      * Enables bitmap creation before image load
      *
      * @static
-     * @constant
+     * @name CREATE_IMAGE_BITMAP
      * @memberof PIXI.settings
      * @type {boolean}
      * @default true
      */
     CREATE_IMAGE_BITMAP: true,
+
+    /**
+     * If true PixiJS will Math.floor() x/y values when rendering, stopping pixel interpolation.
+     * Advantages can include sharper image quality (like text) and faster rendering on canvas.
+     * The main disadvantage is movement of objects may appear less smooth.
+     *
+     * @static
+     * @constant
+     * @memberof PIXI.settings
+     * @type {boolean}
+     * @default false
+     */
+    ROUND_PIXELS: false,
 };

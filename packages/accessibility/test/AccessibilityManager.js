@@ -1,5 +1,6 @@
 const { AccessibilityManager } = require('../');
 const { CanvasRenderer } = require('@pixi/canvas-renderer');
+const { isMobile } = require('@pixi/utils');
 
 describe('PIXI.accessibility.AccessibilityManager', function ()
 {
@@ -24,5 +25,20 @@ describe('PIXI.accessibility.AccessibilityManager', function ()
 
         expect(renderer.plugins.accessibility).to.be.instanceof(AccessibilityManager);
         renderer.destroy();
+    });
+
+    it('should remove touch hook when destroyed', function ()
+    {
+        const phone = isMobile.phone;
+
+        isMobile.phone = true;
+        const manager = new AccessibilityManager();
+        const hookDiv = manager._hookDiv;
+
+        expect(hookDiv).to.be.instanceof(HTMLElement);
+        expect(document.body.contains(hookDiv)).to.be.true;
+        manager.destroy();
+        expect(document.body.contains(hookDiv)).to.be.false;
+        isMobile.phone = phone;
     });
 });

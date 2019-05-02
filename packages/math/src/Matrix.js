@@ -2,12 +2,14 @@ import Point from './Point';
 import { PI_2 } from './const';
 
 /**
- * The PixiJS Matrix class as an object, which makes it a lot faster,
- * here is a representation of it :
+ * The PixiJS Matrix as a class makes it a lot faster.
+ *
+ * Here is a representation of it:
+ * ```js
  * | a | c | tx|
  * | b | d | ty|
  * | 0 | 0 | 1 |
- *
+ * ```
  * @class
  * @memberof PIXI
  */
@@ -355,12 +357,6 @@ export default class Matrix
         if (delta < 0.00001 || Math.abs(PI_2 - delta) < 0.00001)
         {
             transform.rotation = skewY;
-
-            if (a < 0 && d >= 0)
-            {
-                transform.rotation += (transform.rotation <= 0) ? Math.PI : -Math.PI;
-            }
-
             transform.skew.x = transform.skew.y = 0;
         }
         else
@@ -482,6 +478,7 @@ export default class Matrix
      *
      * @static
      * @const
+     * @member {PIXI.Matrix}
      */
     static get IDENTITY()
     {
@@ -493,6 +490,7 @@ export default class Matrix
      *
      * @static
      * @const
+     * @member {PIXI.Matrix}
      */
     static get TEMP_MATRIX()
     {

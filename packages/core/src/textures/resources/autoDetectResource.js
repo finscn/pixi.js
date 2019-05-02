@@ -1,10 +1,4 @@
 import ImageResource from './ImageResource';
-import CanvasResource from './CanvasResource';
-import VideoResource from './VideoResource';
-import SVGResource from './SVGResource';
-import BufferResource from './BufferResource';
-import CubeResource from './CubeResource';
-import ArrayResource from './ArrayResource';
 
 /**
  * Collection of installed resource types, class must extend {@link PIXI.resources.Resource}.
@@ -17,6 +11,7 @@ import ArrayResource from './ArrayResource';
  *   }
  *   upload(renderer, baseTexture, glTexture) {
  *     // upload with GL
+ *     return true;
  *   }
  *   // used to auto-detect resource
  *   static test(source, extension) {
@@ -31,15 +26,7 @@ import ArrayResource from './ArrayResource';
  * @static
  * @readonly
  */
-export const INSTALLED = [
-    ImageResource,
-    CanvasResource,
-    VideoResource,
-    SVGResource,
-    BufferResource,
-    CubeResource,
-    ArrayResource,
-];
+export const INSTALLED = [];
 
 /**
  * Create a resource element from a single source element. This
@@ -65,6 +52,9 @@ export const INSTALLED = [
  * @param {number} [options.scale=1] - SVG source scale
  * @param {boolean} [options.createBitmap=true] - Image option to create Bitmap object
  * @param {boolean} [options.crossorigin=true] - Image and Video option to set crossOrigin
+ * @param {boolean} [options.autoPlay=true] - Video option to start playing video immediately
+ * @param {number} [options.updateFPS=0] - Video option to update how many times a second the
+ *        texture should be updated from the video. Leave at 0 to update at every render
  * @return {PIXI.resources.Resource} The created resource.
  */
 export function autoDetectResource(source, options)

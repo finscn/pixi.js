@@ -10,7 +10,7 @@ import Texture from '../textures/Texture';
  * A RenderTexture takes a snapshot of any Display Object given to its render method. For example:
  *
  * ```js
- * let renderer = PIXI.autoDetectRenderer(1024, 1024, { view: canvas, ratio: 1 });
+ * let renderer = PIXI.autoDetectRenderer();
  * let renderTexture = PIXI.RenderTexture.create(800, 600);
  * let sprite = PIXI.Sprite.from("spinObj_01.png");
  *
@@ -89,14 +89,14 @@ export default class RenderTexture extends Texture
 
         /**
          * FilterSystem temporary storage
-         * @private
+         * @protected
          * @member {PIXI.Rectangle}
          */
         this.filterFrame = null;
 
         /**
         * The key for pooled texture of FilterSystem
-        * @private
+        * @protected
         * @member {string}
         */
         this.filterPoolKey = null;

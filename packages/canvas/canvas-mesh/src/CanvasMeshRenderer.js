@@ -4,7 +4,7 @@ import { DRAW_MODES } from '@pixi/constants';
  * Renderer dedicated to meshes.
  *
  * @class
- * @private
+ * @protected
  * @memberof PIXI
  */
 export default class CanvasMeshRenderer
@@ -30,7 +30,7 @@ export default class CanvasMeshRenderer
         const transform = mesh.worldTransform;
         const res = renderer.resolution;
 
-        if (renderer.roundPixels)
+        if (mesh.roundPixels)
         {
             context.setTransform(
                 transform.a * res,
@@ -70,7 +70,7 @@ export default class CanvasMeshRenderer
      * Draws the object in Triangle Mesh mode
      *
      * @private
-     * @param {PIXI.RawMesh} mesh - the Mesh to render
+     * @param {PIXI.Mesh} mesh - the Mesh to render
      */
     _renderTriangleMesh(mesh)
     {
@@ -90,7 +90,7 @@ export default class CanvasMeshRenderer
      * Draws the object in triangle mode using canvas
      *
      * @private
-     * @param {PIXI.RawMesh} mesh - the current mesh
+     * @param {PIXI.Mesh} mesh - the current mesh
      */
     _renderTriangles(mesh)
     {
@@ -113,7 +113,7 @@ export default class CanvasMeshRenderer
      * Draws one of the triangles that from the Mesh
      *
      * @private
-     * @param {PIXI.RawMesh} mesh - the current mesh
+     * @param {PIXI.Mesh} mesh - the current mesh
      * @param {number} index0 - the index of the first vertex
      * @param {number} index1 - the index of the second vertex
      * @param {number} index2 - the index of the third vertex
@@ -122,8 +122,7 @@ export default class CanvasMeshRenderer
     {
         const context = this.renderer.context;
         const vertices = mesh.geometry.buffers[0].data;
-        const uvs = mesh.geometry.buffers[1].data;
-        const texture = mesh._texture;
+        const { uvs, texture } = mesh;
 
         if (!texture.valid)
         {
@@ -135,33 +134,12 @@ export default class CanvasMeshRenderer
         const textureWidth = base.width;
         const textureHeight = base.height;
 
-        let u0;
-        let u1;
-        let u2;
-        let v0;
-        let v1;
-        let v2;
-
-        if (mesh.uploadUvTransform)
-        {
-            const ut = mesh._uvTransform.mapCoord;
-
-            u0 = ((uvs[index0] * ut.a) + (uvs[index0 + 1] * ut.c) + ut.tx) * base.width;
-            u1 = ((uvs[index1] * ut.a) + (uvs[index1 + 1] * ut.c) + ut.tx) * base.width;
-            u2 = ((uvs[index2] * ut.a) + (uvs[index2 + 1] * ut.c) + ut.tx) * base.width;
-            v0 = ((uvs[index0] * ut.b) + (uvs[index0 + 1] * ut.d) + ut.ty) * base.height;
-            v1 = ((uvs[index1] * ut.b) + (uvs[index1 + 1] * ut.d) + ut.ty) * base.height;
-            v2 = ((uvs[index2] * ut.b) + (uvs[index2 + 1] * ut.d) + ut.ty) * base.height;
-        }
-        else
-        {
-            u0 = uvs[index0] * base.width;
-            u1 = uvs[index1] * base.width;
-            u2 = uvs[index2] * base.width;
-            v0 = uvs[index0 + 1] * base.height;
-            v1 = uvs[index1 + 1] * base.height;
-            v2 = uvs[index2 + 1] * base.height;
-        }
+        const u0 = uvs[index0] * base.width;
+        const u1 = uvs[index1] * base.width;
+        const u2 = uvs[index2] * base.width;
+        const v0 = uvs[index0 + 1] * base.height;
+        const v1 = uvs[index1 + 1] * base.height;
+        const v2 = uvs[index2 + 1] * base.height;
 
         let x0 = vertices[index0];
         let x1 = vertices[index1];
@@ -253,12 +231,12 @@ export default class CanvasMeshRenderer
      * Renders a flat Mesh
      *
      * @private
-     * @param {PIXI.RawMesh} mesh - The Mesh to render
+     * @param {PIXI.Mesh} mesh - The Mesh to render
      */
     renderMeshFlat(mesh)
     {
         const context = this.renderer.context;
-        const vertices = mesh.geometry.getAttribute('aVertexPosition').data;
+        const vertices = mesh.geometry.getBuffer('aVertexPosition').data;
         const length = vertices.length / 2;
 
         // this.count++;

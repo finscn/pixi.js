@@ -7,7 +7,7 @@
  * ```
  *
  * @class
- * @memberOf PIXI
+ * @memberof PIXI
  */
 export default class TextMetrics
 {
@@ -16,8 +16,8 @@ export default class TextMetrics
      * @param {PIXI.TextStyle} style - the style that was measured
      * @param {number} width - the measured width of the text
      * @param {number} height - the measured height of the text
-     * @param {array} lines - an array of the lines of text broken by new lines and wrapping if specified in style
-     * @param {array} lineWidths - an array of the line widths for each line matched to `lines`
+     * @param {string[]} lines - an array of the lines of text broken by new lines and wrapping if specified in style
+     * @param {number[]} lineWidths - an array of the line widths for each line matched to `lines`
      * @param {number} lineHeight - the measured line height for this style
      * @param {number} maxLineWidth - the maximum line width for all measured lines
      * @param {Object} fontProperties - the font properties object from TextMetrics.measureFont
@@ -46,9 +46,18 @@ export default class TextMetrics
      */
     static measureText(text, style, wordWrap, canvas = TextMetrics._canvas)
     {
-        wordWrap = wordWrap || style.wordWrap;
+        wordWrap = (wordWrap === undefined || wordWrap === null) ? style.wordWrap : wordWrap;
         const font = style.toFontString();
         const fontProperties = TextMetrics.measureFont(font);
+
+        // fallback in case UA disallow canvas data extraction
+        // (toDataURI, getImageData functions)
+        if (fontProperties.fontSize === 0)
+        {
+            fontProperties.fontSize = style.fontSize;
+            fontProperties.ascent = style.fontSize;
+        }
+
         const context = canvas.getContext('2d');
 
         context.font = font;
@@ -246,8 +255,10 @@ export default class TextMetrics
                         width = 0;
                     }
 
-                    // give it its own line
-                    lines += TextMetrics.addLine(token);
+                    const isLastToken = i === tokens.length - 1;
+
+                    // give it its own line if it's not the end
+                    lines += TextMetrics.addLine(token, !isLastToken);
                     canPrependSpaces = false;
                     line = '';
                     width = 0;
@@ -424,7 +435,7 @@ export default class TextMetrics
      *
      * @private
      * @param  {string}  text       The text
-     * @return {array}  A tokenized array
+     * @return {string[]}  A tokenized array
      */
     static tokenize(text)
     {
@@ -505,7 +516,7 @@ export default class TextMetrics
      *
      * @static
      * @param {string} font - String representing the style of the font
-     * @return {PIXI.TextMetrics~FontMetrics} Font properties object
+     * @return {PIXI.IFontMetrics} Font properties object
      */
     static measureFont(font)
     {
@@ -522,11 +533,12 @@ export default class TextMetrics
 
         context.font = font;
 
-        const width = Math.ceil(context.measureText('|MÉq').width);
-        let baseline = Math.ceil(context.measureText('M').width);
+        const metricsString = TextMetrics.METRICS_STRING + TextMetrics.BASELINE_SYMBOL;
+        const width = Math.ceil(context.measureText(metricsString).width);
+        let baseline = Math.ceil(context.measureText(TextMetrics.BASELINE_SYMBOL).width);
         const height = 2 * baseline;
 
-        baseline = baseline * 1.4 | 0;
+        baseline = baseline * TextMetrics.BASELINE_MULTIPLIER | 0;
 
         canvas.width = width;
         canvas.height = height;
@@ -538,7 +550,7 @@ export default class TextMetrics
 
         context.textBaseline = 'alphabetic';
         context.fillStyle = '#000';
-        context.fillText('|MÉq', 0, baseline);
+        context.fillText(metricsString, 0, baseline);
 
         const imagedata = context.getImageData(0, 0, width, height).data;
         const pixels = imagedata.length;
@@ -603,15 +615,35 @@ export default class TextMetrics
 
         return properties;
     }
+
+    /**
+     * Clear font metrics in metrics cache.
+     *
+     * @static
+     * @param {string} [font] - font name. If font name not set then clear cache for all fonts.
+     */
+    static clearMetrics(font = '')
+    {
+        if (font)
+        {
+            delete TextMetrics._fonts[font];
+        }
+        else
+        {
+            TextMetrics._fonts = {};
+        }
+    }
 }
 
 /**
  * Internal return object for {@link PIXI.TextMetrics.measureFont `TextMetrics.measureFont`}.
- * @class FontMetrics
- * @memberof PIXI.TextMetrics~
+ *
+ * @typedef {object} FontMetrics
  * @property {number} ascent - The ascent distance
  * @property {number} descent - The descent distance
  * @property {number} fontSize - Font size from ascent to descent
+ * @memberof PIXI.TextMetrics
+ * @private
  */
 
 const canvas = document.createElement('canvas');
@@ -620,6 +652,7 @@ canvas.width = canvas.height = 10;
 
 /**
  * Cached canvas element for measuring text
+ *
  * @memberof PIXI.TextMetrics
  * @type {HTMLCanvasElement}
  * @private
@@ -628,6 +661,7 @@ TextMetrics._canvas = canvas;
 
 /**
  * Cache for context to use.
+ *
  * @memberof PIXI.TextMetrics
  * @type {CanvasRenderingContext2D}
  * @private
@@ -635,7 +669,8 @@ TextMetrics._canvas = canvas;
 TextMetrics._context = canvas.getContext('2d');
 
 /**
- * Cache of PIXI.TextMetrics~FontMetrics objects.
+ * Cache of {@see PIXI.TextMetrics.FontMetrics} objects.
+ *
  * @memberof PIXI.TextMetrics
  * @type {Object}
  * @private
@@ -643,7 +678,42 @@ TextMetrics._context = canvas.getContext('2d');
 TextMetrics._fonts = {};
 
 /**
+ * String used for calculate font metrics.
+ * These characters are all tall to help calculate the height required for text.
+ *
+ * @static
+ * @memberof PIXI.TextMetrics
+ * @name METRICS_STRING
+ * @type {string}
+ * @default |ÉqÅ
+ */
+TextMetrics.METRICS_STRING = '|ÉqÅ';
+
+/**
+ * Baseline symbol for calculate font metrics.
+ *
+ * @static
+ * @memberof PIXI.TextMetrics
+ * @name BASELINE_SYMBOL
+ * @type {string}
+ * @default M
+ */
+TextMetrics.BASELINE_SYMBOL = 'M';
+
+/**
+ * Baseline multiplier for calculate font metrics.
+ *
+ * @static
+ * @memberof PIXI.TextMetrics
+ * @name BASELINE_MULTIPLIER
+ * @type {number}
+ * @default 1.4
+ */
+TextMetrics.BASELINE_MULTIPLIER = 1.4;
+
+/**
  * Cache of new line chars.
+ *
  * @memberof PIXI.TextMetrics
  * @type {number[]}
  * @private
@@ -655,6 +725,7 @@ TextMetrics._newlines = [
 
 /**
  * Cache of breaking spaces.
+ *
  * @memberof PIXI.TextMetrics
  * @type {number[]}
  * @private
@@ -675,3 +746,14 @@ TextMetrics._breakingSpaces = [
     0x205F, // medium mathematical space
     0x3000, // ideographic space
 ];
+
+/**
+ * A number, or a string containing a number.
+ *
+ * @memberof PIXI
+ * @typedef IFontMetrics
+ * @property {number} ascent - Font ascent
+ * @property {number} descent - Font descent
+ * @property {number} fontSize - Font size
+ */
+

@@ -143,7 +143,7 @@ export default class TilingSprite extends Sprite
     /**
      * Renders the object using the WebGL renderer
      *
-     * @private
+     * @protected
      * @param {PIXI.Renderer} renderer - The renderer
      */
     _render(renderer)
@@ -166,7 +166,7 @@ export default class TilingSprite extends Sprite
     /**
      * Updates the bounds of the tiling sprite.
      *
-     * @private
+     * @protected
      */
     _calculateBounds()
     {
@@ -192,7 +192,7 @@ export default class TilingSprite extends Sprite
             this._bounds.minX = this._width * -this._anchor._x;
             this._bounds.minY = this._height * -this._anchor._y;
             this._bounds.maxX = this._width * (1 - this._anchor._x);
-            this._bounds.maxY = this._height * (1 - this._anchor._x);
+            this._bounds.maxY = this._height * (1 - this._anchor._y);
 
             if (!rect)
             {
@@ -260,10 +260,10 @@ export default class TilingSprite extends Sprite
      * The source can be - frame id, image url, video url, canvas element, video element, base texture
      *
      * @static
-     * @param {number|string|PIXI.BaseTexture|HTMLCanvasElement|HTMLVideoElement} source - Source to create texture from
+     * @param {number|string|PIXI.Texture|HTMLCanvasElement|HTMLVideoElement} source - Source to create texture from
      * @param {number} width - the width of the tiling sprite
      * @param {number} height - the height of the tiling sprite
-     * @return {PIXI.Texture} The newly created texture
+     * @return {PIXI.TilingSprite} The newly created texture
      */
     static from(source, width, height)
     {

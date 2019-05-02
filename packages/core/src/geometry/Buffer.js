@@ -1,8 +1,10 @@
+import { Runner } from '@pixi/runner';
+
 let UID = 0;
 /* eslint-disable max-len */
 
 /**
- * A wrapper for data so that it can be used and uploaded by webGL
+ * A wrapper for data so that it can be used and uploaded by WebGL
  *
  * @class
  * @memberof PIXI
@@ -11,6 +13,8 @@ export default class Buffer
 {
     /**
      * @param {ArrayBuffer| SharedArrayBuffer|ArrayBufferView} data the data to store in the buffer.
+     * @param {boolean} [_static=true] `true` for static buffer
+     * @param {boolean} [index=false] `true` for index buffer
      */
     constructor(data, _static = true, index = false)
     {
@@ -36,11 +40,14 @@ export default class Buffer
         this.static = _static;
 
         this.id = UID++;
+
+        this.disposeRunner = new Runner('disposeBuffer', 2);
     }
 
     // TODO could explore flagging only a partial upload?
     /**
      * flags this buffer as requiring an upload to the GPU
+     * @param {ArrayBuffer|SharedArrayBuffer|ArrayBufferView} [data] the data to update in the buffer.
      */
     update(data)
     {
@@ -49,14 +56,19 @@ export default class Buffer
     }
 
     /**
+     * disposes WebGL resources that are connected to this geometry
+     */
+    dispose()
+    {
+        this.disposeRunner.run(this, false);
+    }
+
+    /**
      * Destroys the buffer
      */
     destroy()
     {
-        for (let i = 0; i < this._glBuffers.length; i++)
-        {
-            this._glBuffers[i].destroy();
-        }
+        this.dispose();
 
         this.data = null;
     }
@@ -65,7 +77,7 @@ export default class Buffer
      * Helper function that creates a buffer based on an array or TypedArray
      *
      * @static
-     * @param {TypedArray| Array} data the TypedArray that the buffer will store. If this is a regular Array it will be converted to a Float32Array.
+     * @param {ArrayBufferView | number[]} data the TypedArray that the buffer will store. If this is a regular Array it will be converted to a Float32Array.
      * @return {PIXI.Buffer} A new Buffer based on the data provided.
      */
     static from(data)
@@ -78,4 +90,3 @@ export default class Buffer
         return new Buffer(data);
     }
 }
-

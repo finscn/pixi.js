@@ -4,14 +4,11 @@ import { GroupD8 } from '@pixi/math';
  * A standard object to store the Uvs of a texture
  *
  * @class
- * @private
+ * @protected
  * @memberof PIXI
  */
 export default class TextureUvs
 {
-    /**
-     *
-     */
     constructor()
     {
         this.x0 = 0;
@@ -26,13 +23,13 @@ export default class TextureUvs
         this.x3 = 0;
         this.y3 = 1;
 
-        this.uvsUint32 = new Uint32Array(4);
+        this.uvsFloat32 = new Float32Array(8);
     }
 
     /**
      * Sets the texture Uvs based on the given frame information.
      *
-     * @private
+     * @protected
      * @param {PIXI.Rectangle} frame - The frame of the texture
      * @param {PIXI.Rectangle} baseFrame - The base frame of the texture
      * @param {number} rotate - Rotation of frame, see {@link PIXI.GroupD8}
@@ -83,9 +80,13 @@ export default class TextureUvs
             this.y3 = (frame.y + frame.height) / th;
         }
 
-        this.uvsUint32[0] = (((this.y0 * 65535) & 0xFFFF) << 16) | ((this.x0 * 65535) & 0xFFFF);
-        this.uvsUint32[1] = (((this.y1 * 65535) & 0xFFFF) << 16) | ((this.x1 * 65535) & 0xFFFF);
-        this.uvsUint32[2] = (((this.y2 * 65535) & 0xFFFF) << 16) | ((this.x2 * 65535) & 0xFFFF);
-        this.uvsUint32[3] = (((this.y3 * 65535) & 0xFFFF) << 16) | ((this.x3 * 65535) & 0xFFFF);
+        this.uvsFloat32[0] = this.x0;
+        this.uvsFloat32[1] = this.y0;
+        this.uvsFloat32[2] = this.x1;
+        this.uvsFloat32[3] = this.y1;
+        this.uvsFloat32[4] = this.x2;
+        this.uvsFloat32[5] = this.y2;
+        this.uvsFloat32[6] = this.x3;
+        this.uvsFloat32[7] = this.y3;
     }
 }

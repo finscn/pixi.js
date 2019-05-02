@@ -1,4 +1,4 @@
-import { uid, BaseTextureCache, TextureCache } from '@pixi/utils';
+import { uid, BaseTextureCache, TextureCache, isPow2, EventEmitter } from '@pixi/utils';
 import { FORMATS, TARGETS, TYPES, SCALE_MODES } from '@pixi/constants';
 
 import Resource from './resources/Resource';
@@ -6,8 +6,6 @@ import BufferResource from './resources/BufferResource';
 import { autoDetectResource } from './resources/autoDetectResource';
 
 import { settings } from '@pixi/settings';
-import EventEmitter from 'eventemitter3';
-import bitTwiddle from 'bit-twiddle';
 
 const defaultBufferOptions = {
     scaleMode: SCALE_MODES.NEAREST,
@@ -16,7 +14,9 @@ const defaultBufferOptions = {
 };
 
 /**
- * A texture stores the information that represents an image. All textures have a base texture.
+ * A Texture stores the information that represents an image.
+ * All textures have a base texture, which contains information about the source.
+ * Therefore you can have many textures all using a single BaseTexture
  *
  * @class
  * @extends PIXI.utils.EventEmitter
@@ -25,7 +25,7 @@ const defaultBufferOptions = {
  *        The current resource to use, for things that aren't Resource objects, will be converted
  *        into a Resource.
  * @param {Object} [options] - Collection of options
- * @param {boolean} [options.mipmap=PIXI.settings.MIPMAP_TEXTURES] - If mipmapping is enabled for texture
+ * @param {PIXI.MIPMAP_MODES} [options.mipmap=PIXI.settings.MIPMAP_TEXTURES] - If mipmapping is enabled for texture
  * @param {PIXI.WRAP_MODES} [options.wrapMode=PIXI.settings.WRAP_MODE] - Wrap mode for textures
  * @param {PIXI.SCALE_MODES} [options.scaleMode=PIXI.settings.SCALE_MODE] - Default scale mode, linear, nearest
  * @param {PIXI.FORMATS} [options.format=PIXI.FORMATS.RGBA] - GL format type
@@ -80,9 +80,10 @@ export default class BaseTexture extends EventEmitter
         this.resolution = resolution || settings.RESOLUTION;
 
         /**
-         * If mipmapping was used for this texture, enable and disable with enableMipmap()
+         * Mipmap mode of the texture, affects downscaled images
          *
-         * @member {boolean}
+         * @member {PIXI.MIPMAP_MODES}
+         * @default PIXI.settings.MIPMAP_TEXTURES
          */
         this.mipmap = mipmap !== undefined ? mipmap : settings.MIPMAP_TEXTURES;
 
@@ -95,9 +96,8 @@ export default class BaseTexture extends EventEmitter
         /**
          * The scale mode to apply when scaling this texture
          *
-         * @member {number}
+         * @member {PIXI.SCALE_MODES}
          * @default PIXI.settings.SCALE_MODE
-         * @see PIXI.SCALE_MODES
          */
         this.scaleMode = scaleMode !== undefined ? scaleMode : settings.SCALE_MODE;
 
@@ -137,15 +137,15 @@ export default class BaseTexture extends EventEmitter
          * Global unique identifier for this BaseTexture
          *
          * @member {string}
-         * @private
+         * @protected
          */
         this.uid = uid();
 
         /**
-         * TODO: fill in description
+         * Used by automatic texture Garbage Collection, stores last GC tick when it was bound
          *
          * @member {number}
-         * @private
+         * @protected
          */
         this.touched = 0;
 
@@ -171,7 +171,7 @@ export default class BaseTexture extends EventEmitter
         /**
          * Used by TextureSystem to only update texture to the GPU when needed.
          *
-         * @private
+         * @protected
          * @member {number}
          */
         this.dirtyId = 0;
@@ -179,7 +179,7 @@ export default class BaseTexture extends EventEmitter
         /**
          * Used by TextureSystem to only update texture style when needed.
          *
-         * @private
+         * @protected
          * @member {number}
          */
         this.dirtyStyleId = 0;
@@ -225,8 +225,12 @@ export default class BaseTexture extends EventEmitter
          */
         this.resource = null;
 
-        // Set the resource
-        this.setResource(resource);
+        /**
+         * Number of the texture batch, used by multi-texture renderers
+         *
+         * @member {number}
+         */
+        this._batchEnabled = 0;
 
         /**
          * Fired when a not-immediately-available source finishes loading.
@@ -275,6 +279,9 @@ export default class BaseTexture extends EventEmitter
          * @event PIXI.BaseTexture#dispose
          * @param {PIXI.BaseTexture} baseTexture - Instance of texture being destroyed.
          */
+
+        // Set the resource
+        this.setResource(resource);
     }
 
     /**
@@ -302,9 +309,8 @@ export default class BaseTexture extends EventEmitter
     /**
      * Changes style options of BaseTexture
      *
-     * @param {object} options
-     * @param {PIXI.SCALE_MODES} [scaleMode] - pixi scalemode
-     * @param {boolean} [mipmap] - enable mipmaps
+     * @param {PIXI.SCALE_MODES} [scaleMode] - Pixi scalemode
+     * @param {PIXI.MIPMAP_MODES} [mipmap] - enable mipmaps
      * @returns {BaseTexture} this
      */
     setStyle(scaleMode, mipmap)
@@ -376,7 +382,7 @@ export default class BaseTexture extends EventEmitter
      */
     _refreshPOT()
     {
-        this.isPowerOfTwo = bitTwiddle.isPow2(this.realWidth) && bitTwiddle.isPow2(this.realHeight);
+        this.isPowerOfTwo = isPow2(this.realWidth) && isPow2(this.realHeight);
     }
 
     /**
@@ -482,7 +488,7 @@ export default class BaseTexture extends EventEmitter
             this.cacheId = null;
         }
 
-        // finally let the webGL renderer know..
+        // finally let the WebGL renderer know..
         this.dispose();
 
         BaseTexture.removeFromCache(this);
@@ -513,7 +519,7 @@ export default class BaseTexture extends EventEmitter
      * @param {string|HTMLImageElement|HTMLCanvasElement|SVGElement|HTMLVideoElement} source - The
      *        source to create base texture from.
      * @param {object} [options] See {@link PIXI.BaseTexture}'s constructor for options.
-     * @return {PIXI.BaseTexture} The new base texture.
+     * @returns {PIXI.BaseTexture} The new base texture.
      */
     static from(source, options)
     {
@@ -549,7 +555,7 @@ export default class BaseTexture extends EventEmitter
      * Create a new BaseTexture with a BufferResource from a Float32Array.
      * RGBA values are floats from 0 to 1.
      * @static
-     * @param {Float32Array|UintArray} buffer The optional array to use, if no data
+     * @param {Float32Array|Uint8Array} buffer The optional array to use, if no data
      *        is provided, a new Float32Array is created.
      * @param {number} width - Width of the resource
      * @param {number} height - Height of the resource
@@ -634,3 +640,11 @@ export default class BaseTexture extends EventEmitter
         return null;
     }
 }
+
+/**
+ * Global number of the texture batch, used by multi-texture renderers
+ *
+ * @static
+ * @member {number}
+ */
+BaseTexture._globalBatch = 0;

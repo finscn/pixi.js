@@ -1,21 +1,22 @@
-import url from 'url';
+import { url } from '@pixi/utils';
 import { LoaderResource } from '@pixi/loaders';
 import Spritesheet from './Spritesheet';
 
 /**
- * {@link PIXI.Loader Loader} middleware for loading
- * texture atlases that have been created with TexturePacker or
- * similar JSON-based spritesheet. This automatically generates
- * Texture resources.
+ * {@link PIXI.Loader Loader} middleware for loading texture atlases that have been created with
+ * TexturePacker or similar JSON-based spritesheet.
+ *
+ * This middleware automatically generates Texture resources.
+ *
  * @class
  * @memberof PIXI
- * @extends PIXI.Loader~LoaderPlugin
+ * @implements PIXI.ILoaderPlugin
  */
 export default class SpritesheetLoader
 {
     /**
      * Called after a resource is loaded.
-     * @see PIXI.Loader~loaderMiddleware
+     * @see PIXI.Loader.loaderMiddleware
      * @param {PIXI.LoaderResource} resource
      * @param {function} next
      */

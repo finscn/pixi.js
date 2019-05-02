@@ -5,6 +5,8 @@ import { ENV } from '@pixi/constants';
 let CONTEXT_UID = 0;
 
 /**
+ * System plugin to the renderer to manage the context.
+ *
  * @class
  * @extends PIXI.System
  * @memberof PIXI.systems
@@ -27,10 +29,10 @@ export default class ContextSystem extends System
 
         /**
          * Extensions being used
-         * @name {object}
+         * @member {object}
          * @readonly
          * @property {WEBGL_draw_buffers} drawBuffers - WebGL v1 extension
-         * @property {WEBKIT_WEBGL_depth_texture} depthTexture - WebGL v1 extension
+         * @property {WEBGL_depth_texture} depthTexture - WebGL v1 extension
          * @property {OES_texture_float} floatTexture - WebGL v1 extension
          * @property {WEBGL_lose_context} loseContext - WebGL v1 extension
          * @property {OES_vertex_array_object} vertexArrayObject - WebGL v1 extension
@@ -57,6 +59,7 @@ export default class ContextSystem extends System
 
     /**
      * Handle the context change event
+     * @param {WebGLRenderingContext} gl new webgl context
      */
     contextChange(gl)
     {
@@ -72,7 +75,7 @@ export default class ContextSystem extends System
     /**
      * Initialize the context
      *
-     * @private
+     * @protected
      * @param {WebGLRenderingContext} gl - WebGL context
      */
     initFromContext(gl)
@@ -87,7 +90,7 @@ export default class ContextSystem extends System
     /**
      * Initialize from context options
      *
-     * @private
+     * @protected
      * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
      * @param {object} options - context attributes
      */
@@ -99,7 +102,7 @@ export default class ContextSystem extends System
     }
 
     /**
-     * Helper class to create a webGL Context
+     * Helper class to create a WebGL Context
      *
      * @param canvas {HTMLCanvasElement} the canvas element that we will get the context from
      * @param options {object} An options object that gets passed in to the canvas element containing the context attributes
@@ -129,7 +132,7 @@ export default class ContextSystem extends System
             if (!gl)
             {
                 // fail, not able to get a context
-                throw new Error('This browser does not support webGL. Try using the canvas renderer');
+                throw new Error('This browser does not support WebGL. Try using the canvas renderer');
             }
         }
 
@@ -143,11 +146,11 @@ export default class ContextSystem extends System
     /**
      * Auto-populate the extensions
      *
-     * @private
+     * @protected
      */
     getExtensions()
     {
-        // time to set up default extensions that pixi uses..
+        // time to set up default extensions that Pixi uses.
         const { gl } = this;
 
         if (this.webGLVersion === 1)
@@ -169,7 +172,7 @@ export default class ContextSystem extends System
     /**
      * Handles a lost webgl context
      *
-     * @private
+     * @protected
      * @param {WebGLContextEvent} event - The context lost event.
      */
     handleContextLost(event)
@@ -180,7 +183,7 @@ export default class ContextSystem extends System
     /**
      * Handles a restored webgl context
      *
-     * @private
+     * @protected
      */
     handleContextRestored()
     {
@@ -206,7 +209,7 @@ export default class ContextSystem extends System
     /**
      * Handle the post-render runner event
      *
-     * @private
+     * @protected
      */
     postrender()
     {
@@ -216,7 +219,7 @@ export default class ContextSystem extends System
     /**
      * Validate context
      *
-     * @private
+     * @protected
      * @param {WebGLRenderingContext} gl - Render context
      */
     validateContext(gl)

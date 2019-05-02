@@ -27,9 +27,13 @@ docs
 coverage
 lib
 dist
+bundles/*/*.d.ts
 
 # jetBrains IDE ignores
 .idea
 
 # VSCode ignores
 .vscode
+pixi.code-workspace
+
+package-lock.json

@@ -1,9 +1,21 @@
-import removeItems from 'remove-array-items';
+import { settings } from '@pixi/settings';
+import { removeItems } from '@pixi/utils';
 import DisplayObject from './DisplayObject';
+
+function sortChildren(a, b)
+{
+    if (a.zIndex === b.zIndex)
+    {
+        return a._lastSortedIndex - b._lastSortedIndex;
+    }
+
+    return a.zIndex - b.zIndex;
+}
 
 /**
  * A Container represents a collection of display objects.
- * It is the base class of all display objects that act as a container for other objects.
+ *
+ * It is the base class of all display objects that act as a container for other objects (like Sprites).
  *
  *```js
  * let container = new PIXI.Container();
@@ -16,9 +28,6 @@ import DisplayObject from './DisplayObject';
  */
 export default class Container extends DisplayObject
 {
-    /**
-     *
-     */
     constructor()
     {
         super();
@@ -30,12 +39,55 @@ export default class Container extends DisplayObject
          * @readonly
          */
         this.children = [];
+
+        /**
+         * If set to true, the container will sort its children by zIndex value
+         * when updateTransform() is called, or manually if sortChildren() is called.
+         *
+         * This actually changes the order of elements in the array, so should be treated
+         * as a basic solution that is not performant compared to other solutions,
+         * such as @link https://github.com/pixijs/pixi-display
+         *
+         * Also be aware of that this may not work nicely with the addChildAt() function,
+         * as the zIndex sorting may cause the child to automatically sorted to another position.
+         *
+         * @see PIXI.settings.SORTABLE_CHILDREN
+         *
+         * @member {boolean}
+         */
+        this.sortableChildren = settings.SORTABLE_CHILDREN;
+
+        /**
+         * Should children be sorted by zIndex at the next updateTransform call.
+         * Will get automatically set to true if a new child is added, or if a child's zIndex changes.
+         *
+         * @member {boolean}
+         */
+        this.sortDirty = false;
+
+        /**
+         * Fired when a DisplayObject is added to this Container.
+         *
+         * @event PIXI.Container#childAdded
+         * @param {PIXI.DisplayObject} child - The child added to the Container.
+         * @param {PIXI.Container} container - The container that added the child.
+         * @param {number} index - The children's index of the added child.
+         */
+
+        /**
+         * Fired when a DisplayObject is removed from this Container.
+         *
+         * @event PIXI.DisplayObject#removedFrom
+         * @param {PIXI.DisplayObject} child - The child removed from the Container.
+         * @param {PIXI.Container} container - The container that removed removed the child.
+         * @param {number} index - The former children's index of the removed child
+         */
     }
 
     /**
      * Overridable method that can be used by Container subclasses whenever the children array is modified
      *
-     * @private
+     * @protected
      */
     onChildrenChange()
     {
@@ -73,6 +125,8 @@ export default class Container extends DisplayObject
             }
 
             child.parent = this;
+            this.sortDirty = true;
+
             // ensure child transform will be recalculated
             child.transform._parentID = -1;
 
@@ -83,6 +137,7 @@ export default class Container extends DisplayObject
 
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(this.children.length - 1);
+            this.emit('childAdded', child, this, this.children.length - 1);
             child.emit('added', this);
         }
 
@@ -109,6 +164,8 @@ export default class Container extends DisplayObject
         }
 
         child.parent = this;
+        this.sortDirty = true;
+
         // ensure child transform will be recalculated
         child.transform._parentID = -1;
 
@@ -120,6 +177,7 @@ export default class Container extends DisplayObject
         // TODO - lets either do all callbacks or all events.. not both!
         this.onChildrenChange(index);
         child.emit('added', this);
+        this.emit('childAdded', child, this, index);
 
         return child;
     }
@@ -237,6 +295,7 @@ export default class Container extends DisplayObject
             // TODO - lets either do all callbacks or all events.. not both!
             this.onChildrenChange(index);
             child.emit('removed', this);
+            this.emit('childRemoved', child, this, index);
         }
 
         return child;
@@ -263,6 +322,7 @@ export default class Container extends DisplayObject
         // TODO - lets either do all callbacks or all events.. not both!
         this.onChildrenChange(index);
         child.emit('removed', this);
+        this.emit('childRemoved', child, this, index);
 
         return child;
     }
@@ -301,6 +361,7 @@ export default class Container extends DisplayObject
             for (let i = 0; i < removed.length; ++i)
             {
                 removed[i].emit('removed', this);
+                this.emit('childRemoved', removed[i], this, i);
             }
 
             return removed;
@@ -314,10 +375,42 @@ export default class Container extends DisplayObject
     }
 
     /**
+     * Sorts children by zIndex. Previous order is mantained for 2 children with the same zIndex.
+     */
+    sortChildren()
+    {
+        let sortRequired = false;
+
+        for (let i = 0, j = this.children.length; i < j; ++i)
+        {
+            const child = this.children[i];
+
+            child._lastSortedIndex = i;
+
+            if (!sortRequired && child.zIndex !== 0)
+            {
+                sortRequired = true;
+            }
+        }
+
+        if (sortRequired && this.children.length > 1)
+        {
+            this.children.sort(sortChildren);
+        }
+
+        this.sortDirty = false;
+    }
+
+    /**
      * Updates the transform on all children of this container for rendering
      */
     updateTransform()
     {
+        if (this.sortableChildren && this.sortDirty)
+        {
+            this.sortChildren();
+        }
+
         this._boundsID++;
 
         this.transform.updateTransform(this.parent.transform);
@@ -380,6 +473,7 @@ export default class Container extends DisplayObject
      * Recalculates the bounds of the object. Override this to
      * calculate the bounds of the specific object (not including children).
      *
+     * @protected
      */
     _calculateBounds()
     {
@@ -419,7 +513,7 @@ export default class Container extends DisplayObject
     /**
      * Render the object using the WebGL renderer and advanced features.
      *
-     * @private
+     * @protected
      * @param {PIXI.Renderer} renderer - The renderer
      */
     renderAdvanced(renderer)
@@ -483,7 +577,7 @@ export default class Container extends DisplayObject
     /**
      * To be overridden by the subclasses.
      *
-     * @private
+     * @protected
      * @param {PIXI.Renderer} renderer - The renderer
      */
     _render(renderer) // eslint-disable-line no-unused-vars
@@ -507,6 +601,8 @@ export default class Container extends DisplayObject
     destroy(options)
     {
         super.destroy();
+
+        this.sortDirty = false;
 
         const destroyChildren = typeof options === 'boolean' ? options : options && options.children;
 

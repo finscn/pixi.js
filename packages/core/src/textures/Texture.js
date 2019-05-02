@@ -2,15 +2,17 @@ import BaseTexture from './BaseTexture';
 import ImageResource from './resources/ImageResource';
 import CanvasResource from './resources/CanvasResource';
 import TextureUvs from './TextureUvs';
-import EventEmitter from 'eventemitter3';
 import { settings } from '@pixi/settings';
-import { Rectangle } from '@pixi/math';
-import { uid, TextureCache, getResolutionOfUrl } from '@pixi/utils';
+import { Rectangle, Point } from '@pixi/math';
+import { uid, TextureCache, getResolutionOfUrl, EventEmitter } from '@pixi/utils';
+
+const DEFAULT_UVS = new TextureUvs();
 
 /**
- * A texture stores the information that represents an image or part of an image. It cannot be added
- * to the display list directly. Instead use it as the texture for a Sprite. If no frame is provided
- * then the whole image is used.
+ * A texture stores the information that represents an image or part of an image.
+ *
+ * It cannot be added to the display list directly; instead use it as the texture for a Sprite.
+ * If no frame is provided for a texture, then the whole image is used.
  *
  * You can directly create a texture from an image and then reuse it multiple times like this :
  *
@@ -41,8 +43,9 @@ export default class Texture extends EventEmitter
      * @param {PIXI.Rectangle} [orig] - The area of original texture
      * @param {PIXI.Rectangle} [trim] - Trimmed rectangle of original texture
      * @param {number} [rotate] - indicates how the texture was rotated by texture packer. See {@link PIXI.GroupD8}
+     * @param {PIXI.Point} [anchor] - Default anchor point used for sprite placement / rotation
      */
-    constructor(baseTexture, frame, orig, trim, rotate)
+    constructor(baseTexture, frame, orig, trim, rotate, anchor)
     {
         super();
 
@@ -95,7 +98,7 @@ export default class Texture extends EventEmitter
         this.valid = false;
 
         /**
-         * This will let a renderer know that a texture has been updated (used mainly for webGL uv updates)
+         * This will let a renderer know that a texture has been updated (used mainly for WebGL uv updates)
          *
          * @member {boolean}
          */
@@ -105,9 +108,9 @@ export default class Texture extends EventEmitter
          * The WebGL UV data cache. Can be used as quad UV
          *
          * @member {PIXI.TextureUvs}
-         * @private
+         * @protected
          */
-        this._uvs = null;
+        this._uvs = DEFAULT_UVS;
 
         /**
          * Default TextureMatrix instance for this texture
@@ -145,6 +148,7 @@ export default class Texture extends EventEmitter
                 // if there is no frame we should monitor for any base texture changes..
                 baseTexture.on('update', this.onBaseTextureUpdated, this);
             }
+
             this.frame = frame;
         }
         else
@@ -153,11 +157,19 @@ export default class Texture extends EventEmitter
         }
 
         /**
+         * Anchor point that is used as default if sprite is created with this texture.
+         * Changing the `defaultAnchor` at a later point of time will not update Sprite's anchor point.
+         * @member {PIXI.Point}
+         * @default {0,0}
+         */
+        this.defaultAnchor = anchor ? new Point(anchor.x, anchor.y) : new Point(0, 0);
+
+        /**
          * Update ID is observed by sprites and TextureMatrix instances.
          * Call updateUvs() to increment it.
          *
          * @member {number}
-         * @private
+         * @protected
          */
 
         this._updateID = 0;
@@ -184,7 +196,7 @@ export default class Texture extends EventEmitter
     /**
      * Called when the base texture is updated
      *
-     * @private
+     * @protected
      * @param {PIXI.BaseTexture} baseTexture - The base texture.
      */
     onBaseTextureUpdated(baseTexture)
@@ -250,7 +262,7 @@ export default class Texture extends EventEmitter
      */
     clone()
     {
-        return new Texture(this.baseTexture, this.frame, this.orig, this.trim, this.rotate);
+        return new Texture(this.baseTexture, this.frame, this.orig, this.trim, this.rotate, this.defaultAnchor);
     }
 
     /**
@@ -259,7 +271,7 @@ export default class Texture extends EventEmitter
      */
     updateUvs()
     {
-        if (!this._uvs)
+        if (this._uvs === DEFAULT_UVS)
         {
             this._uvs = new TextureUvs();
         }
@@ -274,8 +286,8 @@ export default class Texture extends EventEmitter
      * The source can be - frame id, image url, video url, canvas element, video element, base texture
      *
      * @static
-     * @param {number|string|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|PIXI.BaseTexture}
-     *        source - Source to create texture from
+     * @param {number|string|HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|PIXI.BaseTexture} source
+     *        Source to create texture from
      * @param {object} [options] See {@link PIXI.BaseTexture}'s constructor for options.
      * @return {PIXI.Texture} The newly created texture
      */
@@ -286,11 +298,6 @@ export default class Texture extends EventEmitter
         if (typeof source === 'string')
         {
             cacheId = source;
-
-            if (!options.resolution)
-            {
-                options.resolution = getResolutionOfUrl(source);
-            }
         }
         else
         {
@@ -306,6 +313,11 @@ export default class Texture extends EventEmitter
 
         if (!texture)
         {
+            if (!options.resolution)
+            {
+                options.resolution = getResolutionOfUrl(source);
+            }
+
             texture = new Texture(new BaseTexture(source, options));
             texture.baseTexture.cacheId = cacheId;
 
@@ -321,7 +333,7 @@ export default class Texture extends EventEmitter
      * Create a new Texture with a BufferResource from a Float32Array.
      * RGBA values are floats from 0 to 1.
      * @static
-     * @param {Float32Array|UintArray} buffer The optional array to use, if no data
+     * @param {Float32Array|Uint8Array} buffer The optional array to use, if no data
      *        is provided, a new Float32Array is created.
      * @param {number} width - Width of the resource
      * @param {number} height - Height of the resource
@@ -345,12 +357,10 @@ export default class Texture extends EventEmitter
      */
     static fromLoader(source, imageUrl, name)
     {
-        // console.log('added from loader...')
         const resource = new ImageResource(source);
 
         resource.url = imageUrl;
 
-        //  console.log('base resource ' + resource.width);
         const baseTexture = new BaseTexture(resource, {
             scaleMode: settings.SCALE_MODE,
             resolution: getResolutionOfUrl(imageUrl),
@@ -364,7 +374,7 @@ export default class Texture extends EventEmitter
             name = imageUrl;
         }
 
-        // lets also add the frame to pixi's global cache for fromFrame and fromImage functions
+        // lets also add the frame to pixi's global cache for 'fromLoader' function
         BaseTexture.addToCache(texture.baseTexture, name);
         Texture.addToCache(texture, name);
 
@@ -542,13 +552,13 @@ function createWhiteTexture()
 {
     const canvas = document.createElement('canvas');
 
-    canvas.width = 10;
-    canvas.height = 10;
+    canvas.width = 16;
+    canvas.height = 16;
 
     const context = canvas.getContext('2d');
 
     context.fillStyle = 'white';
-    context.fillRect(0, 0, 10, 10);
+    context.fillRect(0, 0, 16, 16);
 
     return new Texture(new BaseTexture(new CanvasResource(canvas)));
 }
@@ -567,6 +577,7 @@ function removeAllHandlers(tex)
  *
  * @static
  * @constant
+ * @member {PIXI.Texture}
  */
 Texture.EMPTY = new Texture(new BaseTexture());
 removeAllHandlers(Texture.EMPTY);
@@ -578,6 +589,7 @@ removeAllHandlers(Texture.EMPTY.baseTexture);
  *
  * @static
  * @constant
+ * @member {PIXI.Texture}
  */
 Texture.WHITE = createWhiteTexture();
 removeAllHandlers(Texture.WHITE);

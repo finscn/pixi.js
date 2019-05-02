@@ -8,7 +8,6 @@ const vertTemplate = `
     varying vec2 vBlurTexCoords[%size%];
 
     uniform vec4 inputSize;
-    uniform vec4 inputClamp;
     uniform vec4 outputFrame;
     
     vec4 filterVertexPosition( void )
@@ -31,7 +30,7 @@ const vertTemplate = `
         %blur%
     }`;
 
-export default function generateVertBlurSource(kernelSize, x)
+export default function generateBlurVertSource(kernelSize, x)
 {
     const halfLength = Math.ceil(kernelSize / 2);
 
@@ -43,11 +42,11 @@ export default function generateVertBlurSource(kernelSize, x)
 
     if (x)
     {
-        template = 'vBlurTexCoords[%index%] =  min( textureCoord + vec2(%sampleIndex% * strength, 0.0), inputClamp.zw);';
+        template = 'vBlurTexCoords[%index%] =  textureCoord + vec2(%sampleIndex% * strength, 0.0);';
     }
     else
     {
-        template = 'vBlurTexCoords[%index%] =  min( textureCoord + vec2(0.0, %sampleIndex% * strength), inputClamp.zw);';
+        template = 'vBlurTexCoords[%index%] =  textureCoord + vec2(0.0, %sampleIndex% * strength);';
     }
 
     for (let i = 0; i < kernelSize; i++)

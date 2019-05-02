@@ -1,5 +1,4 @@
-import buildLine from './buildLine';
-import { hex2rgb, earcut } from '@pixi/utils';
+import { earcut } from '@pixi/utils';
 
 /**
  * Builds a rounded rectangle to draw
@@ -9,72 +8,71 @@ import { hex2rgb, earcut } from '@pixi/utils';
  * @ignore
  * @private
  * @param {PIXI.WebGLGraphicsData} graphicsData - The graphics object containing all the necessary properties
- * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
- * @param {object} webGLDataNativeLines - an object containing all the webGL-specific information to create nativeLines
+ * @param {object} webGLData - an object containing all the WebGL-specific information to create this shape
+ * @param {object} webGLDataNativeLines - an object containing all the WebGL-specific information to create nativeLines
  */
-export default function buildRoundedRectangle(graphicsData, webGLData, webGLDataNativeLines)
-{
-    const rrectData = graphicsData.shape;
-    const x = rrectData.x;
-    const y = rrectData.y;
-    const width = rrectData.width;
-    const height = rrectData.height;
+export default {
 
-    const radius = rrectData.radius;
-
-    const recPoints = [];
-
-    recPoints.push(x, y + radius);
-    quadraticBezierCurve(x, y + height - radius, x, y + height, x + radius, y + height, recPoints);
-    quadraticBezierCurve(x + width - radius, y + height, x + width, y + height, x + width, y + height - radius, recPoints);
-    quadraticBezierCurve(x + width, y + radius, x + width, y, x + width - radius, y, recPoints);
-    quadraticBezierCurve(x + radius, y, x, y, x, y + radius + 0.0000000001, recPoints);
-
-    // this tiny number deals with the issue that occurs when points overlap and earcut fails to triangulate the item.
-    // TODO - fix this properly, this is not very elegant.. but it works for now.
-
-    if (graphicsData.fill)
+    build(graphicsData)
     {
-        const color = hex2rgb(graphicsData.fillColor);
-        const alpha = graphicsData.fillAlpha;
+        const rrectData = graphicsData.shape;
+        const points = graphicsData.points;
+        const x = rrectData.x;
+        const y = rrectData.y;
+        const width = rrectData.width;
+        const height = rrectData.height;
 
-        const r = color[0] * alpha;
-        const g = color[1] * alpha;
-        const b = color[2] * alpha;
+        const radius = rrectData.radius;
 
-        const verts = webGLData.points;
-        const indices = webGLData.indices;
+        points.length = 0;
 
-        const vecPos = verts.length / 6;
+        quadraticBezierCurve(x, y + radius,
+            x, y,
+            x + radius, y,
+            points);
+        quadraticBezierCurve(x + width - radius,
+            y, x + width, y,
+            x + width, y + radius,
+            points);
+        quadraticBezierCurve(x + width, y + height - radius,
+            x + width, y + height,
+            x + width - radius, y + height,
+            points);
+        quadraticBezierCurve(x + radius, y + height,
+            x, y + height,
+            x, y + height - radius,
+            points);
 
-        const triangles = earcut(recPoints, null, 2);
+        // this tiny number deals with the issue that occurs when points overlap and earcut fails to triangulate the item.
+        // TODO - fix this properly, this is not very elegant.. but it works for now.
+    },
+
+    triangulate(graphicsData, graphicsGeometry)
+    {
+        const points = graphicsData.points;
+
+        const verts = graphicsGeometry.points;
+        const indices = graphicsGeometry.indices;
+
+        const vecPos = verts.length / 2;
+
+        const triangles = earcut(points, null, 2);
 
         for (let i = 0, j = triangles.length; i < j; i += 3)
         {
             indices.push(triangles[i] + vecPos);
-            indices.push(triangles[i] + vecPos);
+            //     indices.push(triangles[i] + vecPos);
             indices.push(triangles[i + 1] + vecPos);
-            indices.push(triangles[i + 2] + vecPos);
+            //   indices.push(triangles[i + 2] + vecPos);
             indices.push(triangles[i + 2] + vecPos);
         }
 
-        for (let i = 0, j = recPoints.length; i < j; i++)
+        for (let i = 0, j = points.length; i < j; i++)
         {
-            verts.push(recPoints[i], recPoints[++i], r, g, b, alpha);
+            verts.push(points[i], points[++i]);
         }
-    }
-
-    if (graphicsData.lineWidth)
-    {
-        const tempPoints = graphicsData.points;
-
-        graphicsData.points = recPoints;
-
-        buildLine(graphicsData, webGLData, webGLDataNativeLines);
-
-        graphicsData.points = tempPoints;
-    }
-}
+    },
+};
 
 /**
  * Calculate a single point for a quadratic bezier curve.

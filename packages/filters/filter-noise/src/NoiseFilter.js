@@ -1,5 +1,4 @@
-import { Filter } from '@pixi/core';
-import { defaultFilterVertex } from '@pixi/fragments';
+import { Filter, defaultFilterVertex } from '@pixi/core';
 import fragment from './noise.frag';
 
 /**
@@ -17,8 +16,8 @@ import fragment from './noise.frag';
 export default class NoiseFilter extends Filter
 {
     /**
-     * @param {number} noise - The noise intensity, should be a normalized value in the range [0, 1].
-     * @param {number} seed - A random seed for the noise generation. Default is `Math.random()`.
+     * @param {number} [noise=0.5] - The noise intensity, should be a normalized value in the range [0, 1].
+     * @param {number} [seed] - A random seed for the noise generation. Default is `Math.random()`.
      */
     constructor(noise = 0.5, seed = Math.random())
     {

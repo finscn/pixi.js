@@ -3,7 +3,7 @@ import { Sprite } from '@pixi/sprite';
 import { Texture } from '@pixi/core';
 import { settings } from '@pixi/settings';
 import { Rectangle } from '@pixi/math';
-import { sign, trimCanvas } from '@pixi/utils';
+import { sign, trimCanvas, hex2rgb, string2hex } from '@pixi/utils';
 import { TEXT_GRADIENT } from './const';
 import TextStyle from './TextStyle';
 import TextMetrics from './TextMetrics';
@@ -15,10 +15,21 @@ const defaultDestroyOptions = {
 };
 
 /**
- * A Text Object will create a line or multiple lines of text. To split a line you can use '\n' in your text string,
- * or add a wordWrap property set to true and and wordWrapWidth property with a value in the style object.
+ * A Text Object will create a line or multiple lines of text.
  *
- * A Text can be created directly from a string and a style object
+ * The text is created using the [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API).
+ *
+ * The primary advantage of this class over BitmapText is that you have great control over the style of the next,
+ * which you can change at runtime.
+ *
+ * The primary disadvantages is that each piece of text has it's own texture, which can use more memory.
+ * When text changes, this texture has to be re-generated and re-uploaded to the GPU, taking up time.
+ *
+ * To split a line you can use '\n' in your text string, or, on the `style` object,
+ * change its `wordWrap` property to true and and give the `wordWrapWidth` property a value.
+ *
+ * A Text can be created directly from a string and a style object,
+ * which can be generated [here](https://pixijs.io/pixi-text-style).
  *
  * ```js
  * let text = new PIXI.Text('This is a PixiJS text',{fontFamily : 'Arial', fontSize: 24, fill : 0xff1010, align : 'center'});
@@ -42,15 +53,12 @@ export default class Text extends Sprite
         canvas.width = 3;
         canvas.height = 3;
 
-        const texture = Texture.from(canvas, settings.SCALE_MODE, 'text');
+        const texture = Texture.from(canvas);
 
         texture.orig = new Rectangle();
         texture.trim = new Rectangle();
 
         super(texture);
-
-        // base texture is already automatically added to the cache, now adding the actual texture
-        Texture.addToCache(this._texture, this._texture.baseTexture.textureCacheIds[0]);
 
         /**
          * The canvas element that everything is drawn to
@@ -66,11 +74,13 @@ export default class Text extends Sprite
         this.context = this.canvas.getContext('2d');
 
         /**
-         * The resolution / device pixel ratio of the canvas. This is set automatically by the renderer.
+         * The resolution / device pixel ratio of the canvas.
+         * This is set to automatically match the renderer resolution by default, but can be overridden by setting manually.
          * @member {number}
          * @default 1
          */
-        this.resolution = settings.RESOLUTION;
+        this._resolution = settings.RESOLUTION;
+        this._autoResolution = true;
 
         /**
          * Private tracker for the current text.
@@ -134,7 +144,7 @@ export default class Text extends Sprite
         this._font = this._style.toFontString();
 
         const context = this.context;
-        const measured = TextMetrics.measureText(this._text, this._style, this._style.wordWrap, this.canvas);
+        const measured = TextMetrics.measureText(this._text || ' ', this._style, this._style.wordWrap, this.canvas);
         const width = measured.width;
         const height = measured.height;
         const lines = measured.lines;
@@ -143,10 +153,10 @@ export default class Text extends Sprite
         const maxLineWidth = measured.maxLineWidth;
         const fontProperties = measured.fontProperties;
 
-        this.canvas.width = Math.ceil((Math.max(1, width) + (style.padding * 2)) * this.resolution);
-        this.canvas.height = Math.ceil((Math.max(1, height) + (style.padding * 2)) * this.resolution);
+        this.canvas.width = Math.ceil((Math.max(1, width) + (style.padding * 2)) * this._resolution);
+        this.canvas.height = Math.ceil((Math.max(1, height) + (style.padding * 2)) * this._resolution);
 
-        context.scale(this.resolution, this.resolution);
+        context.scale(this._resolution, this._resolution);
 
         context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -162,56 +172,21 @@ export default class Text extends Sprite
 
         if (style.dropShadow)
         {
-            context.fillStyle = style.dropShadowColor;
-            context.globalAlpha = style.dropShadowAlpha;
+            const dropShadowColor = style.dropShadowColor;
+            const rgb = hex2rgb(typeof dropShadowColor === 'number' ? dropShadowColor : string2hex(dropShadowColor));
+
+            context.shadowColor = `rgba(${rgb[0] * 255},${rgb[1] * 255},${rgb[2] * 255},${style.dropShadowAlpha})`;
             context.shadowBlur = style.dropShadowBlur;
-
-            if (style.dropShadowBlur > 0)
-            {
-                context.shadowColor = style.dropShadowColor;
-            }
-
-            const xShadowOffset = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
-            const yShadowOffset = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
-
-            for (let i = 0; i < lines.length; i++)
-            {
-                linePositionX = style.strokeThickness / 2;
-                linePositionY = ((style.strokeThickness / 2) + (i * lineHeight)) + fontProperties.ascent;
-
-                if (style.align === 'right')
-                {
-                    linePositionX += maxLineWidth - lineWidths[i];
-                }
-                else if (style.align === 'center')
-                {
-                    linePositionX += (maxLineWidth - lineWidths[i]) / 2;
-                }
-
-                if (style.fill)
-                {
-                    this.drawLetterSpacing(
-                        lines[i],
-                        linePositionX + xShadowOffset + style.padding, linePositionY + yShadowOffset + style.padding
-                    );
-
-                    if (style.stroke && style.strokeThickness)
-                    {
-                        context.strokeStyle = style.dropShadowColor;
-                        this.drawLetterSpacing(
-                            lines[i],
-                            linePositionX + xShadowOffset + style.padding, linePositionY + yShadowOffset + style.padding,
-                            true
-                        );
-                        context.strokeStyle = style.stroke;
-                    }
-                }
-            }
+            context.shadowOffsetX = Math.cos(style.dropShadowAngle) * style.dropShadowDistance;
+            context.shadowOffsetY = Math.sin(style.dropShadowAngle) * style.dropShadowDistance;
         }
-
-        // reset the shadow blur and alpha that was set by the drop shadow, for the regular text
-        context.shadowBlur = 0;
-        context.globalAlpha = 1;
+        else
+        {
+            context.shadowColor = 0;
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
 
         // set canvas text styles
         context.fillStyle = this._generateFillStyle(style, lines);
@@ -284,23 +259,29 @@ export default class Text extends Sprite
             return;
         }
 
-        const characters = String.prototype.split.call(text, '');
         let currentPosition = x;
-        let index = 0;
-        let current = '';
 
-        while (index < text.length)
+        // Using Array.from correctly splits characters whilst keeping emoji together.
+        // This is not supported on IE as it requires ES6, so regular text splitting occurs.
+        // This also doesn't account for emoji that are multiple emoji put together to make something else.
+        // Handling all of this would require a big library itself.
+        // https://medium.com/@giltayar/iterating-over-emoji-characters-the-es6-way-f06e4589516
+        // https://github.com/orling/grapheme-splitter
+        const stringArray = Array.from ? Array.from(text) : text.split('');
+
+        for (let i = 0; i < stringArray.length; ++i)
         {
-            current = characters[index++];
+            const currentChar = stringArray[i];
+
             if (isStroke)
             {
-                this.context.strokeText(current, currentPosition, y);
+                this.context.strokeText(currentChar, currentPosition, y);
             }
             else
             {
-                this.context.fillText(current, currentPosition, y);
+                this.context.fillText(currentChar, currentPosition, y);
             }
-            currentPosition += this.context.measureText(current).width + letterSpacing;
+            currentPosition += this.context.measureText(currentChar).width + letterSpacing;
         }
     }
 
@@ -317,9 +298,12 @@ export default class Text extends Sprite
         {
             const trimmed = trimCanvas(canvas);
 
-            canvas.width = trimmed.width;
-            canvas.height = trimmed.height;
-            this.context.putImageData(trimmed.data, 0, 0);
+            if (trimmed.data)
+            {
+                canvas.width = trimmed.width;
+                canvas.height = trimmed.height;
+                this.context.putImageData(trimmed.data, 0, 0);
+            }
         }
 
         const texture = this._texture;
@@ -327,8 +311,8 @@ export default class Text extends Sprite
         const padding = style.trim ? 0 : style.padding;
         const baseTexture = texture.baseTexture;
 
-        texture.trim.width = texture._frame.width = canvas.width / this.resolution;
-        texture.trim.height = texture._frame.height = canvas.height / this.resolution;
+        texture.trim.width = texture._frame.width = canvas.width / this._resolution;
+        texture.trim.height = texture._frame.height = canvas.height / this._resolution;
         texture.trim.x = -padding;
         texture.trim.y = -padding;
 
@@ -338,7 +322,7 @@ export default class Text extends Sprite
         // call sprite onTextureUpdate to update scale if _width or _height were set
         this._onTextureUpdate();
 
-        baseTexture.setRealSize(canvas.width, canvas.height, this.resolution);
+        baseTexture.setRealSize(canvas.width, canvas.height, this._resolution);
 
         this.dirty = false;
     }
@@ -350,9 +334,9 @@ export default class Text extends Sprite
      */
     render(renderer)
     {
-        if (this.resolution !== renderer.resolution)
+        if (this._autoResolution && this._resolution !== renderer.resolution)
         {
-            this.resolution = renderer.resolution;
+            this._resolution = renderer.resolution;
             this.dirty = true;
         }
 
@@ -369,9 +353,9 @@ export default class Text extends Sprite
      */
     _renderCanvas(renderer)
     {
-        if (this.resolution !== renderer.resolution)
+        if (this._autoResolution && this._resolution !== renderer.resolution)
         {
-            this.resolution = renderer.resolution;
+            this._resolution = renderer.resolution;
             this.dirty = true;
         }
 
@@ -395,6 +379,7 @@ export default class Text extends Sprite
 
     /**
      * calculates the bounds of the Text as a rectangle. The bounds calculation takes the worldTransform into account.
+     * @protected
      */
     _calculateBounds()
     {
@@ -428,12 +413,6 @@ export default class Text extends Sprite
             return style.fill;
         }
 
-        // cocoon on canvas+ cannot generate textures, so use the first colour instead
-        if (navigator.isCocoonJS)
-        {
-            return style.fill[0];
-        }
-
         // the gradient will be evenly spaced out according to how large the array is.
         // ['#FF0000', '#00FF00', '#0000FF'] would created stops at 0.25, 0.5 and 0.75
         let gradient;
@@ -441,8 +420,8 @@ export default class Text extends Sprite
         let currentIteration;
         let stop;
 
-        const width = this.canvas.width / this.resolution;
-        const height = this.canvas.height / this.resolution;
+        const width = this.canvas.width / this._resolution;
+        const height = this.canvas.height / this._resolution;
 
         // make a copy of the style settings, so we can manipulate them later
         const fill = style.fill.slice();
@@ -636,13 +615,37 @@ export default class Text extends Sprite
 
     set text(text) // eslint-disable-line require-jsdoc
     {
-        text = String(text === '' || text === null || text === undefined ? ' ' : text);
+        text = String(text === null || text === undefined ? '' : text);
 
         if (this._text === text)
         {
             return;
         }
         this._text = text;
+        this.dirty = true;
+    }
+
+    /**
+     * The resolution / device pixel ratio of the canvas.
+     * This is set to automatically match the renderer resolution by default, but can be overridden by setting manually.
+     * @member {number}
+     * @default 1
+     */
+    get resolution()
+    {
+        return this._resolution;
+    }
+
+    set resolution(value) // eslint-disable-line require-jsdoc
+    {
+        this._autoResolution = false;
+
+        if (this._resolution === value)
+        {
+            return;
+        }
+
+        this._resolution = value;
         this.dirty = true;
     }
 }

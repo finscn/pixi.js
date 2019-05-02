@@ -1,43 +1,53 @@
+let supported;
+
 /**
- * Helper for checking for webgl support
+ * Helper for checking for WebGL support.
  *
  * @memberof PIXI.utils
  * @function isWebGLSupported
- * @return {boolean} is webgl supported
+ * @return {boolean} Is WebGL supported.
  */
 export function isWebGLSupported()
 {
-    const contextOptions = { stencil: true, failIfMajorPerformanceCaveat: true };
-
-    try
+    if (typeof supported === 'undefined')
     {
-        if (!window.WebGLRenderingContext)
+        supported = (function supported()
         {
-            return false;
-        }
+            const contextOptions = { stencil: true, failIfMajorPerformanceCaveat: true };
 
-        const canvas = document.createElement('canvas');
-        let gl = canvas.getContext('webgl', contextOptions) || canvas.getContext('experimental-webgl', contextOptions);
-
-        const success = !!(gl && gl.getContextAttributes().stencil);
-
-        if (gl)
-        {
-            const loseContext = gl.getExtension('WEBGL_lose_context');
-
-            if (loseContext)
+            try
             {
-                loseContext.loseContext();
+                if (!window.WebGLRenderingContext)
+                {
+                    return false;
+                }
+
+                const canvas = document.createElement('canvas');
+                let gl = canvas.getContext('webgl', contextOptions)
+                    || canvas.getContext('experimental-webgl', contextOptions);
+
+                const success = !!(gl && gl.getContextAttributes().stencil);
+
+                if (gl)
+                {
+                    const loseContext = gl.getExtension('WEBGL_lose_context');
+
+                    if (loseContext)
+                    {
+                        loseContext.loseContext();
+                    }
+                }
+
+                gl = null;
+
+                return success;
             }
-        }
-
-        gl = null;
-
-        return success;
+            catch (e)
+            {
+                return false;
+            }
+        })();
     }
-    catch (e)
-    {
-        return false;
-    }
+
+    return supported;
 }
-

@@ -6,9 +6,10 @@ import { RENDERER_TYPE, SCALE_MODES, BLEND_MODES } from '@pixi/constants';
 import { settings } from '@pixi/settings';
 
 /**
- * The CanvasRenderer draws the scene and all its content onto a 2d canvas. This renderer should
- * be used for browsers that do not support WebGL. Don't forget to add the CanvasRenderer.view to
- * your DOM or you will not see anything :)
+ * The CanvasRenderer draws the scene and all its content onto a 2d canvas.
+ *
+ * This renderer should be used for browsers that do not support WebGL.
+ * Don't forget to add the CanvasRenderer.view to your DOM or you will not see anything!
  *
  * @class
  * @memberof PIXI
@@ -16,7 +17,6 @@ import { settings } from '@pixi/settings';
  */
 export default class CanvasRenderer extends AbstractRenderer
 {
-    // eslint-disable-next-line valid-jsdoc
     /**
      * @param {object} [options] - The optional renderer parameters
      * @param {number} [options.width=800] - the width of the screen
@@ -25,7 +25,7 @@ export default class CanvasRenderer extends AbstractRenderer
      * @param {boolean} [options.transparent=false] - If the render view is transparent, default false
      * @param {boolean} [options.autoDensity=false] - Resizes renderer view in CSS pixels to allow for
      *   resolutions other than 1
-     * @param {boolean} [options.antialias=false] - sets antialias (only applicable in chrome at the moment)
+     * @param {boolean} [options.antialias=false] - sets antialias
      * @param {number} [options.resolution=1] - The resolution / device pixel ratio of the renderer. The
      *  resolution of the renderer retina would be 2.
      * @param {boolean} [options.preserveDrawingBuffer=false] - enables drawing buffer preservation,
@@ -34,8 +34,6 @@ export default class CanvasRenderer extends AbstractRenderer
      *      not before the new render pass.
      * @param {number} [options.backgroundColor=0x000000] - The background color of the rendered area
      *  (shown if not transparent).
-     * @param {boolean} [options.roundPixels=false] - If true PixiJS will Math.floor() x/y values when rendering,
-     *  stopping pixel interpolation.
      */
     constructor(options, arg2, arg3)
     {
@@ -100,14 +98,18 @@ export default class CanvasRenderer extends AbstractRenderer
 
         this.initPlugins(CanvasRenderer.__plugins);
 
+        /**
+         * Tracks the blend modes useful for this renderer.
+         *
+         * @member {object<number, string>}
+         */
         this.blendModes = mapCanvasBlendModesToPixi();
         this._activeBlendMode = null;
+        this._outerBlend = false;
 
         this.renderingToScreen = false;
 
         sayHello('Canvas');
-
-        this.resize(this.options.width, this.options.height);
 
         /**
          * Fired after rendering finishes.
@@ -120,6 +122,8 @@ export default class CanvasRenderer extends AbstractRenderer
          *
          * @event PIXI.CanvasRenderer#prerender
          */
+
+        this.resize(this.options.width, this.options.height);
     }
 
     /**
@@ -129,7 +133,7 @@ export default class CanvasRenderer extends AbstractRenderer
      * @param {PIXI.RenderTexture} [renderTexture] - A render texture to be rendered to.
      *  If unset, it will render to the root context.
      * @param {boolean} [clear=false] - Whether to clear the canvas before drawing
-     * @param {PIXI.Transform} [transform] - A transformation to be applied
+     * @param {PIXI.Matrix} [transform] - A transformation to be applied
      * @param {boolean} [skipUpdateTransform=false] - Whether to skip the update transform
      */
     render(displayObject, renderTexture, clear, transform, skipUpdateTransform)
@@ -205,13 +209,8 @@ export default class CanvasRenderer extends AbstractRenderer
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.globalAlpha = 1;
         this._activeBlendMode = BLEND_MODES.NORMAL;
+        this._outerBlend = false;
         context.globalCompositeOperation = this.blendModes[BLEND_MODES.NORMAL];
-
-        if (navigator.isCocoonJS && this.view.screencanvas)
-        {
-            context.fillStyle = 'black';
-            context.clear();
-        }
 
         if (clear !== undefined ? clear : this.clearBeforeRender)
         {
@@ -271,15 +270,28 @@ export default class CanvasRenderer extends AbstractRenderer
      * Sets the blend mode of the renderer.
      *
      * @param {number} blendMode - See {@link PIXI.BLEND_MODES} for valid values.
+     * @param {boolean} [readyForOuterBlend=false] - Some blendModes are dangerous, they affect outer space of sprite.
+     * Pass `true` only if you are ready to use them.
      */
-    setBlendMode(blendMode)
+    setBlendMode(blendMode, readyForOuterBlend)
     {
+        const outerBlend = blendMode === BLEND_MODES.SRC_IN
+            || blendMode === BLEND_MODES.SRC_OUT
+            || blendMode === BLEND_MODES.DST_IN
+            || blendMode === BLEND_MODES.DST_ATOP;
+
+        if (!readyForOuterBlend && outerBlend)
+        {
+            blendMode = BLEND_MODES.NORMAL;
+        }
+
         if (this._activeBlendMode === blendMode)
         {
             return;
         }
 
         this._activeBlendMode = blendMode;
+        this._outerBlend = outerBlend;
         this.context.globalCompositeOperation = this.blendModes[blendMode];
     }
 

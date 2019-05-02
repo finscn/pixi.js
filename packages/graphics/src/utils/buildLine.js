@@ -1,5 +1,4 @@
-import { Point } from '@pixi/math';
-import { hex2rgb } from '@pixi/utils';
+import { Point, SHAPES } from '@pixi/math';
 
 /**
  * Builds a line to draw
@@ -8,19 +7,18 @@ import { hex2rgb } from '@pixi/utils';
  *
  * @ignore
  * @private
- * @param {PIXI.WebGLGraphicsData} graphicsData - The graphics object containing all the necessary properties
- * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
- * @param {object} webGLDataNativeLines - an object containing all the webGL-specific information to create nativeLines
+ * @param {PIXI.GraphicsData} graphicsData - The graphics object containing all the necessary properties
+ * @param {PIXI.GraphicsGeometry} graphicsGeometry - Geometry where to append output
  */
-export default function (graphicsData, webGLData, webGLDataNativeLines)
+export default function (graphicsData, graphicsGeometry)
 {
-    if (graphicsData.nativeLines)
+    if (graphicsData.lineStyle.native)
     {
-        buildNativeLine(graphicsData, webGLDataNativeLines);
+        buildNativeLine(graphicsData, graphicsGeometry);
     }
     else
     {
-        buildLine(graphicsData, webGLData);
+        buildLine(graphicsData, graphicsGeometry);
     }
 }
 
@@ -31,13 +29,13 @@ export default function (graphicsData, webGLData, webGLDataNativeLines)
  *
  * @ignore
  * @private
- * @param {PIXI.WebGLGraphicsData} graphicsData - The graphics object containing all the necessary properties
- * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
+ * @param {PIXI.GraphicsData} graphicsData - The graphics object containing all the necessary properties
+ * @param {PIXI.GraphicsGeometry} graphicsGeometry - Geometry where to append output
  */
-function buildLine(graphicsData, webGLData)
+function buildLine(graphicsData, graphicsGeometry)
 {
-    // TODO OPTIMISE!
-    let points = graphicsData.points;
+    const shape = graphicsData.shape;
+    let points = graphicsData.points || shape.points.slice();
 
     if (points.length === 0)
     {
@@ -53,20 +51,26 @@ function buildLine(graphicsData, webGLData)
     //     }
     // }
 
+    const style = graphicsData.lineStyle;
+
     // get first and last point.. figure out the middle!
     const firstPoint = new Point(points[0], points[1]);
-    let lastPoint = new Point(points[points.length - 2], points[points.length - 1]);
+    const lastPoint = new Point(points[points.length - 2], points[points.length - 1]);
+    const closedShape = shape.type !== SHAPES.POLY || shape.closeStroke;
+    const closedPath = firstPoint.x === lastPoint.x && firstPoint.y === lastPoint.y;
 
     // if the first point is the last point - gonna have issues :)
-    if (firstPoint.x === lastPoint.x && firstPoint.y === lastPoint.y)
+    if (closedShape)
     {
         // need to clone as we are going to slightly modify the shape..
         points = points.slice();
 
-        points.pop();
-        points.pop();
-
-        lastPoint = new Point(points[points.length - 2], points[points.length - 1]);
+        if (closedPath)
+        {
+            points.pop();
+            points.pop();
+            lastPoint.set(points[points.length - 2], points[points.length - 1]);
+        }
 
         const midPointX = lastPoint.x + ((firstPoint.x - lastPoint.x) * 0.5);
         const midPointY = lastPoint.y + ((firstPoint.y - lastPoint.y) * 0.5);
@@ -75,22 +79,15 @@ function buildLine(graphicsData, webGLData)
         points.push(midPointX, midPointY);
     }
 
-    const verts = webGLData.points;
-    const indices = webGLData.indices;
+    const verts = graphicsGeometry.points;
     const length = points.length / 2;
     let indexCount = points.length;
-    let indexStart = verts.length / 6;
+    let indexStart = verts.length / 2;
 
     // DRAW the Line
-    const width = graphicsData.lineWidth / 2;
+    const width = style.width / 2;
 
     // sort color
-    const color = hex2rgb(graphicsData.lineColor);
-    const alpha = graphicsData.lineAlpha;
-    const r = color[0] * alpha;
-    const g = color[1] * alpha;
-    const b = color[2] * alpha;
-
     let p1x = points[0];
     let p1y = points[1];
     let p2x = points[2];
@@ -112,22 +109,18 @@ function buildLine(graphicsData, webGLData)
     perpx *= width;
     perpy *= width;
 
-    const ratio = graphicsData.lineAlignment;// 0.5;
+    const ratio = style.alignment;// 0.5;
     const r1 = (1 - ratio) * 2;
     const r2 = ratio * 2;
 
     // start
     verts.push(
         p1x - (perpx * r1),
-        p1y - (perpy * r1),
-        r, g, b, alpha
-    );
+        p1y - (perpy * r1));
 
     verts.push(
         p1x + (perpx * r2),
-        p1y + (perpy * r2),
-        r, g, b, alpha
-    );
+        p1y + (perpy * r2));
 
     for (let i = 1; i < length - 1; ++i)
     {
@@ -172,15 +165,11 @@ function buildLine(graphicsData, webGLData)
             denom += 10.1;
             verts.push(
                 p2x - (perpx * r1),
-                p2y - (perpy * r1),
-                r, g, b, alpha
-            );
+                p2y - (perpy * r1));
 
             verts.push(
                 p2x + (perpx * r2),
-                p2y + (perpy * r2),
-                r, g, b, alpha
-            );
+                p2y + (perpy * r2));
 
             continue;
         }
@@ -201,23 +190,18 @@ function buildLine(graphicsData, webGLData)
             perp3y *= width;
 
             verts.push(p2x - (perp3x * r1), p2y - (perp3y * r1));
-            verts.push(r, g, b, alpha);
 
             verts.push(p2x + (perp3x * r2), p2y + (perp3y * r2));
-            verts.push(r, g, b, alpha);
 
             verts.push(p2x - (perp3x * r2 * r1), p2y - (perp3y * r1));
-            verts.push(r, g, b, alpha);
 
             indexCount++;
         }
         else
         {
             verts.push(p2x + ((px - p2x) * r1), p2y + ((py - p2y) * r1));
-            verts.push(r, g, b, alpha);
 
             verts.push(p2x - ((px - p2x) * r2), p2y - ((py - p2y) * r2));
-            verts.push(r, g, b, alpha);
         }
     }
 
@@ -237,19 +221,19 @@ function buildLine(graphicsData, webGLData)
     perpy *= width;
 
     verts.push(p2x - (perpx * r1), p2y - (perpy * r1));
-    verts.push(r, g, b, alpha);
 
     verts.push(p2x + (perpx * r2), p2y + (perpy * r2));
-    verts.push(r, g, b, alpha);
 
-    indices.push(indexStart);
+    const indices = graphicsGeometry.indices;
 
-    for (let i = 0; i < indexCount; ++i)
+    // indices.push(indexStart);
+
+    for (let i = 0; i < indexCount - 2; ++i)
     {
-        indices.push(indexStart++);
-    }
+        indices.push(indexStart, indexStart + 1, indexStart + 2);
 
-    indices.push(indexStart - 1);
+        indexStart++;
+    }
 }
 
 /**
@@ -259,25 +243,23 @@ function buildLine(graphicsData, webGLData)
  *
  * @ignore
  * @private
- * @param {PIXI.WebGLGraphicsData} graphicsData - The graphics object containing all the necessary properties
- * @param {object} webGLData - an object containing all the webGL-specific information to create this shape
+ * @param {PIXI.GraphicsData} graphicsData - The graphics object containing all the necessary properties
+ * @param {PIXI.GraphicsGeometry} graphicsGeometry - Geometry where to append output
  */
-function buildNativeLine(graphicsData, webGLData)
+function buildNativeLine(graphicsData, graphicsGeometry)
 {
     let i = 0;
-    const points = graphicsData.points;
+
+    const points = graphicsData.points || graphicsData.shape.points;
 
     if (points.length === 0) return;
 
-    const verts = webGLData.points;
+    const verts = graphicsGeometry.points;
+    const indices = graphicsGeometry.indices;
     const length = points.length / 2;
 
+    let indexStart = verts.length / 2;
     // sort color
-    const color = hex2rgb(graphicsData.lineColor);
-    const alpha = graphicsData.lineAlpha;
-    const r = color[0] * alpha;
-    const g = color[1] * alpha;
-    const b = color[2] * alpha;
 
     for (i = 1; i < length; i++)
     {
@@ -288,9 +270,9 @@ function buildNativeLine(graphicsData, webGLData)
         const p2y = points[(i * 2) + 1];
 
         verts.push(p1x, p1y);
-        verts.push(r, g, b, alpha);
 
         verts.push(p2x, p2y);
-        verts.push(r, g, b, alpha);
+
+        indices.push(indexStart++, indexStart++);
     }
 }

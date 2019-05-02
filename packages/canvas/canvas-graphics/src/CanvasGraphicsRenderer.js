@@ -16,7 +16,7 @@ import { SHAPES } from '@pixi/math';
  * Renderer dedicated to drawing and batching graphics objects.
  *
  * @class
- * @private
+ * @protected
  * @memberof PIXI
  */
 export default class CanvasGraphicsRenderer
@@ -42,12 +42,6 @@ export default class CanvasGraphicsRenderer
         const transform = graphics.transform.worldTransform;
         const resolution = renderer.resolution;
 
-        // if the tint has changed, set the graphics object to dirty.
-        if (this._prevTint !== this.tint)
-        {
-            this.dirty = true;
-        }
-
         context.setTransform(
             transform.a * resolution,
             transform.b * resolution,
@@ -57,59 +51,120 @@ export default class CanvasGraphicsRenderer
             transform.ty * resolution
         );
 
-        if (graphics.dirty)
+        // update tint if graphics was dirty
+        if (graphics.canvasTintDirty !== graphics.dirty
+            || graphics._prevTint !== graphics.tint)
         {
-            this.updateGraphicsTint(graphics);
-            graphics.dirty = false;
+        //    this.updateGraphicsTint(graphics);
         }
 
         renderer.setBlendMode(graphics.blendMode);
 
-        for (let i = 0; i < graphics.graphicsData.length; i++)
+        const graphicsData = graphics.geometry.graphicsData;
+
+        for (let i = 0; i < graphicsData.length; i++)
         {
-            const data = graphics.graphicsData[i];
+            const data = graphicsData[i];
             const shape = data.shape;
+            const fillStyle = data.fillStyle;
+            const lineStyle = data.lineStyle;
 
-            const fillColor = data._fillTint;
-            const lineColor = data._lineTint;
+            const fillColor = fillStyle.color;// data._fillTint;
+            const lineColor = lineStyle.color;// data._lineTint;
 
-            context.lineWidth = data.lineWidth;
+            context.lineWidth = lineStyle.width;
 
             if (data.type === SHAPES.POLY)
             {
                 context.beginPath();
 
-                this.renderPolygon(shape.points, shape.closed, context);
+                let points = shape.points;
+                const holes = data.holes;
+                let outerArea;
+                let innerArea;
 
-                for (let j = 0; j < data.holes.length; j++)
+                context.moveTo(points[0], points[1]);
+
+                for (let j = 2; j < points.length; j += 2)
                 {
-                    this.renderPolygon(data.holes[j].points, true, context);
+                    context.lineTo(points[j], points[j + 1]);
                 }
 
-                if (data.fill)
+                if (shape.closeStroke)
                 {
-                    context.globalAlpha = data.fillAlpha * worldAlpha;
+                    context.closePath();
+                }
+
+                if (holes.length > 0)
+                {
+                    outerArea = 0;
+                    for (let j = 0; j < points.length; j += 2)
+                    {
+                        outerArea += (points[j] * points[j + 3]) - (points[j + 1] * points[j + 2]);
+                    }
+
+                    for (let k = 0; k < holes.length; k++)
+                    {
+                        points = holes[k].points;
+
+                        innerArea = 0;
+                        for (let j = 0; j < points.length; j += 2)
+                        {
+                            innerArea += (points[j] * points[j + 3]) - (points[j + 1] * points[j + 2]);
+                        }
+
+                        if (innerArea * outerArea < 0)
+                        {
+                            context.moveTo(points[0], points[1]);
+
+                            for (let j = 2; j < points.length; j += 2)
+                            {
+                                context.lineTo(points[j], points[j + 1]);
+                            }
+                        }
+                        else
+                        {
+                            context.moveTo(points[points.length - 2], points[points.length - 1]);
+
+                            for (let j = points.length - 4; j >= 0; j -= 2)
+                            {
+                                context.lineTo(points[j], points[j + 1]);
+                            }
+                        }
+
+                        if (holes[k].shape.closeStroke)
+                        {
+                            context.closePath();
+                        }
+                    }
+                }
+
+                if (fillStyle.visible)
+                {
+                    context.globalAlpha = fillStyle.alpha * worldAlpha;
+
                     context.fillStyle = `#${(`00000${(fillColor | 0).toString(16)}`).substr(-6)}`;
                     context.fill();
                 }
-                if (data.lineWidth)
+
+                if (lineStyle.visible)
                 {
-                    context.globalAlpha = data.lineAlpha * worldAlpha;
+                    context.globalAlpha = lineStyle.alpha * worldAlpha;
                     context.strokeStyle = `#${(`00000${(lineColor | 0).toString(16)}`).substr(-6)}`;
                     context.stroke();
                 }
             }
             else if (data.type === SHAPES.RECT)
             {
-                if (data.fillColor || data.fillColor === 0)
+                if (fillStyle.visible)
                 {
-                    context.globalAlpha = data.fillAlpha * worldAlpha;
+                    context.globalAlpha = fillStyle.alpha * worldAlpha;
                     context.fillStyle = `#${(`00000${(fillColor | 0).toString(16)}`).substr(-6)}`;
                     context.fillRect(shape.x, shape.y, shape.width, shape.height);
                 }
-                if (data.lineWidth)
+                if (lineStyle.visible)
                 {
-                    context.globalAlpha = data.lineAlpha * worldAlpha;
+                    context.globalAlpha = lineStyle.alpha * worldAlpha;
                     context.strokeStyle = `#${(`00000${(lineColor | 0).toString(16)}`).substr(-6)}`;
                     context.strokeRect(shape.x, shape.y, shape.width, shape.height);
                 }
@@ -121,15 +176,16 @@ export default class CanvasGraphicsRenderer
                 context.arc(shape.x, shape.y, shape.radius, 0, 2 * Math.PI);
                 context.closePath();
 
-                if (data.fill)
+                if (fillStyle.visible)
                 {
-                    context.globalAlpha = data.fillAlpha * worldAlpha;
+                    context.globalAlpha = fillStyle.alpha * worldAlpha;
                     context.fillStyle = `#${(`00000${(fillColor | 0).toString(16)}`).substr(-6)}`;
                     context.fill();
                 }
-                if (data.lineWidth)
+
+                if (lineStyle.visible)
                 {
-                    context.globalAlpha = data.lineAlpha * worldAlpha;
+                    context.globalAlpha = lineStyle.alpha * worldAlpha;
                     context.strokeStyle = `#${(`00000${(lineColor | 0).toString(16)}`).substr(-6)}`;
                     context.stroke();
                 }
@@ -162,15 +218,15 @@ export default class CanvasGraphicsRenderer
 
                 context.closePath();
 
-                if (data.fill)
+                if (fillStyle.visible)
                 {
-                    context.globalAlpha = data.fillAlpha * worldAlpha;
+                    context.globalAlpha = fillStyle.alpha * worldAlpha;
                     context.fillStyle = `#${(`00000${(fillColor | 0).toString(16)}`).substr(-6)}`;
                     context.fill();
                 }
-                if (data.lineWidth)
+                if (lineStyle.visible)
                 {
-                    context.globalAlpha = data.lineAlpha * worldAlpha;
+                    context.globalAlpha = lineStyle.alpha * worldAlpha;
                     context.strokeStyle = `#${(`00000${(lineColor | 0).toString(16)}`).substr(-6)}`;
                     context.stroke();
                 }
@@ -199,16 +255,15 @@ export default class CanvasGraphicsRenderer
                 context.quadraticCurveTo(rx, ry, rx, ry + radius);
                 context.closePath();
 
-                if (data.fillColor || data.fillColor === 0)
+                if (fillStyle.visible)
                 {
-                    context.globalAlpha = data.fillAlpha * worldAlpha;
+                    context.globalAlpha = fillStyle.alpha * worldAlpha;
                     context.fillStyle = `#${(`00000${(fillColor | 0).toString(16)}`).substr(-6)}`;
                     context.fill();
                 }
-
-                if (data.lineWidth)
+                if (lineStyle.visible)
                 {
-                    context.globalAlpha = data.lineAlpha * worldAlpha;
+                    context.globalAlpha = lineStyle.alpha * worldAlpha;
                     context.strokeStyle = `#${(`00000${(lineColor | 0).toString(16)}`).substr(-6)}`;
                     context.stroke();
                 }
@@ -219,12 +274,13 @@ export default class CanvasGraphicsRenderer
     /**
      * Updates the tint of a graphics object
      *
-     * @private
+     * @protected
      * @param {PIXI.Graphics} graphics - the graphics that will have its tint updated
      */
     updateGraphicsTint(graphics)
     {
         graphics._prevTint = graphics.tint;
+        graphics.canvasTintDirty = graphics.dirty;
 
         const tintR = ((graphics.tint >> 16) & 0xFF) / 255;
         const tintG = ((graphics.tint >> 8) & 0xFF) / 255;
@@ -237,7 +293,7 @@ export default class CanvasGraphicsRenderer
             const fillColor = data.fillColor | 0;
             const lineColor = data.lineColor | 0;
 
-            // super inline cos im an optimization NAZI :)
+            // super inline, cos optimization :)
             data._fillTint = (
                 (((fillColor >> 16) & 0xFF) / 255 * tintR * 255 << 16)
                 + (((fillColor >> 8) & 0xFF) / 255 * tintG * 255 << 8)
@@ -249,28 +305,6 @@ export default class CanvasGraphicsRenderer
                 + (((lineColor >> 8) & 0xFF) / 255 * tintG * 255 << 8)
                 + (((lineColor & 0xFF) / 255) * tintB * 255)
             );
-        }
-    }
-
-    /**
-     * Renders a polygon.
-     *
-     * @param {PIXI.Point[]} points - The points to render
-     * @param {boolean} close - Should the polygon be closed
-     * @param {CanvasRenderingContext2D} context - The rendering context to use
-     */
-    renderPolygon(points, close, context)
-    {
-        context.moveTo(points[0], points[1]);
-
-        for (let j = 1; j < points.length / 2; ++j)
-        {
-            context.lineTo(points[j * 2], points[(j * 2) + 1]);
-        }
-
-        if (close)
-        {
-            context.closePath();
         }
     }
 

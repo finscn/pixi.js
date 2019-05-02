@@ -41,7 +41,7 @@ export default class ImageResource extends BaseImageResource
 
         /**
          * When process is completed
-         * @member {Promise}
+         * @member {Promise<void>}
          * @private
          */
         this._process = null;
@@ -77,7 +77,7 @@ export default class ImageResource extends BaseImageResource
 
         /**
          * Promise when loading
-         * @member {Promise}
+         * @member {Promise<void>}
          * @private
          * @default null
          */
@@ -93,7 +93,7 @@ export default class ImageResource extends BaseImageResource
      * returns a promise when image will be loaded and processed
      *
      * @param {boolean} [createBitmap=true] whether process image into bitmap
-     * @returns {Promise}
+     * @returns {Promise<void>}
      */
     load(createBitmap)
     {
@@ -151,7 +151,7 @@ export default class ImageResource extends BaseImageResource
      * Called when we need to convert image into BitmapImage.
      * Can be called multiple times, real promise is cached inside.
      *
-     * @returns {Promise} cached promise to fill that bitmap
+     * @returns {Promise<void>} cached promise to fill that bitmap
      */
     process()
     {
@@ -190,27 +190,47 @@ export default class ImageResource extends BaseImageResource
      *
      * @param {PIXI.Renderer} renderer - Renderer to upload to
      * @param {PIXI.BaseTexture} baseTexture - BaseTexture for this resource
-     * @param {PIXI.glCore.Texture} glTexture - GLTexture to use
+     * @param {PIXI.GLTexture} glTexture - GLTexture to use
+     * @returns {boolean} true is success
      */
     upload(renderer, baseTexture, glTexture)
     {
         baseTexture.premultiplyAlpha = this.premultiplyAlpha;
 
-        if (this.createBitmap)
+        if (!this.createBitmap)
         {
+            return super.upload(renderer, baseTexture, glTexture);
+        }
+        if (!this.bitmap)
+        {
+            // yeah, ignore the output
+            this.process();
             if (!this.bitmap)
             {
-                // yeah, ignore the output
-                this.process();
-                if (!this.bitmap)
+                return false;
+            }
+        }
+
+        super.upload(renderer, baseTexture, glTexture, this.bitmap);
+
+        if (!this.preserveBitmap)
+        {
+            // checks if there are other renderers that possibly need this bitmap
+
+            let flag = true;
+
+            for (const key in baseTexture._glTextures)
+            {
+                const otherTex = baseTexture._glTextures[key];
+
+                if (otherTex !== glTexture && otherTex.dirtyId !== baseTexture.dirtyId)
                 {
-                    return false;
+                    flag = false;
+                    break;
                 }
             }
 
-            super.upload(renderer, baseTexture, glTexture, this.bitmap);
-
-            if (!this.preserveBitmap)
+            if (flag)
             {
                 if (this.bitmap.close)
                 {
@@ -219,10 +239,6 @@ export default class ImageResource extends BaseImageResource
 
                 this.bitmap = null;
             }
-        }
-        else
-        {
-            super.upload(renderer, baseTexture, glTexture);
         }
 
         return true;

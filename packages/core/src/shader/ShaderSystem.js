@@ -1,13 +1,14 @@
 import System from '../System';
 import GLProgram from './GLProgram';
 import { generateUniformsSync,
+    unsafeEvalSupported,
     defaultValue,
     compileProgram } from './utils';
 
 let UID = 0;
 
 /**
- * Helper class to create a webGL Texture
+ * System plugin to the renderer to manage shaders.
  *
  * @class
  * @memberof PIXI.systems
@@ -16,11 +17,14 @@ let UID = 0;
 export default class ShaderSystem extends System
 {
     /**
-     * @param {PIXI.Renderer} renderer - A reference to the current renderer
+     * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
     constructor(renderer)
     {
         super(renderer);
+
+        // Validation check that this environment support `new Function`
+        this.systemCheck();
 
         /**
          * The current WebGL rendering context
@@ -42,6 +46,21 @@ export default class ShaderSystem extends System
         this.id = UID++;
     }
 
+    /**
+     * Overrideable function by `@pixi/unsafe-eval` to silence
+     * throwing an error if platform doesn't support unsafe-evals.
+     *
+     * @private
+     */
+    systemCheck()
+    {
+        if (!unsafeEvalSupported())
+        {
+            throw new Error('Current environment does not allow unsafe-eval, '
+                + 'please use @pixi/unsafe-eval module to enable support.');
+        }
+    }
+
     contextChange(gl)
     {
         this.gl = gl;
@@ -52,7 +71,7 @@ export default class ShaderSystem extends System
      *
      * @param {PIXI.Shader} shader - the new shader
      * @param {boolean} dontSync - false if the shader should automatically sync its uniforms.
-     * @returns {PIXI.glCore.glProgram} the glProgram that belongs to the shader.
+     * @returns {PIXI.GLProgram} the glProgram that belongs to the shader.
      */
     bind(shader, dontSync)
     {
@@ -63,7 +82,7 @@ export default class ShaderSystem extends System
 
         this.shader = shader;
 
-        // TODO - some current pixi plugins bypass this.. so it not safe to use yet..
+        // TODO - some current Pixi plugins bypass this.. so it not safe to use yet..
         if (this.program !== program)
         {
             this.program = program;
@@ -98,10 +117,22 @@ export default class ShaderSystem extends System
         if (!group.static || group.dirtyId !== glProgram.uniformGroups[group.id])
         {
             glProgram.uniformGroups[group.id] = group.dirtyId;
-            const syncFunc = group.syncUniforms[this.shader.program.id] || this.createSyncGroups(group);
 
-            syncFunc(glProgram.uniformData, group.uniforms, this.renderer);
+            this.syncUniforms(group, glProgram);
         }
+    }
+
+    /**
+     * Overrideable by the @pixi/unsafe-eval package to use static
+     * syncUnforms instead.
+     *
+     * @private
+     */
+    syncUniforms(group, glProgram)
+    {
+        const syncFunc = group.syncUniforms[this.shader.program.id] || this.createSyncGroups(group);
+
+        syncFunc(glProgram.uniformData, group.uniforms, this.renderer);
     }
 
     createSyncGroups(group)
@@ -130,28 +161,26 @@ export default class ShaderSystem extends System
     {
         const uniforms = group.uniforms;
 
-        let sig = '';
+        const strings = [];
 
         for (const i in uniforms)
         {
+            strings.push(i);
+
             if (uniformData[i])
             {
-                sig += i + uniformData[i].type;
-            }
-            else
-            {
-                sig += i;
+                strings.push(uniformData[i].type);
             }
         }
 
-        return sig;
+        return strings.join('-');
     }
 
     /**
      * Returns the underlying GLShade rof the currently bound shader.
      * This can be handy for when you to have a little more control over the setting of your uniforms.
      *
-     * @return {PIXI.glCore.Shader} the glProgram for the currently bound Shader for this context
+     * @return {PIXI.GLProgram} the glProgram for the currently bound Shader for this context
      */
     getglProgram()
     {
@@ -168,7 +197,7 @@ export default class ShaderSystem extends System
      *
      * @private
      * @param {PIXI.Shader} shader the shader that the glProgram will be based on.
-     * @return {PIXI.glCore.glProgram} A shiny new glProgram!
+     * @return {PIXI.GLProgram} A shiny new glProgram!
      */
     generateShader(shader)
     {
@@ -201,6 +230,15 @@ export default class ShaderSystem extends System
         program.glPrograms[this.renderer.CONTEXT_UID] = glProgram;
 
         return glProgram;
+    }
+
+    /**
+     * Resets ShaderSystem state, does not affect WebGL state
+     */
+    reset()
+    {
+        this.program = null;
+        this.shader = null;
     }
 
     /**

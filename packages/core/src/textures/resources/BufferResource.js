@@ -1,6 +1,10 @@
 import Resource from './Resource';
 
 /**
+ * @interface SharedArrayBuffer
+ */
+
+/**
  * Buffer resource with data of typed array.
  * @class
  * @extends PIXI.resources.Resource
@@ -38,6 +42,8 @@ export default class BufferResource extends Resource
      * Upload the texture to the GPU.
      * @param {PIXI.Renderer} renderer Upload to the renderer
      * @param {PIXI.BaseTexture} baseTexture Reference to parent texture
+     * @param {PIXI.GLTexture} glTexture glTexture
+     * @returns {boolean} true is success
      */
     upload(renderer, baseTexture, glTexture)
     {
@@ -64,10 +70,21 @@ export default class BufferResource extends Resource
             glTexture.width = baseTexture.width;
             glTexture.height = baseTexture.height;
 
+            let internalFormat = baseTexture.format;
+
+            // guess sized format by type and format
+            // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/texImage2D
+            if (renderer.context.webGLVersion === 2
+                && baseTexture.type === renderer.gl.FLOAT
+                && baseTexture.format === renderer.gl.RGBA)
+            {
+                internalFormat = renderer.gl.RGBA32F;
+            }
+
             gl.texImage2D(
                 baseTexture.target,
                 0,
-                baseTexture.format,
+                internalFormat,
                 baseTexture.width,
                 baseTexture.height,
                 0,

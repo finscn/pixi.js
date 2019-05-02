@@ -4,8 +4,8 @@ const tempMat = new Matrix();
 
 /**
  * Class controls uv mapping from Texture normal space to BaseTexture normal space.
- * Takes `trim` and `rotate` into account.
- * May contain clamp settings for Meshes and TilingSprite.
+ *
+ * Takes `trim` and `rotate` into account. May contain clamp settings for Meshes and TilingSprite.
  *
  * Can be used in Texture `uvMatrix` field, or separately, you can use different clamp settings on the same texture.
  * If you want to add support for texture region of certain feature or filter, that's what you're looking for.
@@ -38,10 +38,11 @@ export default class TextureMatrix
         this.uClampOffset = new Float32Array(2);
 
         /**
-         * @member {number} Tracks Texture frame changes
-         * @private
+         * Tracks Texture frame changes
+         * @member {number}
+         * @protected
          */
-        this._lastTextureID = -1;
+        this._updateID = -1;
 
         /**
          * Changes frame clamping
@@ -62,6 +63,14 @@ export default class TextureMatrix
          * @member {number}
          */
         this.clampMargin = (typeof clampMargin === 'undefined') ? 0.5 : clampMargin;
+
+        /**
+         * If texture size is the same as baseTexture
+         * @member {boolean}
+         * @default false
+         * @readonly
+         */
+        this.isSimple = false;
     }
 
     /**
@@ -76,7 +85,7 @@ export default class TextureMatrix
     set texture(value) // eslint-disable-line require-jsdoc
     {
         this._texture = value;
-        this._lastTextureID = -1;
+        this._updateID = -1;
     }
 
     /**
@@ -108,7 +117,7 @@ export default class TextureMatrix
 
     /**
      * updates matrices if texture was changed
-     * @param {boolean} forceUpdate if true, matrices will be updated any case
+     * @param {boolean} [forceUpdate=false] if true, matrices will be updated any case
      * @returns {boolean} whether or not it was updated
      */
     update(forceUpdate)
@@ -121,12 +130,12 @@ export default class TextureMatrix
         }
 
         if (!forceUpdate
-            && this._lastTextureID === tex._updateID)
+            && this._updateID === tex._updateID)
         {
             return false;
         }
 
-        this._lastTextureID = tex._updateID;
+        this._updateID = tex._updateID;
 
         const uvs = tex._uvs;
 
@@ -153,6 +162,10 @@ export default class TextureMatrix
         frame[3] = (tex._frame.y + tex._frame.height - margin + offset) / texBase.height;
         this.uClampOffset[0] = offset / texBase.realWidth;
         this.uClampOffset[1] = offset / texBase.realHeight;
+
+        this.isSimple = tex._frame.width === texBase.width
+            && tex._frame.height === texBase.height
+            && tex.rotate === 0;
 
         return true;
     }

@@ -1,5 +1,5 @@
 import AbstractRenderer from './AbstractRenderer';
-import { sayHello } from '@pixi/utils';
+import { sayHello, isWebGLSupported } from '@pixi/utils';
 import MaskSystem from './mask/MaskSystem';
 import StencilSystem from './mask/StencilSystem';
 import FilterSystem from './filters/FilterSystem';
@@ -16,13 +16,15 @@ import TextureGCSystem from './textures/TextureGCSystem';
 import { RENDERER_TYPE } from '@pixi/constants';
 import UniformGroup from './shader/UniformGroup';
 import { Matrix } from '@pixi/math';
-import Runner from 'mini-runner';
+import { Runner } from '@pixi/runner';
 
 /**
- * The Renderer draws the scene and all its content onto a webGL enabled canvas. This renderer
- * should be used for browsers that support webGL. This Render works by automatically managing webGLBatchs.
- * So no need for Sprite Batches or Sprite Clouds.
- * Don't forget to add the view to your DOM or you will not see anything :)
+ * The Renderer draws the scene and all its content onto a WebGL enabled canvas.
+ *
+ * This renderer should be used for browsers that support WebGL.
+ *
+ * This renderer works by automatically managing WebGLBatchesm, so no need for Sprite Batches or Sprite Clouds.
+ * Don't forget to add the view to your DOM or you will not see anything!
  *
  * @class
  * @memberof PIXI
@@ -30,37 +32,54 @@ import Runner from 'mini-runner';
  */
 export default class Renderer extends AbstractRenderer
 {
-    // eslint-disable-next-line valid-jsdoc
     /**
-     *
-     * @param {object} [options] - The optional renderer parameters
-     * @param {number} [options.width=800] - the width of the screen
-     * @param {number} [options.height=600] - the height of the screen
-     * @param {HTMLCanvasElement} [options.view] - the canvas to use as a view, optional
-     * @param {boolean} [options.transparent=false] - If the render view is transparent, default false
+     * Create renderer if WebGL is available. Overrideable
+     * by the **@pixi/canvas-renderer** package to allow fallback.
+     * throws error if WebGL is not available.
+     * @static
+     * @private
+     */
+    static create(options)
+    {
+        if (isWebGLSupported())
+        {
+            return new Renderer(options);
+        }
+
+        throw new Error('WebGL unsupported in this browser, use "pixi.js-legacy" for fallback canvas2d support.');
+    }
+
+    /**
+     * @param {object} [options] - The optional renderer parameters.
+     * @param {number} [options.width=800] - The width of the screen.
+     * @param {number} [options.height=600] - The height of the screen.
+     * @param {HTMLCanvasElement} [options.view] - The canvas to use as a view, optional.
+     * @param {boolean} [options.transparent=false] - If the render view is transparent.
      * @param {boolean} [options.autoDensity=false] - Resizes renderer view in CSS pixels to allow for
-     *   resolutions other than 1
-     * @param {boolean} [options.antialias=false] - sets antialias. If not available natively then FXAA
-     *  antialiasing is used
-     * @param {boolean} [options.forceFXAA=false] - forces FXAA antialiasing to be used over native.
-     *  FXAA is faster, but may not always look as great
+     *   resolutions other than 1.
+     * @param {boolean} [options.antialias=false] - Sets antialias. If not available natively then FXAA
+     *  antialiasing is used.
+     * @param {boolean} [options.forceFXAA=false] - Forces FXAA antialiasing to be used over native.
+     *  FXAA is faster, but may not always look as great.
      * @param {number} [options.resolution=1] - The resolution / device pixel ratio of the renderer.
      *  The resolution of the renderer retina would be 2.
      * @param {boolean} [options.clearBeforeRender=true] - This sets if the renderer will clear
      *  the canvas or not before the new render pass. If you wish to set this to false, you *must* set
      *  preserveDrawingBuffer to `true`.
-     * @param {boolean} [options.preserveDrawingBuffer=false] - enables drawing buffer preservation,
-     *  enable this if you need to call toDataUrl on the webgl context.
-     * @param {boolean} [options.roundPixels=false] - If true PixiJS will Math.floor() x/y values when
-     *  rendering, stopping pixel interpolation.
+     * @param {boolean} [options.preserveDrawingBuffer=false] - Enables drawing buffer preservation,
+     *  enable this if you need to call toDataUrl on the WebGL context.
      * @param {number} [options.backgroundColor=0x000000] - The background color of the rendered area
      *  (shown if not transparent).
-     * @param {string} [options.powerPreference] - Parameter passed to webgl context, set to "high-performance"
-     *  for devices with dual graphics card
+     * @param {string} [options.powerPreference] - Parameter passed to WebGL context, set to "high-performance"
+     *  for devices with dual graphics card.
+     * @param {object} [options.context] If WebGL context already exists, all parameters must be taken from it.
      */
-    constructor(options, arg2, arg3)
+    constructor(options = {})
     {
-        super('WebGL', options, arg2, arg3);
+        super('WebGL', options);
+
+        // the options will have been modified here in the super constructor with pixi's default settings..
+        options = this.options;
 
         /**
          * The type of this renderer as a standardized const
@@ -77,19 +96,20 @@ export default class Renderer extends AbstractRenderer
         // TODO legacy!
 
         /**
-         * Internal signal instances of **mini-runner**, these
+         * Internal signal instances of **runner**, these
          * are assigned to each system created.
-         * @see https://github.com/GoodBoyDigital/mini-runner
+         * @see PIXI.Runner
          * @name PIXI.Renderer#runners
+         * @private
          * @type {object}
          * @readonly
-         * @property {Runner} destroy - Destroy runner
-         * @property {Runner} contextChange - Context change runner
-         * @property {Runner} reset - Reset runner
-         * @property {Runner} update - Update runner
-         * @property {Runner} postrender - Post-render runner
-         * @property {Runner} prerender - Pre-render runner
-         * @property {Runner} resize - Resize runner
+         * @property {PIXI.Runner} destroy - Destroy runner
+         * @property {PIXI.Runner} contextChange - Context change runner
+         * @property {PIXI.Runner} reset - Reset runner
+         * @property {PIXI.Runner} update - Update runner
+         * @property {PIXI.Runner} postrender - Post-render runner
+         * @property {PIXI.Runner} prerender - Pre-render runner
+         * @property {PIXI.Runner} resize - Resize runner
          */
         this.runners = {
             destroy: new Runner('destroy'),
@@ -193,6 +213,7 @@ export default class Renderer extends AbstractRenderer
              * @readonly
              */
             .addSystem(RenderTextureSystem, 'renderTexture')
+
             /**
              * Batch system instance
              * @member {PIXI.systems.BatchSystem} batch
@@ -204,10 +225,7 @@ export default class Renderer extends AbstractRenderer
         this.initPlugins(Renderer.__plugins);
 
         /**
-         * The options passed in to create a new webgl context.
-         *
-         * @member {object}
-         * @private
+         * The options passed in to create a new WebGL context.
          */
         if (options.context)
         {
@@ -240,7 +258,7 @@ export default class Renderer extends AbstractRenderer
 
     /**
      * Add a new system to the renderer.
-     * @param {class} ClassRef - Class reference
+     * @param {Function} ClassRef - Class reference
      * @param {string} [name] - Property name for system, if not specified
      *        will use a static `name` property on the class itself. This
      *        name will be assigned as s property on the Renderer so make
@@ -268,8 +286,6 @@ export default class Renderer extends AbstractRenderer
             this.runners[i].add(system);
         }
 
-        return this;
-
         /**
          * Fired after rendering finishes.
          *
@@ -288,16 +304,18 @@ export default class Renderer extends AbstractRenderer
          * @event PIXI.Renderer#context
          * @param {WebGLRenderingContext} gl - WebGL context.
          */
+
+        return this;
     }
 
     /**
-     * Renders the object to its webGL view
+     * Renders the object to its WebGL view
      *
-     * @param {PIXI.DisplayObject} displayObject - the object to be rendered
-     * @param {PIXI.RenderTexture} renderTexture - The render texture to render to.
-     * @param {boolean} [clear] - Should the canvas be cleared before the new render
-     * @param {PIXI.Transform} [transform] - A transform to apply to the render texture before rendering.
-     * @param {boolean} [skipUpdateTransform] - Should we skip the update transform pass?
+     * @param {PIXI.DisplayObject} displayObject - The object to be rendered.
+     * @param {PIXI.RenderTexture} [renderTexture] - The render texture to render to.
+     * @param {boolean} [clear=true] - Should the canvas be cleared before the new render.
+     * @param {PIXI.Matrix} [transform] - A transform to apply to the render texture before rendering.
+     * @param {boolean} [skipUpdateTransform=false] - Should we skip the update transform pass?
      */
     render(displayObject, renderTexture, clear, transform, skipUpdateTransform)
     {
@@ -306,6 +324,9 @@ export default class Renderer extends AbstractRenderer
 
         this.runners.prerender.run();
         this.emit('prerender');
+
+        // apply a transform at a GPU level
+        this.projection.transform = transform;
 
         // no point rendering if our context has been blown up!
         if (this.context.isLost)
@@ -349,14 +370,17 @@ export default class Renderer extends AbstractRenderer
 
         this.runners.postrender.run();
 
+        // reset transform after render
+        this.projection.transform = null;
+
         this.emit('postrender');
     }
 
     /**
-     * Resizes the webGL view to the specified width and height.
+     * Resizes the WebGL view to the specified width and height.
      *
-     * @param {number} screenWidth - the new width of the screen
-     * @param {number} screenHeight - the new height of the screen
+     * @param {number} screenWidth - The new width of the screen.
+     * @param {number} screenHeight - The new height of the screen.
      */
     resize(screenWidth, screenHeight)
     {
@@ -411,9 +435,9 @@ export default class Renderer extends AbstractRenderer
      * @type {object}
      * @readonly
      * @property {PIXI.accessibility.AccessibilityManager} accessibility Support tabbing interactive elements.
-     * @property {PIXI.extract.WebGLExtract} extract Extract image data from renderer.
+     * @property {PIXI.extract.Extract} extract Extract image data from renderer.
      * @property {PIXI.interaction.InteractionManager} interaction Handles mouse, touch and pointer events.
-     * @property {PIXI.prepare.WebGLPrepare} prepare Pre-render display objects.
+     * @property {PIXI.prepare.Prepare} prepare Pre-render display objects.
      */
 
     /**

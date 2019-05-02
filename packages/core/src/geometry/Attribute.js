@@ -1,14 +1,15 @@
 /* eslint-disable max-len */
 
 /**
- * holds the information for a single attribute structure required to render geometry.
- * this does not contain the actual data, but instead has a buffer id that maps to a {@link PIXI.Buffer}
- * This can include anything from positions, uvs, normals, colors etc..
+ * Holds the information for a single attribute structure required to render geometry.
+ *
+ * This does not contain the actual data, but instead has a buffer id that maps to a {@link PIXI.Buffer}
+ * This can include anything from positions, uvs, normals, colors etc.
  *
  * @class
  * @memberof PIXI
  */
-class Attribute
+export default class Attribute
 {
     /**
      * @param {string} buffer  the id of the buffer that this attribute will look for
@@ -49,10 +50,8 @@ class Attribute
      *
      * @returns {PIXI.Attribute} A new {@link PIXI.Attribute} based on the information provided
      */
-    static from(buffer, size, stride, start, normalized)
+    static from(buffer, size, normalized, type, stride)
     {
-        return new Attribute(buffer, size, stride, start, normalized);
+        return new Attribute(buffer, size, normalized, type, stride);
     }
 }
-
-module.exports = Attribute;

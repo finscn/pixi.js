@@ -6,15 +6,16 @@ import defaultVertex from './defaultFilter.vert';
 import defaultFragment from './defaultFilter.frag';
 
 /**
- * Filter is a special type of shader that is applied to the screen.
+ * Filter is a special type of WebGL shader that is applied to the screen.
+ *
  * {@link http://pixijs.io/examples/#/filters/blur-filter.js Example} of the
  * {@link PIXI.filters.BlurFilter BlurFilter}.
  *
  * ### Usage
- * Filters can be applied to any DisplayObject or Container. PixiJS' `FilterSystem`
- * renders the container into temporary FrameBuffer, then filter
- * renders it to the screen. Multiple filters can be added to the `filters` property
- * and stacked on each other.
+ * Filters can be applied to any DisplayObject or Container.
+ * PixiJS' `FilterSystem` renders the container into temporary Framebuffer,
+ * then filter renders it to the screen.
+ * Multiple filters can be added to the `filters` array property and stacked on each other.
  *
  * ```
  * const filter = new PIXI.Filter(myShaderVert, myShaderFrag, { myUniform: 0.5 });
@@ -26,12 +27,15 @@ import defaultFragment from './defaultFilter.frag';
  *
  * In PixiJS **v3**, a filter was always applied to _whole screen_.
  *
- * In PixiJS **v4**, a filter can be applied _only part of the screen_, developers
- * had to create a set of uniforms to deal with coordinates.
+ * In PixiJS **v4**, a filter can be applied _only part of the screen_.
+ * Developers had to create a set of uniforms to deal with coordinates.
  *
- * In PixiJS **v5** combines _both approaches_, developers can use normal coordinates of
- * v3 and then allow filter to use partial FrameBuffers, bringing those extra
- * uniforms into account.
+ * In PixiJS **v5** combines _both approaches_.
+ * Developers can use normal coordinates of v3 and then allow filter to use partial Framebuffers,
+ * bringing those extra uniforms into account.
+ *
+ * Also be aware that we have changed default vertex shader, please consult
+ * {@link https://github.com/pixijs/pixi.js/wiki/v5-Creating-filters Wiki}.
  *
  * ### Built-in Uniforms
  *
@@ -41,10 +45,10 @@ import defaultFragment from './defaultFilter.frag';
  * **uSampler**
  *
  * The most important uniform is the input texture that container was rendered into.
- * _Important note: as with all PixiJS' FrameBuffers, both input and output are
+ * _Important note: as with all Framebuffers in PixiJS, both input and output are
  * premultiplied by alpha._
  *
- * By default, input FrameBuffer space coordinates are passed to fragment shader with `vTextureCoord`.
+ * By default, input normalized coordinates are passed to fragment shader with `vTextureCoord`.
  * Use it to sample the input.
  *
  * ```
@@ -66,7 +70,7 @@ import defaultFragment from './defaultFilter.frag';
  *
  * The `outputFrame` holds the rectangle where filter is applied in screen (CSS) coordinates.
  * It's the same as `renderer.screen` for a fullscreen filter.
- * Only a part of  `outputFrame.zw` size of temporary FrameBuffer is used,
+ * Only a part of  `outputFrame.zw` size of temporary Framebuffer is used,
  * `(0, 0, outputFrame.width, outputFrame.height)`,
  *
  * Filters uses this quad to normalized (0-1) space, its passed into `aVertexPosition` attribute.
@@ -82,15 +86,15 @@ import defaultFragment from './defaultFilter.frag';
  *
  * **inputSize**
  *
- * Temporary FrameBuffer is different, it can be either the size of screen, either power-of-two.
- * The `inputSize.xy` are size of temporary FrameBuffer that holds input.
+ * Temporary framebuffer is different, it can be either the size of screen, either power-of-two.
+ * The `inputSize.xy` are size of temporary framebuffer that holds input.
  * The `inputSize.zw` is inverted, it's a shortcut to evade division inside the shader.
  *
  * Set `inputSize.xy = outputFrame.zw` for a fullscreen filter.
  *
- * To calculate input texture coordinate in 0-1 space, you have to map it to FrameBuffer normalized space.
- * Multiply by `outputFrame.zw` to get pixel coordinate in part of FrameBuffer.
- * Divide by `inputSize.xy` to get FrameBuffer normalized space (input sampler space)
+ * To calculate input normalized coordinate, you have to map it to filter normalized space.
+ * Multiply by `outputFrame.zw` to get input coordinate.
+ * Divide by `inputSize.xy` to get input normalized coordinate.
  *
  * ```
  * vec2 filterTextureCoord( void )
@@ -111,10 +115,10 @@ import defaultFragment from './defaultFilter.frag';
  *
  * **inputClamp**
  *
- * If you try to get info from outside of used part of FrameBuffer - you'll get undefined behaviour.
+ * If you try to get info from outside of used part of Framebuffer - you'll get undefined behaviour.
  * For displacements, coordinates has to be clamped.
  *
- * The `inputClamp.xy` is left-top pixel center, you may ignore it, because we use left-top part of FrameBuffer
+ * The `inputClamp.xy` is left-top pixel center, you may ignore it, because we use left-top part of Framebuffer
  * `inputClamp.zw` is bottom-right pixel center.
  *
  * ```
@@ -127,12 +131,11 @@ import defaultFragment from './defaultFilter.frag';
  *
  * ### Additional Information
  *
- * Complete documentation on Filter usage is located in
+ * Complete documentation on Filter usage is located in the
  * {@link https://github.com/pixijs/pixi.js/wiki/v5-Creating-filters Wiki}.
  *
- * Since PixiJS only had a handful of built-in filters, additional filters
- * can be downloaded {@link https://github.com/pixijs/pixi-filters here} from the
- * PixiJS Filters repository.
+ * Since PixiJS only had a handful of built-in filters, additional filters can be downloaded
+ * {@link https://github.com/pixijs/pixi-filters here} from the PixiJS Filters repository.
  *
  * @class
  * @memberof PIXI
@@ -147,7 +150,8 @@ export default class Filter extends Shader
      */
     constructor(vertexSrc, fragmentSrc, uniforms)
     {
-        const program = Program.from(vertexSrc, fragmentSrc);
+        const program = Program.from(vertexSrc || Filter.defaultVertexSrc,
+            fragmentSrc || Filter.defaultFragmentSrc);
 
         super(program, uniforms);
 
@@ -191,7 +195,7 @@ export default class Filter extends Shader
         this.legacy = !!this.program.attributeData.aTextureCoord;
 
         /**
-         * the webGL state the filter requires to render
+         * The WebGL state the filter requires to render
          * @member {PIXI.State}
          */
         this.state = new State();
@@ -200,19 +204,19 @@ export default class Filter extends Shader
     /**
      * Applies the filter
      *
-     * @param {PIXI.FilterManager} filterManager - The renderer to retrieve the filter from
-     * @param {PIXI.RenderTarget} input - The input render target.
-     * @param {PIXI.RenderTarget} output - The target to output to.
+     * @param {PIXI.systems.FilterSystem} filterManager - The renderer to retrieve the filter from
+     * @param {PIXI.RenderTexture} input - The input render target.
+     * @param {PIXI.RenderTexture} output - The target to output to.
      * @param {boolean} clear - Should the output be cleared before rendering to it
      * @param {object} [currentState] - It's current state of filter.
      *        There are some useful properties in the currentState :
      *        target, filters, sourceFrame, destinationFrame, renderTarget, resolution
      */
-    apply(filterManager, input, output, clear, currentState, derp) // eslint-disable-line no-unused-vars
+    apply(filterManager, input, output, clear, currentState)
     {
         // do as you please!
 
-        filterManager.applyFilter(this, input, output, clear, currentState, derp);
+        filterManager.applyFilter(this, input, output, clear, currentState);
 
         // or just do a regular render..
     }
@@ -262,7 +266,8 @@ export default class Filter extends Shader
  * Used for caching shader IDs
  *
  * @static
- * @private
+ * @type {object}
+ * @protected
  */
 Filter.SOURCE_KEY_MAP = {};
 

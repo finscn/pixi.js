@@ -5,7 +5,9 @@ import fragment from './spriteMaskFilter.frag';
 import { default as TextureMatrix } from '../../textures/TextureMatrix';
 
 /**
- * The SpriteMaskFilter class
+ * This handles a Sprite acting as a mask, as opposed to a Graphic.
+ *
+ * WebGL only.
  *
  * @class
  * @extends PIXI.Filter
@@ -40,11 +42,12 @@ export default class SpriteMaskFilter extends Filter
     /**
      * Applies the filter
      *
-     * @param {PIXI.FilterManager} filterManager - The renderer to retrieve the filter from
-     * @param {PIXI.RenderTarget} input - The input render target.
-     * @param {PIXI.RenderTarget} output - The target to output to.
+     * @param {PIXI.systems.FilterSystem} filterManager - The renderer to retrieve the filter from
+     * @param {PIXI.RenderTexture} input - The input render target.
+     * @param {PIXI.RenderTexture} output - The target to output to.
+     * @param {boolean} clear - Should the output be cleared before rendering to it.
      */
-    apply(filterManager, input, output)
+    apply(filterManager, input, output, clear)
     {
         const maskSprite = this.maskSprite;
         const tex = this.maskSprite.texture;
@@ -63,11 +66,12 @@ export default class SpriteMaskFilter extends Filter
 
         this.uniforms.npmAlpha = tex.baseTexture.premultiplyAlpha ? 0.0 : 1.0;
         this.uniforms.mask = tex;
+        // get _normalized sprite texture coords_ and convert them to _normalized atlas texture coords_ with `prepend`
         this.uniforms.otherMatrix = filterManager.calculateSpriteMatrix(this.maskMatrix, maskSprite)
             .prepend(tex.transform.mapCoord);
         this.uniforms.alpha = maskSprite.worldAlpha;
         this.uniforms.maskClamp = tex.transform.uClampFrame;
 
-        filterManager.applyFilter(this, input, output);
+        filterManager.applyFilter(this, input, output, clear);
     }
 }

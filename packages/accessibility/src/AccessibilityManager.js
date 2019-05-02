@@ -1,13 +1,9 @@
-import Device from 'ismobilejs';
 import accessibleTarget from './accessibleTarget';
-import { removeItems, mixins } from '@pixi/utils';
+import { removeItems, isMobile } from '@pixi/utils';
 import { DisplayObject } from '@pixi/display';
 
 // add some extra variables to the container..
-mixins.delayMixin(
-    DisplayObject.prototype,
-    accessibleTarget
-);
+DisplayObject.mixin(accessibleTarget);
 
 const KEY_CODE_TAB = 9;
 
@@ -22,14 +18,13 @@ const DIV_HOOK_POS_Y = -1000;
 const DIV_HOOK_ZINDEX = 2;
 
 /**
- * The Accessibility manager recreates the ability to tab and have content read by screen
- * readers. This is very important as it can possibly help people with disabilities access pixi
- * content.
+ * The Accessibility manager recreates the ability to tab and have content read by screen readers.
+ * This is very important as it can possibly help people with disabilities access PixiJS content.
  *
- * Much like interaction any DisplayObject can be made accessible. This manager will map the
+ * A DisplayObject can be made accessible just like it can be made interactive. This manager will map the
  * events as if the mouse was being used, minimizing the effort required to implement.
  *
- * An instance of this class is automatically created by default, and can be found at renderer.plugins.accessibility
+ * An instance of this class is automatically created by default, and can be found at `renderer.plugins.accessibility`
  *
  * @class
  * @memberof PIXI.accessibility
@@ -41,7 +36,12 @@ export default class AccessibilityManager
      */
     constructor(renderer)
     {
-        if ((Device.tablet || Device.phone) && !navigator.isCocoonJS)
+        /**
+         * @type {?HTMLElement}
+         * @private
+         */
+        this._hookDiv = null;
+        if (isMobile.tablet || isMobile.phone)
         {
             this.createTouchHook();
         }
@@ -105,18 +105,31 @@ export default class AccessibilityManager
         /**
          * pre-bind the functions
          *
+         * @type {Function}
          * @private
          */
         this._onKeyDown = this._onKeyDown.bind(this);
+
+        /**
+         * pre-bind the functions
+         *
+         * @type {Function}
+         * @private
+         */
         this._onMouseMove = this._onMouseMove.bind(this);
 
         /**
-         * stores the state of the manager. If there are no accessible objects or the mouse is moving, this will be false.
-         *
-         * @member {Array<*>}
-         * @private
+         * A flag
+         * @type {boolean}
+         * @readonly
          */
         this.isActive = false;
+
+        /**
+         * A flag
+         * @type {boolean}
+         * @readonly
+         */
         this.isMobileAccessibility = false;
 
         // let listen for tab.. once pressed we can fire up and show the accessibility layer
@@ -126,6 +139,7 @@ export default class AccessibilityManager
     /**
      * Creates the touch hooks.
      *
+     * @private
      */
     createTouchHook()
     {
@@ -144,15 +158,31 @@ export default class AccessibilityManager
         {
             this.isMobileAccessibility = true;
             this.activate();
-            document.body.removeChild(hookDiv);
+            this.destroyTouchHook();
         });
 
         document.body.appendChild(hookDiv);
+        this._hookDiv = hookDiv;
     }
 
     /**
-     * Activating will cause the Accessibility layer to be shown. This is called when a user
-     * presses the tab key.
+     * Destroys the touch hooks.
+     *
+     * @private
+     */
+    destroyTouchHook()
+    {
+        if (!this._hookDiv)
+        {
+            return;
+        }
+        document.body.removeChild(this._hookDiv);
+        this._hookDiv = null;
+    }
+
+    /**
+     * Activating will cause the Accessibility layer to be shown.
+     * This is called when a user presses the tab key.
      *
      * @private
      */
@@ -177,8 +207,8 @@ export default class AccessibilityManager
     }
 
     /**
-     * Deactivating will cause the Accessibility layer to be hidden. This is called when a user moves
-     * the mouse.
+     * Deactivating will cause the Accessibility layer to be hidden.
+     * This is called when a user moves the mouse.
      *
      * @private
      */
@@ -191,7 +221,7 @@ export default class AccessibilityManager
 
         this.isActive = false;
 
-        window.document.removeEventListener('mousemove', this._onMouseMove);
+        window.document.removeEventListener('mousemove', this._onMouseMove, true);
         window.addEventListener('keydown', this._onKeyDown, false);
 
         this.renderer.off('postrender', this.update);
@@ -227,7 +257,7 @@ export default class AccessibilityManager
 
         const children = displayObject.children;
 
-        for (let i = children.length - 1; i >= 0; i--)
+        for (let i = 0; i < children.length; i++)
         {
             this.updateAccessibleObjects(children[i]);
         }
@@ -305,6 +335,17 @@ export default class AccessibilityManager
 
                     div.style.width = `${hitArea.width * sx}px`;
                     div.style.height = `${hitArea.height * sy}px`;
+
+                    // update button titles and hints if they exist and they've changed
+                    if (div.title !== child.accessibleTitle && child.accessibleTitle !== null)
+                    {
+                        div.title = child.accessibleTitle;
+                    }
+                    if (div.getAttribute('aria-label') !== child.accessibleHint
+                        && child.accessibleHint !== null)
+                    {
+                        div.setAttribute('aria-label', child.accessibleHint);
+                    }
                 }
             }
         }
@@ -314,9 +355,9 @@ export default class AccessibilityManager
     }
 
     /**
-     * TODO: docs.
+     * Adjust the hit area based on the bounds of a display object
      *
-     * @param {Rectangle} hitArea - TODO docs
+     * @param {Rectangle} hitArea - Bounds of the child
      */
     capHitArea(hitArea)
     {
@@ -366,21 +407,45 @@ export default class AccessibilityManager
             div.style.zIndex = DIV_TOUCH_ZINDEX;
             div.style.borderStyle = 'none';
 
+            // ARIA attributes ensure that button title and hint updates are announced properly
+            if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1)
+            {
+                // Chrome doesn't need aria-live to work as intended; in fact it just gets more confused.
+                div.setAttribute('aria-live', 'off');
+            }
+            else
+            {
+                div.setAttribute('aria-live', 'polite');
+            }
+
+            if (navigator.userAgent.match(/rv:.*Gecko\//))
+            {
+                // FireFox needs this to announce only the new button name
+                div.setAttribute('aria-relevant', 'additions');
+            }
+            else
+            {
+                // required by IE, other browsers don't much care
+                div.setAttribute('aria-relevant', 'text');
+            }
+
             div.addEventListener('click', this._onClick.bind(this));
             div.addEventListener('focus', this._onFocus.bind(this));
             div.addEventListener('focusout', this._onFocusOut.bind(this));
         }
 
-        if (displayObject.accessibleTitle)
+        if (displayObject.accessibleTitle && displayObject.accessibleTitle !== null)
         {
             div.title = displayObject.accessibleTitle;
         }
-        else if (!displayObject.accessibleTitle && !displayObject.accessibleHint)
+        else if (!displayObject.accessibleHint
+                 || displayObject.accessibleHint === null)
         {
-            div.title = `displayObject ${this.tabIndex}`;
+            div.title = `displayObject ${displayObject.tabIndex}`;
         }
 
-        if (displayObject.accessibleHint)
+        if (displayObject.accessibleHint
+            && displayObject.accessibleHint !== null)
         {
             div.setAttribute('aria-label', displayObject.accessibleHint);
         }
@@ -417,6 +482,10 @@ export default class AccessibilityManager
      */
     _onFocus(e)
     {
+        if (!e.target.getAttribute('aria-live', 'off'))
+        {
+            e.target.setAttribute('aria-live', 'assertive');
+        }
         const interactionManager = this.renderer.plugins.interaction;
 
         interactionManager.dispatchEvent(e.target.displayObject, 'mouseover', interactionManager.eventData);
@@ -430,6 +499,10 @@ export default class AccessibilityManager
      */
     _onFocusOut(e)
     {
+        if (!e.target.getAttribute('aria-live', 'off'))
+        {
+            e.target.setAttribute('aria-live', 'polite');
+        }
         const interactionManager = this.renderer.plugins.interaction;
 
         interactionManager.dispatchEvent(e.target.displayObject, 'mouseout', interactionManager.eventData);
@@ -455,9 +528,15 @@ export default class AccessibilityManager
      * Is called when the mouse moves across the renderer element
      *
      * @private
+     * @param {MouseEvent} e - The mouse event.
      */
-    _onMouseMove()
+    _onMouseMove(e)
     {
+        if (e.movementX === 0 && e.movementY === 0)
+        {
+            return;
+        }
+
         this.deactivate();
     }
 
@@ -467,6 +546,7 @@ export default class AccessibilityManager
      */
     destroy()
     {
+        this.destroyTouchHook();
         this.div = null;
 
         for (let i = 0; i < this.children.length; i++)
@@ -474,7 +554,7 @@ export default class AccessibilityManager
             this.children[i].div = null;
         }
 
-        window.document.removeEventListener('mousemove', this._onMouseMove);
+        window.document.removeEventListener('mousemove', this._onMouseMove, true);
         window.removeEventListener('keydown', this._onKeyDown);
 
         this.pool = null;

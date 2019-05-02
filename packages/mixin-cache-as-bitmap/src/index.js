@@ -3,6 +3,7 @@ import { Sprite } from '@pixi/sprite';
 import { DisplayObject } from '@pixi/display';
 import { Matrix } from '@pixi/math';
 import { uid } from '@pixi/utils';
+import { settings } from '@pixi/settings';
 
 const _tempMatrix = new Matrix();
 
@@ -18,9 +19,6 @@ DisplayObject.prototype._cacheData = false;
  */
 class CacheData
 {
-    /**
-     *
-     */
     constructor()
     {
         this.textureCacheId = null;
@@ -44,9 +42,9 @@ Object.defineProperties(DisplayObject.prototype, {
      * Set this to true if you want this display object to be cached as a bitmap.
      * This basically takes a snap shot of the display object as it is at that moment. It can
      * provide a performance benefit for complex static displayObjects.
-     * To remove simply set this property to 'false'
+     * To remove simply set this property to `false`
      *
-     * IMPORTANT GOTCHA - make sure that all your textures are preloaded BEFORE setting this property to true
+     * IMPORTANT GOTCHA - Make sure that all your textures are preloaded BEFORE setting this property to true
      * as it will take a snapshot of what is currently there. If the textures have not loaded then they will not appear.
      *
      * @member {boolean}
@@ -81,7 +79,7 @@ Object.defineProperties(DisplayObject.prototype, {
                 data.originalRenderCanvas = this.renderCanvas;
 
                 data.originalUpdateTransform = this.updateTransform;
-                data.originalCalculateBounds = this._calculateBounds;
+                data.originalCalculateBounds = this.calculateBounds;
                 data.originalGetLocalBounds = this.getLocalBounds;
 
                 data.originalDestroy = this.destroy;
@@ -107,7 +105,7 @@ Object.defineProperties(DisplayObject.prototype, {
 
                 this.render = data.originalRender;
                 this.renderCanvas = data.originalRenderCanvas;
-                this._calculateBounds = data.originalCalculateBounds;
+                this.calculateBounds = data.originalCalculateBounds;
                 this.getLocalBounds = data.originalGetLocalBounds;
 
                 this.destroy = data.originalDestroy;
@@ -126,6 +124,7 @@ Object.defineProperties(DisplayObject.prototype, {
  * Renders a cached version of the sprite with WebGL
  *
  * @private
+ * @function _renderCached
  * @memberof PIXI.DisplayObject#
  * @param {PIXI.Renderer} renderer - the WebGL renderer
  */
@@ -138,7 +137,7 @@ DisplayObject.prototype._renderCached = function _renderCached(renderer)
 
     this._initCachedDisplayObject(renderer);
 
-    this._cacheData.sprite._transformID = -1;
+    this._cacheData.sprite.transform._worldID = this.transform._worldID;
     this._cacheData.sprite.worldAlpha = this.worldAlpha;
     this._cacheData.sprite._render(renderer);
 };
@@ -147,6 +146,7 @@ DisplayObject.prototype._renderCached = function _renderCached(renderer)
  * Prepares the WebGL renderer to cache the sprite
  *
  * @private
+ * @function _initCachedDisplayObject
  * @memberof PIXI.DisplayObject#
  * @param {PIXI.Renderer} renderer - the WebGL renderer
  */
@@ -180,15 +180,16 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
         bounds.pad(padding);
     }
 
-    // for now we cache the current renderTarget that the webGL renderer is currently using.
+    bounds.ceil(settings.RESOLUTION);
+
+    // for now we cache the current renderTarget that the WebGL renderer is currently using.
     // this could be more elegant..
     const cachedRenderTarget = renderer._activeRenderTarget;
     // We also store the filter stack - I will definitely look to change how this works a little later down the line.
     // const stack = renderer.filterManager.filterStack;
 
     // this renderTexture will be used to store the cached DisplayObject
-
-    const renderTexture = RenderTexture.create(bounds.width | 0, bounds.height | 0);
+    const renderTexture = RenderTexture.create(bounds.width, bounds.height);
 
     const textureCacheId = `cacheAsBitmap_${uid()}`;
 
@@ -217,7 +218,10 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     // renderer.filterManager.filterStack = stack;
 
     this.render = this._renderCached;
+    // the rest is the same as for Canvas
     this.updateTransform = this.displayObjectUpdateTransform;
+    this.calculateBounds = this._calculateCachedBounds;
+    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._mask = null;
     this.filterArea = null;
@@ -230,10 +234,6 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
     cachedSprite.anchor.y = -(bounds.y / bounds.height);
     cachedSprite.alpha = cacheAlpha;
     cachedSprite._bounds = this._bounds;
-
-    // easy bounds..
-    this._calculateBounds = this._calculateCachedBounds;
-    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._cacheData.sprite = cachedSprite;
 
@@ -258,6 +258,7 @@ DisplayObject.prototype._initCachedDisplayObject = function _initCachedDisplayOb
  * Renders a cached version of the sprite with canvas
  *
  * @private
+ * @function _renderCachedCanvas
  * @memberof PIXI.DisplayObject#
  * @param {PIXI.Renderer} renderer - the WebGL renderer
  */
@@ -271,15 +272,15 @@ DisplayObject.prototype._renderCachedCanvas = function _renderCachedCanvas(rende
     this._initCachedDisplayObjectCanvas(renderer);
 
     this._cacheData.sprite.worldAlpha = this.worldAlpha;
-
-    this._cacheData.sprite.renderCanvas(renderer);
+    this._cacheData.sprite._renderCanvas(renderer);
 };
 
-// TODO this can be the same as the webGL version.. will need to do a little tweaking first though..
+// TODO this can be the same as the WebGL version.. will need to do a little tweaking first though..
 /**
  * Prepares the Canvas renderer to cache the sprite
  *
  * @private
+ * @function _initCachedDisplayObjectCanvas
  * @memberof PIXI.DisplayObject#
  * @param {PIXI.Renderer} renderer - the WebGL renderer
  */
@@ -299,7 +300,9 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
 
     const cachedRenderTarget = renderer.context;
 
-    const renderTexture = RenderTexture.create(bounds.width | 0, bounds.height | 0);
+    bounds.ceil(settings.RESOLUTION);
+
+    const renderTexture = RenderTexture.create(bounds.width, bounds.height);
 
     const textureCacheId = `cacheAsBitmap_${uid()}`;
 
@@ -328,7 +331,10 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
     renderer.context = cachedRenderTarget;
 
     this.renderCanvas = this._renderCachedCanvas;
-    this._calculateBounds = this._calculateCachedBounds;
+    // the rest is the same as for WebGL
+    this.updateTransform = this.displayObjectUpdateTransform;
+    this.calculateBounds = this._calculateCachedBounds;
+    this.getLocalBounds = this._getCachedLocalBounds;
 
     this._mask = null;
     this.filterArea = null;
@@ -339,9 +345,13 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
     cachedSprite.transform.worldTransform = this.transform.worldTransform;
     cachedSprite.anchor.x = -(bounds.x / bounds.width);
     cachedSprite.anchor.y = -(bounds.y / bounds.height);
-    cachedSprite._bounds = this._bounds;
     cachedSprite.alpha = cacheAlpha;
+    cachedSprite._bounds = this._bounds;
 
+    this._cacheData.sprite = cachedSprite;
+
+    this.transform._parentID = -1;
+    // restore the transform of the cached sprite to avoid the nasty flicker..
     if (!this.parent)
     {
         this.parent = renderer._tempDisplayObjectParent;
@@ -353,10 +363,7 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
         this.updateTransform();
     }
 
-    this.updateTransform = this.displayObjectUpdateTransform;
-
-    this._cacheData.sprite = cachedSprite;
-
+    // map the hit test..
     this.containsPoint = cachedSprite.containsPoint.bind(cachedSprite);
 };
 
@@ -367,7 +374,10 @@ DisplayObject.prototype._initCachedDisplayObjectCanvas = function _initCachedDis
  */
 DisplayObject.prototype._calculateCachedBounds = function _calculateCachedBounds()
 {
+    this._bounds.clear();
+    this._cacheData.sprite.transform._worldID = this.transform._worldID;
     this._cacheData.sprite._calculateBounds();
+    this._lastBoundsID = this._boundsID;
 };
 
 /**

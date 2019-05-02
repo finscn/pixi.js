@@ -26,14 +26,14 @@ PixiJS has full [WebGL](https://en.wikipedia.org/wiki/WebGL) support and seamles
 **Boost your development and feel free to use your imagination!**
 
 ### Learn ###
-- Website: Find out more about PixiJS on the [offical website](http://www.pixijs.com/).
+- Website: Find out more about PixiJS on the [official website](http://www.pixijs.com/).
 - Getting started: Check out @kittykatattack's comprehensive [tutorial](https://github.com/kittykatattack/learningPixi).
 - Examples: Get stuck right in and play around with PixiJS code and features right [here](http://pixijs.github.io/examples/)!
 - Docs: Get to know the PixiJS API by checking out the [docs](https://pixijs.github.io/docs/).
 - Wiki: Other misc tutorials and resources are [on the Wiki](https://github.com/pixijs/pixi.js/wiki).
 
 ### Community ###
-- Forums: Check out the [forum](http://www.html5gamedevs.com/forum/15-pixijs/) and [Stackoverflow](http://stackoverflow.com/search?q=pixi.js), both friendly places to ask your pixi questions.
+- Forums: Check out the [forum](http://www.html5gamedevs.com/forum/15-pixijs/) and [Stackoverflow](http://stackoverflow.com/search?q=pixi.js), both friendly places to ask your PixiJS questions.
 - Inspiration: Check out the [gallery](http://www.pixijs.com/gallery) to see some of the amazing things people have created!
 - Chat: You can join us on [Gitter](https://gitter.im/pixijs/pixi.js) To chat about PixiJS. We also now have a Slack channel. If you would like to join it please Send me an email (mat@goodboydigital.com) and I will invite you in.
 
@@ -123,7 +123,7 @@ const app = new PIXI.Application();
 document.body.appendChild(app.view);
 
 // load the texture we need
-PIXI.loader.add('bunny', 'bunny.png').load((loader, resources) => {
+app.loader.add('bunny', 'bunny.png').load((loader, resources) => {
     // This creates a texture from a 'bunny.png' image
     const bunny = new PIXI.Sprite(resources.bunny.texture);
 

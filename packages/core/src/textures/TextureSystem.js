@@ -1,8 +1,12 @@
 import System from '../System';
+import BaseTexture from './BaseTexture';
 import GLTexture from './GLTexture';
 import { removeItems } from '@pixi/utils';
+import { MIPMAP_MODES, WRAP_MODES } from '@pixi/constants';
 
 /**
+ * System plugin to the renderer to manage textures.
+ *
  * @class
  * @extends PIXI.System
  * @memberof PIXI.systems
@@ -22,26 +26,7 @@ export default class TextureSystem extends System
          * @member {PIXI.BaseTexture[]}
          * @readonly
          */
-        this.boundTextures = [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-        ];
-
+        this.boundTextures = [];
         /**
          * Current location
          * @member {number}
@@ -51,22 +36,45 @@ export default class TextureSystem extends System
 
         /**
          * List of managed textures
-         * @member {PIXI.BaseTextures[]}
+         * @member {PIXI.BaseTexture[]}
          * @readonly
          */
         this.managedTextures = [];
+
+        /**
+         * Did someone temper with textures state? We'll overwrite them when we need to unbind something.
+         * @member {boolean}
+         * @private
+         */
+        this._unknownBoundTextures = false;
+
+        /**
+         * BaseTexture value that shows that we don't know what is bound
+         * @member {PIXI.BaseTexture}
+         * @readonly
+         */
+        this.unknownTexture = new BaseTexture();
     }
 
     /**
      * Sets up the renderer context and necessary buffers.
-     *
-     * @private
      */
     contextChange()
     {
         const gl = this.gl = this.renderer.gl;
 
         this.CONTEXT_UID = this.renderer.CONTEXT_UID;
+
+        this.webGLVersion = this.renderer.context.webGLVersion;
+
+        const maxTextures = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+
+        this.boundTextures.length = maxTextures;
+
+        for (let i = 0; i < maxTextures; i++)
+        {
+            this.boundTextures[i] = null;
+        }
 
         // TODO move this.. to a nice make empty textures class..
         this.emptyTextures = {};
@@ -81,9 +89,7 @@ export default class TextureSystem extends System
 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.emptyTextures[gl.TEXTURE_CUBE_MAP].texture);
 
-        let i;
-
-        for (i = 0; i < 6; i++)
+        for (let i = 0; i < 6; i++)
         {
             gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         }
@@ -91,7 +97,7 @@ export default class TextureSystem extends System
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
-        for (i = 0; i < this.boundTextures.length; i++)
+        for (let i = 0; i < this.boundTextures.length; i++)
         {
             this.bind(null, i);
         }
@@ -100,18 +106,14 @@ export default class TextureSystem extends System
     /**
      * Bind a texture to a specific location
      *
+     * If you want to unbind something, please use `unbind(texture)` instead of `bind(null, textureLocation)`
+     *
      * @param {PIXI.Texture|PIXI.BaseTexture} texture - Texture to bind
      * @param {number} [location=0] - Location to bind at
      */
     bind(texture, location = 0)
     {
         const { gl } = this;
-
-        if (this.currentLocation !== location)
-        {
-            this.currentLocation = location;
-            gl.activeTexture(gl.TEXTURE0 + location);
-        }
 
         if (texture)
         {
@@ -123,7 +125,16 @@ export default class TextureSystem extends System
 
                 const glTexture = texture._glTextures[this.CONTEXT_UID] || this.initTexture(texture);
 
-                gl.bindTexture(texture.target, glTexture.texture);
+                if (this.currentLocation !== location)
+                {
+                    this.currentLocation = location;
+                    gl.activeTexture(gl.TEXTURE0 + location);
+                }
+
+                if (this.boundTextures[location] !== texture)
+                {
+                    gl.bindTexture(texture.target, glTexture.texture);
+                }
 
                 if (glTexture.dirtyId !== texture.dirtyId)
                 {
@@ -135,8 +146,30 @@ export default class TextureSystem extends System
         }
         else
         {
+            if (this.currentLocation !== location)
+            {
+                this.currentLocation = location;
+                gl.activeTexture(gl.TEXTURE0 + location);
+            }
+
             gl.bindTexture(gl.TEXTURE_2D, this.emptyTextures[gl.TEXTURE_2D].texture);
             this.boundTextures[location] = null;
+        }
+    }
+
+    /**
+     * Resets texture location and bound textures
+     *
+     * Actual `bind(null, i)` calls will be performed at next `unbind()` call
+     */
+    reset()
+    {
+        this._unknownBoundTextures = true;
+        this.currentLocation = -1;
+
+        for (let i = 0; i < this.boundTextures.length; i++)
+        {
+            this.boundTextures[i] = this.unknownTexture;
         }
     }
 
@@ -146,11 +179,25 @@ export default class TextureSystem extends System
      */
     unbind(texture)
     {
-        const { gl } = this;
+        const { gl, boundTextures } = this;
 
-        for (let i = 0; i < this.boundTextures.length; i++)
+        if (this._unknownBoundTextures)
         {
-            if (this.boundTextures[i] === texture)
+            this._unknownBoundTextures = false;
+            // someone changed webGL state,
+            // we have to be sure that our texture does not appear in multi-texture renderer samplers
+            for (let i = 0; i < boundTextures.length; i++)
+            {
+                if (boundTextures[i] === this.unknownTexture)
+                {
+                    this.bind(null, i);
+                }
+            }
+        }
+
+        for (let i = 0; i < boundTextures.length; i++)
+        {
+            if (boundTextures[i] === texture)
             {
                 if (this.currentLocation !== i)
                 {
@@ -159,7 +206,7 @@ export default class TextureSystem extends System
                 }
 
                 gl.bindTexture(gl.TEXTURE_2D, this.emptyTextures[texture.target].texture);
-                this.boundTextures[i] = null;
+                boundTextures[i] = null;
             }
         }
     }
@@ -277,10 +324,20 @@ export default class TextureSystem extends System
     {
         const glTexture = texture._glTextures[this.CONTEXT_UID];
 
-        glTexture.mipmap = texture.mipmap && texture.isPowerOfTwo;
         if (!glTexture)
         {
             return;
+        }
+
+        if ((texture.mipmap === MIPMAP_MODES.POW2 || this.webGLVersion !== 2) && !texture.isPowerOfTwo)
+        {
+            glTexture.mipmap = 0;
+            glTexture.wrapMode = WRAP_MODES.CLAMP;
+        }
+        else
+        {
+            glTexture.mipmap = texture.mipmap >= 1;
+            glTexture.wrapMode = texture.wrapMode;
         }
 
         if (texture.resource && texture.resource.style(this.renderer, texture, glTexture))
@@ -311,8 +368,8 @@ export default class TextureSystem extends System
             gl.generateMipmap(texture.target);
         }
 
-        gl.texParameteri(texture.target, gl.TEXTURE_WRAP_S, texture.wrapMode);
-        gl.texParameteri(texture.target, gl.TEXTURE_WRAP_T, texture.wrapMode);
+        gl.texParameteri(texture.target, gl.TEXTURE_WRAP_S, glTexture.wrapMode);
+        gl.texParameteri(texture.target, gl.TEXTURE_WRAP_T, glTexture.wrapMode);
 
         if (glTexture.mipmap)
         {

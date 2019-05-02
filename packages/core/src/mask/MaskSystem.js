@@ -2,6 +2,8 @@ import System from '../System';
 import SpriteMaskFilter from '../filters/spriteMask/SpriteMaskFilter';
 
 /**
+ * System plugin to the renderer to manage masks.
+ *
  * @class
  * @extends PIXI.System
  * @memberof PIXI.systems
@@ -72,7 +74,7 @@ export default class MaskSystem extends System
         // be used on render textures more info here:
         // https://github.com/pixijs/pixi.js/pull/3545
 
-        if (maskData.vertexData)
+        if (maskData.isSprite)
         {
             this.pushSpriteMask(target, maskData);
         }
@@ -112,7 +114,7 @@ export default class MaskSystem extends System
      */
     pop(target, maskData)
     {
-        if (maskData.vertexData)
+        if (maskData.isSprite)
         {
             this.popSpriteMask(target, maskData);
         }
@@ -129,7 +131,7 @@ export default class MaskSystem extends System
     /**
      * Applies the Mask and adds it to the current filter stack.
      *
-     * @param {PIXI.RenderTarget} target - Display Object to push the sprite mask to
+     * @param {PIXI.RenderTexture} target - Display Object to push the sprite mask to
      * @param {PIXI.Sprite} maskData - Sprite to be used as the mask
      */
     pushSpriteMask(target, maskData)
@@ -144,10 +146,11 @@ export default class MaskSystem extends System
         alphaMaskFilter[0].resolution = this.renderer.resolution;
         alphaMaskFilter[0].maskSprite = maskData;
 
-        // TODO - may cause issues!
-        target.filterArea = maskData.getBounds(true);
+        const stashFilterArea = target.filterArea;
 
+        target.filterArea = maskData.getBounds(true);
         this.renderer.filter.push(target, alphaMaskFilter);
+        target.filterArea = stashFilterArea;
 
         this.alphaMaskIndex++;
     }
