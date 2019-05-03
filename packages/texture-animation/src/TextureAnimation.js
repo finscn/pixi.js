@@ -126,7 +126,7 @@ export default class TextureAnimation
          */
         this.onFrameChange = null;
 
-         /**
+        /**
          * Function to call when 'loop' is true, and an Animation Object is played and loops around to start again
          *
          * @member {Function}
@@ -384,11 +384,11 @@ export default class TextureAnimation
             // TODO: Whether snap currentTime to frame ?
             // if (!skipFrame)
             // {
-                // Play forward:
-                // this.currentTime = this.currentFrame._startTime;
+            // Play forward:
+            // this.currentTime = this.currentFrame._startTime;
 
-                // Play backward:
-                // this.currentTime = this.currentFrame._endTime;
+            // Play backward:
+            // this.currentTime = this.currentFrame._endTime;
             // }
         }
     }
@@ -464,7 +464,6 @@ export default class TextureAnimation
         {
             this._target._anchor.copy(this.currentTexture.defaultAnchor);
         }
-
     }
 
     /**
