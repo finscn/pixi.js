@@ -68,6 +68,7 @@
     "@pixi/spritesheet": "^5.0.0",
     "@pixi/text": "^5.0.0",
     "@pixi/text-bitmap": "^5.0.0",
+    "@pixi/texture-animation": "^5.0.0",
     "@pixi/ticker": "^5.0.0",
     "@pixi/utils": "^5.0.0"
   },

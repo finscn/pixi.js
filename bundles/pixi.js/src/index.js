@@ -113,6 +113,7 @@ export * from '@pixi/sprite-animated';
 export * from '@pixi/sprite-tiling';
 export * from '@pixi/text';
 export * from '@pixi/text-bitmap';
+export * from '@pixi/texture-animation';
 export * from '@pixi/ticker';
 export * from '@pixi/settings';
 export {
