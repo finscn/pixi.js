@@ -1,4 +1,4 @@
- import { Texture } from '@pixi/core';
+import { Texture } from '@pixi/core';
 import { Point } from '@pixi/math';
 
 /**
@@ -16,7 +16,6 @@ import { Point } from '@pixi/math';
  * anim.update(deltaTime);
  * ```
  */
-
 
 /**
  * An Animation is a simple way to display an animation depicted by a list of frames
@@ -55,7 +54,6 @@ export default class TextureAnimation
      */
     initAnimation(frames, duration = 0)
     {
-
         this.duration = duration;
 
         /**
