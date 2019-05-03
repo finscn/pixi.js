@@ -1,4 +1,5 @@
-import { Texture } from '@pixi/core';
+ import { Texture } from '@pixi/core';
+import { Point } from '@pixi/math';
 
 /**
  * example:
@@ -7,6 +8,7 @@ import { Texture } from '@pixi/core';
  * // create an Animation , and bind with a sprite.
  * var anim = new PIXI.TextureAnimation(frames);
  * anim.bind(sprite);
+ * anim.gotoAndPlay(0);
  * ```
  *
  * in game tick:
@@ -15,19 +17,6 @@ import { Texture } from '@pixi/core';
  * ```
  */
 
-/**
- * @typedef FrameObject
- * @type {object}
- * @property {PIXI.Texture} texture - The texture object of the frame
- * @property {number} [duration|time] - the duration of the frame in ms
- * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
- *
- * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
- * If no `frame.pivot`, frame.pivot will be null, then Animation use default or original or previous pivot.
- * Some private fileds will be generated dynamically:
- *     {number} _startTime:
- *     {number} _endTime:
- */
 
 /**
  * An Animation is a simple way to display an animation depicted by a list of frames
@@ -45,7 +34,7 @@ export default class TextureAnimation
      * @param {string} [defaultBindName='anim'] - The default value of `property name of target for binding`
      *     If defaultBindName === null/false/'' , will not set anim-instance to target
      */
-    constructor(frames, duration, defaultBindName = 'anim')
+    constructor(frames, duration = 0, defaultBindName = 'anim')
     {
         this.defaultBindName = defaultBindName;
 
@@ -64,8 +53,11 @@ export default class TextureAnimation
      * @param {number} [duration=0] - The total duration of animation in ms
      *     If no `duration`, the duration will equal the sum of all `frame.duration`
      */
-    initAnimation(frames, duration)
+    initAnimation(frames, duration = 0)
     {
+
+        this.duration = duration;
+
         /**
          * The speed that the TextureAnimation will play at. Higher is faster, lower is slower.
          *
@@ -75,7 +67,7 @@ export default class TextureAnimation
         this.animationSpeed = 1;
 
         /**
-         * Whether or not the animate sprite repeats after playing
+         * Whether or not the animate sprite repeats after playing.
          *
          * @member {boolean}
          * @default true
@@ -91,24 +83,34 @@ export default class TextureAnimation
         this.skipFrame = false;
 
         /**
-         * The default pivot of the animation(the default pivot of all frames).
-         * Index 0 is x; Index 1 is y.
-         * if it's null/undefined/false/0/''/non-number[] , means x = 0 & y = 0.
+         * Update pivot to target when frame changes.
          *
-         * @member {number[]}
-         * @default null
+         * @member {boolean}
+         * @default false
          */
-        this.defaultPivot = null;
-
-        this.duration = duration || 0;
+        this.updatePivot = false;
 
         /**
-         * Function to call when a Animation completes playing
+         * The default pivot of the animation(the default pivot for all frames).
          *
-         * @method
-         * @memberof PIXI.TextureAnimation
+         * @member {PIXI.Point}
+         * @default {0,0}
          */
-        this.onComplete = null;
+        this.defaultPivot = new Point(0, 0);
+
+        /**
+         * Update anchor to [Texture's defaultAnchor]{@link PIXI.Texture#defaultAnchor} when frame changes.
+         *
+         * Useful with [sprite sheet animations]{@link PIXI.Spritesheet#animations} created with tools.
+         * Changing anchor for each frame allows to pin sprite origin to certain moving feature
+         * of the frame (e.g. left foot).
+         *
+         * Note: Enabling this will override any previously set `anchor` on each frame change.
+         *
+         * @member {boolean}
+         * @default false
+         */
+        this.updateAnchor = false;
 
         /**
          * The index of the frame displayed when animation finished.
@@ -119,29 +121,35 @@ export default class TextureAnimation
         this.completeIndex = 0;
 
         /**
-         * Function to call when a Animation frame changes
+         * Function to call when an TextureAnimation finishes playing.
          *
-         * @method
-         * @memberof PIXI.TextureAnimation
+         * @member {Function}
+         */
+        this.onComplete = null;
+
+        /**
+         * Function to call when an TextureAnimation changes which texture is being rendered.
+         *
+         * @member {Function}
          */
         this.onFrameChange = null;
 
         /**
-         * Function to call when 'loop' is true, and an Animation Object is played and loops around to start again
+         * Function to call when `loop` is true, and an TextureAnimation is played and loops around to start again.
          *
          * @member {Function}
          */
         this.onLoop = null;
 
         /**
-         * Elapsed time since animation has been started, used internally to display current texture
+         * Elapsed time since animation has been started, used internally to display current texture.
          *
          * @member {number}
          */
         this.currentTime = 0;
 
         /**
-         * Indicates if the Animation is currently playing
+         * Indicates if the TextureAnimation is currently playing.
          *
          * @member {boolean}
          * @readonly
@@ -394,7 +402,7 @@ export default class TextureAnimation
     }
 
     /**
-     * Function to call when a Animation changes which texture is being rendered
+     * Function to call when the Animation changes which texture is being rendered
      *
      * @param {number} frameIndex - new frame index
      * @param {number} prevIndex - previous frame index
@@ -438,31 +446,18 @@ export default class TextureAnimation
      */
     updateTarget()
     {
-        this._target._texture = this.currentTexture;
-        // this._target._textureID = -1;
-        // this._target._textureTrimmedID = -1;
-        // this._target.cachedTint = 0xFFFFFF;
-        // this._target.uvs = this._target._texture._uvs.uvsFloat32;
+        this._target.texture = this.currentTexture;
 
-        // TODO: Shall we need `pivot` ?
-        const pivot = this.currentFrame.pivot || this.defaultPivot;
-
-        if (pivot)
+        if (this.updateAnchor && this._target._anchor)
         {
-            this._target.transform.pivot.set(pivot[0], pivot[1]);
+            this._target._anchor.copyFrom(this.currentTexture.defaultAnchor);
         }
 
-        // // TODO: `refresh` is hard code , not good enough.
-        // if (this._target.refresh)
-        // {
-        //     this._target.refresh();
-        // }
-
-        this._target._onTextureUpdate();
-
-        if (this.updateAnchor)
+        if (this.updatePivot && this._target.transform)
         {
-            this._target._anchor.copy(this.currentTexture.defaultAnchor);
+            const pivot = this.currentFrame.pivot || this.defaultPivot;
+
+            this._target.transform.pivot.copyFrom(pivot);
         }
     }
 
@@ -475,6 +470,19 @@ export default class TextureAnimation
     getFrames()
     {
         return this._frames;
+    }
+
+    /**
+     * The total number of frames in the TextureAnimation. This is the same as number of textures
+     * assigned to the TextureAnimation.
+     *
+     * @readonly
+     * @member {number}
+     * @default 0
+     */
+    get frameCount()
+    {
+        return this._frames.length;
     }
 
     /**
@@ -510,7 +518,7 @@ export default class TextureAnimation
         this.completeIndex = this._maxIndex;
 
         const preDuration = this.duration / len;
-        const useTexture = frames[0] instanceof Texture;
+        const isTextureArray = frames[0] instanceof Texture;
 
         let startTime = 0;
         let endTime = 0;
@@ -518,7 +526,7 @@ export default class TextureAnimation
 
         for (let i = 0; i < len; i++)
         {
-            if (useTexture)
+            if (isTextureArray)
             {
                 frame = {
                     texture: frames[i],
@@ -535,8 +543,8 @@ export default class TextureAnimation
             // TODO:
             frame.pivot = frame.pivot || null;
 
-            // TODO:
-            frame.offset = frame.offset || null;
+            // // TODO:
+            // frame.offset = frame.offset || null;
 
             frame._startTime = startTime;
             frame._endTime = (endTime += frame.duration);
@@ -556,7 +564,7 @@ export default class TextureAnimation
     /**
      * Bind the target of Animation.
      *
-     * @param {PIXI.DisplayObject} target - A display object with Texture.
+     * @param {EntityWithTexture} target - A display object with Texture.
      * @param {string} [bindName] - The property name of target for binding
      */
     bind(target, bindName)
@@ -587,7 +595,7 @@ export default class TextureAnimation
     /**
      * Unbind the target of Animation.
      *
-     * @return {PIXI.DisplayObject} The previous target of Animation
+     * @return {EntityWithTexture} The previous target of Animation
      */
     unbind()
     {
@@ -605,15 +613,10 @@ export default class TextureAnimation
         return target;
     }
 
-    activate(startIndex)
-    {
-        this.gotoAndPlay(startIndex || 0);
-    }
-
     /**
      * The target displayObject of Animation
      *
-     * @member {PIXI.DisplayObject}
+     * @member {EntityWithTexture}
      */
     get target()
     {
@@ -636,3 +639,29 @@ export default class TextureAnimation
         this._frames = null;
     }
 }
+
+/**
+ * @memberof PIXI.TextureAnimation
+ * @typedef {object} EntityWithTexture
+ * @type {object}
+ * @property {PIXI.Texture} texture - The texture to diplay
+ *
+ * An Obejct with texture to display. e.g. PIXI.Sprite, PIXI.SimpleRope, PIXI.SimplePlane.
+ *
+ */
+
+/**
+ * @memberof PIXI.TextureAnimation
+ * @typedef {object} FrameObject
+ * @type {object}
+ * @property {PIXI.Texture} texture - The {@link PIXI.Texture} of the frame
+ * @property {number} [duration|time] - the duration of the frame in ms
+ * @property {number[]} [pivot] - the pivot of the frame. Index 0 is x; Index 1 is y.
+ *
+ * If no `frame.duration`, frame.duration will equal `animation.duration / frames.length`
+ * If no `frame.pivot`, frame.pivot will be null, then Animation use default or original or previous pivot.
+ * Some private fileds will be generated dynamically:
+ *     {number} _startTime:
+ *     {number} _endTime:
+ */
+
