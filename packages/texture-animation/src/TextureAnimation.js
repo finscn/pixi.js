@@ -180,12 +180,13 @@ export default class TextureAnimation
         this.currentTexture = null;
 
         /**
-         * `frameCount` is the total number of frames in the Animation
+         * the total number of frames in the Animation
          *
          * @member {number}
          * @default 0
+         * @private
          */
-        this.frameCount = 0;
+        this._frameCount = 0;
 
         /**
          * @private
@@ -460,6 +461,35 @@ export default class TextureAnimation
     }
 
     /**
+     * Get the frame by frame index
+     *
+     * @return {FrameObject} - The frame object
+     * @memberof PIXI.TextureAnimation
+     */
+    getFrameAt(index)
+    {
+        return this._frames[index];
+    }
+
+    /**
+     * Get the texture of the frame by frame index
+     *
+     * @return {PIXI.Texture} - The texture of the frame object
+     * @memberof PIXI.TextureAnimation
+     */
+    getTextureAt(index)
+    {
+        const frame = this._frames[index];
+
+        if (!frame)
+        {
+            return null;
+        }
+
+        return frame.texture;
+    }
+
+    /**
      * Get the array of frame objects used for this Animation
      *
      * @return {FrameObject[]} The array of frame objects in animation
@@ -471,7 +501,7 @@ export default class TextureAnimation
     }
 
     /**
-     * The total number of frames in the TextureAnimation. This is the same as number of textures
+     * The total number of frames in the TextureAnimation. This is the same as number of frames/textures
      * assigned to the TextureAnimation.
      *
      * @readonly
@@ -480,7 +510,8 @@ export default class TextureAnimation
      */
     get frameCount()
     {
-        return this._frames.length;
+        // return this._frames.length;
+        return this._frameCount;
     }
 
     /**
@@ -500,8 +531,8 @@ export default class TextureAnimation
 
         if (!frames)
         {
-            this.frameCount = 0;
             this.completeIndex = 0;
+            this._frameCount = 0;
             this._minIndex = -1;
             this._maxIndex = -1;
             this.firstTexture = null;
@@ -509,7 +540,7 @@ export default class TextureAnimation
             return;
         }
 
-        const len = this.frameCount = frames.length;
+        const len = this._frameCount = frames.length;
 
         this._minIndex = 0;
         this._maxIndex = len - 1;
@@ -587,7 +618,10 @@ export default class TextureAnimation
             target[this._bindName] = this;
         }
 
-        // this.changeFrame(this._minIndex, null);
+        if (this._frameCount > 0)
+        {
+            this.changeFrame(this._minIndex, null);
+        }
     }
 
     /**
