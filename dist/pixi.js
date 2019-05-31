@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.7
- * Compiled Sat, 27 Apr 2019 16:33:25 UTC
+ * Compiled Fri, 31 May 2019 15:16:29 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -12627,6 +12627,8 @@ var CanvasGraphicsRenderer = function () {
                 var holes = data.holes;
                 var outerArea = void 0;
                 var innerArea = void 0;
+                var px = void 0;
+                var py = void 0;
 
                 context.moveTo(points[0], points[1]);
 
@@ -12641,31 +12643,41 @@ var CanvasGraphicsRenderer = function () {
 
                 if (holes.length > 0) {
                     outerArea = 0;
-                    for (var _j = 0; _j < points.length; _j += 2) {
-                        outerArea += points[_j] * points[_j + 3] - points[_j + 1] * points[_j + 2];
+                    px = points[0];
+                    py = points[1];
+                    for (var _j = 2; _j + 2 < points.length; _j += 2) {
+                        outerArea += (points[_j] - px) * (points[_j + 3] - py) - (points[_j + 2] - px) * (points[_j + 1] - py);
                     }
 
                     for (var k = 0; k < holes.length; k++) {
                         points = holes[k].points;
 
-                        innerArea = 0;
-                        for (var _j2 = 0; _j2 < points.length; _j2 += 2) {
-                            innerArea += points[_j2] * points[_j2 + 3] - points[_j2 + 1] * points[_j2 + 2];
+                        if (!points) {
+                            continue;
                         }
 
-                        context.moveTo(points[0], points[1]);
+                        innerArea = 0;
+                        px = points[0];
+                        py = points[1];
+                        for (var _j2 = 2; _j2 + 2 < points.length; _j2 += 2) {
+                            innerArea += (points[_j2] - px) * (points[_j2 + 3] - py) - (points[_j2 + 2] - px) * (points[_j2 + 1] - py);
+                        }
 
                         if (innerArea * outerArea < 0) {
+                            context.moveTo(points[0], points[1]);
+
                             for (var _j3 = 2; _j3 < points.length; _j3 += 2) {
                                 context.lineTo(points[_j3], points[_j3 + 1]);
                             }
                         } else {
-                            for (var _j4 = points.length - 2; _j4 >= 2; _j4 -= 2) {
+                            context.moveTo(points[points.length - 2], points[points.length - 1]);
+
+                            for (var _j4 = points.length - 4; _j4 >= 0; _j4 -= 2) {
                                 context.lineTo(points[_j4], points[_j4 + 1]);
                             }
                         }
 
-                        if (holes[k].closed) {
+                        if (holes[k].close) {
                             context.closePath();
                         }
                     }
@@ -21102,7 +21114,7 @@ function mapWebGLBlendModesToPixi(gl) {
     // TODO - premultiply alpha would be different.
     // add a boolean for that!
     array[_const.BLEND_MODES.NORMAL] = [gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
-    array[_const.BLEND_MODES.ADD] = [gl.ONE, gl.DST_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
+    array[_const.BLEND_MODES.ADD] = [gl.ONE, gl.ONE];
     array[_const.BLEND_MODES.MULTIPLY] = [gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
     array[_const.BLEND_MODES.SCREEN] = [gl.ONE, gl.ONE_MINUS_SRC_COLOR, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
     array[_const.BLEND_MODES.OVERLAY] = [gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
@@ -21121,7 +21133,7 @@ function mapWebGLBlendModesToPixi(gl) {
 
     // not-premultiplied blend modes
     array[_const.BLEND_MODES.NORMAL_NPM] = [gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
-    array[_const.BLEND_MODES.ADD_NPM] = [gl.SRC_ALPHA, gl.DST_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
+    array[_const.BLEND_MODES.ADD_NPM] = [gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE];
     array[_const.BLEND_MODES.SCREEN_NPM] = [gl.SRC_ALPHA, gl.ONE_MINUS_SRC_COLOR, gl.ONE, gl.ONE_MINUS_SRC_ALPHA];
 
     return array;
