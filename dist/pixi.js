@@ -1,6 +1,6 @@
 /*!
- * pixi.js - v4.8.7
- * Compiled Fri, 31 May 2019 15:16:29 UTC
+ * pixi.js - v4.8.8
+ * Compiled Tue, 20 Aug 2019 14:28:38 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -8543,7 +8543,7 @@ exports.__esModule = true;
  * @name VERSION
  * @type {string}
  */
-var VERSION = exports.VERSION = '4.8.7';
+var VERSION = exports.VERSION = '4.8.8';
 
 /**
  * Two Pi.
@@ -9625,7 +9625,7 @@ var Container = function (_DisplayObject) {
         }
 
         // do a quick check to see if this element has a mask or a filter.
-        if (this._mask || this.filters) {
+        if (this._mask || this._filters && this._filters.length) {
             this.renderAdvancedWebGL(renderer);
         } else {
             this._renderWebGL(renderer);
@@ -9645,7 +9645,7 @@ var Container = function (_DisplayObject) {
     Container.prototype.renderAdvancedWebGL = function renderAdvancedWebGL(renderer) {
         renderer.flush();
 
-        var filters = this.filters;
+        var filters = this._filters;
         var mask = this._mask;
 
         // push filter first as we need to ensure the stencil buffer is correct for any masking
