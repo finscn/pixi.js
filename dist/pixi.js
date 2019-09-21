@@ -1,6 +1,6 @@
 /*!
  * pixi.js - v4.8.8
- * Compiled Tue, 20 Aug 2019 14:28:38 UTC
+ * Compiled Sat, 21 Sep 2019 16:42:53 UTC
  *
  * pixi.js is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -23597,6 +23597,8 @@ var Text = function (_Sprite) {
         var currentPosition = x;
         var index = 0;
         var current = '';
+        var previousWidth = this.context.measureText(text).width;
+        var currentWidth = 0;
 
         while (index < text.length) {
             current = characters[index++];
@@ -23605,7 +23607,9 @@ var Text = function (_Sprite) {
             } else {
                 this.context.fillText(current, currentPosition, y);
             }
-            currentPosition += this.context.measureText(current).width + letterSpacing;
+            currentWidth = this.context.measureText(text.substring(index)).width;
+            currentPosition += previousWidth - currentWidth + letterSpacing;
+            previousWidth = currentWidth;
         }
     };
 
@@ -37719,8 +37723,8 @@ var CanvasExtract = function () {
             frame.height = this.renderer.height;
         }
 
-        var width = frame.width * resolution;
-        var height = frame.height * resolution;
+        var width = Math.floor(frame.width * resolution + 1e-4);
+        var height = Math.floor(frame.height * resolution + 1e-4);
 
         var canvasBuffer = new core.CanvasRenderTarget(width, height, 1);
         var canvasData = context.getImageData(frame.x * resolution, frame.y * resolution, width, height);
@@ -37931,8 +37935,8 @@ var WebGLExtract = function () {
             frame.height = textureBuffer.size.height;
         }
 
-        var width = frame.width * resolution;
-        var height = frame.height * resolution;
+        var width = Math.floor(frame.width * resolution + 1e-4);
+        var height = Math.floor(frame.height * resolution + 1e-4);
 
         var canvasBuffer = new core.CanvasRenderTarget(width, height, 1);
 
